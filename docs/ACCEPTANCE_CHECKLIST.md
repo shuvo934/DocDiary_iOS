@@ -19,6 +19,10 @@ test centre and non-sensitive account role. Do not place real passwords in this 
 | Forced logout/access disabled/expired | Access denied; protected data is not displayed | Pending |
 | First-login expiry/audit | Headers/server changes match intended native semantics | Pending |
 | Remember Me on/off | Filled form and post-logout behaviour match Android | Pending |
+| iOS update/no listing/current version | Compatible newer Store version blocks before session restore; no listing/current permits routing | Pending iPhone/Store |
+| iOS update failure/Cancel/Retry | Store launch/return failure retains gate and native failure text; iOS Home instruction on final Cancel | Pending iPhone/Store |
+| Device/loginLog | Real Apple model, iOS version and OS hostname appear in saved six-header audit row | Pending real iPhone/backend |
+| Network/log fallback | Wi-Fi, cellular IPv4/IPv6 and unavailable echo; backend handles actual/empty metadata; no dummy IP | Pending real iPhone/backend |
 | Cold start | Session revalidated; network failure remains retryable | Pending |
 | Doctor summaries | Same period and data produce same values | Pending |
 | Admin restricted/all access | Correct username filter and exact payment values | Pending |

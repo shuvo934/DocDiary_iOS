@@ -1,4 +1,26 @@
-# Dashboard update verification — 18 October 2026 (current)
+# Startup/device verification — 18 October 2026 (current)
+
+- Flutter3.29.2 / Dart3.7.2, framework c23637390482d4cf9598c3ce3f2be31aa7332daf.
+- `flutter pub get`: successful with exact device_info_plus12.2.0,
+  network_info_plus7.0.0 and package_info_plus8.3.1.
+- `flutter analyze --no-pub --fatal-infos`: No issues found, exit0.
+- `flutter test --no-pub`: all220 tests pass, exit0, Linux. Prior187 retained,
+  33 new metadata/update cases. Full log: verification/startup_flutter_tests_2026-10-18.log.
+- Eight installer fixtures pass: full Dart reconstruction, local UI/signing/settings
+  preservation, idempotence, exact restore, formatting/CRLF, conflict rejection,
+  payload checksum rejection and write-failure rollback. These are separate from
+  the220 Flutter tests. Tested lock snapshot: startup_dependency_snapshot.lock.
+- Native Android source, accepted dashboard code/assets, splash and login UI
+  remain unchanged. No live DocDiary API or real App Store was called by tests.
+- Mac iOS build, native plugin values, live loginLog persistence and published
+  Store-version acceptance remain unrun here. Run the Mac commands and iPhone
+  checks in STARTUP_DEVICE_UPDATE_BN.md. Linux checks do not establish them.
+
+---
+
+## Previous dashboard checkpoint
+
+# Dashboard update verification — 18 October 2026
 
 - SDK: Flutter3.29.2, framework c23637390482d4cf9598c3ce3f2be31aa7332daf,
   engine18b71d647a, Dart3.7.2. SDK tools run in CI mode to omit the cloud

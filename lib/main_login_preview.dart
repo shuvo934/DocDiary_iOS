@@ -17,7 +17,10 @@ void main() {
   final transport = _PreviewTransport();
   final auth = AuthController(
     repository: AuthRepository(transport, ServerDirectory(transport)),
-    profiles: ProfileRepository(transport),
+    profiles: ProfileRepository(
+      transport,
+      describeClient: () async => const ClientDescriptor(),
+    ),
     vault: _PreviewVault(),
   )..stage = AuthStage.signedOut;
   runApp(_LoginPreview(auth: auth));

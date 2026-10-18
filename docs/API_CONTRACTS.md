@@ -37,3 +37,17 @@ are normalized where the Android implementation uses fallback values.
 Credentials never appear in application logging. The underlying legacy authentication
 contract still sends them in a query; changing that requires a separate backend agreement.
 
+
+## iOS loginLog client descriptor (18 October 2026)
+
+The existing six-header POST now uses DeviceInfoPlugin utsname.machine,
+Apple brand, actual systemName/systemVersion, Platform.localHostname and
+Wi-Fi/public/local-interface IP fallback. There is no additional login POST.
+No dummy host/IP is written. Missing optional metadata stays empty; backend
+acceptance of empty fields and IPv6 needs live testing. Source IP observed by
+the backend is a distinct server-side fact. See STARTUP_DEVICE_UPDATE_BN.md.
+
+Separate public reads: Apple HTTPS lookup by actual bundle ID/optional numeric
+Apple ID and country; HTTPS public-IP echo only without usable Wi-Fi. Neither
+request carries DocDiary identity/custom login headers. The default public echo
+can be disabled or replaced with a first-party HTTPS JSON endpoint.

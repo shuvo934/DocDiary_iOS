@@ -18,7 +18,10 @@ Future<void> main() async {
   final transport = _SelectionPreviewTransport();
   final auth = AuthController(
     repository: AuthRepository(transport, ServerDirectory(transport)),
-    profiles: ProfileRepository(transport),
+    profiles: ProfileRepository(
+      transport,
+      describeClient: () async => const ClientDescriptor(),
+    ),
     vault: _SelectionPreviewVault(),
   );
   await auth.initialize();

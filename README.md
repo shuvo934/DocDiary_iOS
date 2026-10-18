@@ -1,3 +1,17 @@
+# Startup/device update — 18 October 2026 (current)
+
+Splash now checks compatible public App Store versions before session restore;
+loginLog collects actual iOS device/hostname/OS/IP metadata. Native failure and
+Retry/Cancel behavior is retained with App Store/Home-gesture iOS adaptations.
+Flutter3.29.2/Dart3.7.2 analyzer is clean; all220 tests pass on Linux. Mac/iPhone
+plugin, Store and live audit acceptance remains. Accepted dashboard UI is kept.
+
+Apply/configuration/preview: `docs/STARTUP_DEVICE_UPDATE_BN.md`.
+Audit: `docs/STARTUP_DEVICE_AUDIT.md`. Use the focused Startup Device patch on
+an existing Mac project; do not replace the whole project or regenerate Runner.
+
+---
+
 # Latest dashboard update — 18 October 2026
 
 The supplied dashboard file is the current integration baseline. Dashboard

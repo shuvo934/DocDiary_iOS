@@ -14,11 +14,11 @@ Status vocabulary:
 | Native area | Current implementation | Status |
 | --- | --- | --- |
 | Splash UI | Original MainActivity PNG layers/gradient/fullscreen; user approved appearance on 17 October | Accepted UI |
-| Startup routing | Keychain restoration and minimum 1000ms splash; full device/lifecycle acceptance remains pending | Drafted |
+| Startup routing/update | Public App Store check before restore; compatible marketing versions, Retry/Cancel and 1000ms splash; Linux coverage passes, Mac/iPhone acceptance pending | Implemented — device acceptance pending |
 | Login UI | Native DocLogin form, typography, gradient button, loading/contact/keyboard states; user approved appearance | Accepted UI |
 | Login authentication | Server discovery, native response variants, validation and login flow; full device acceptance pending | Drafted |
 | Centre/account selection | User approved UI on 17 October; native header/rows/close behavior; six corrected tests still need a supplied rerun result | Accepted UI |
-| Session/access | Native flag resets, expiry/access checks, login logs, secure persistence, logout/switch | Drafted |
+| Session/access | Native flag resets, expiry/access checks, real device/IP/OS login logs, secure persistence, logout/switch | Implemented subset — live device acceptance pending |
 | Dashboard access/dialog audit | Native forced/mobile/status/expiry dialogs, inclusive0–3-day warning, full error-handler/scoped Retry, owned routes and explicit acknowledgement | Drafted — Mac/iPhone verification pending; iOS Exit adapted |
 | Dashboard | Native-derived header/identity, role/permission buttons and icon menus, 4 date tabs, doctor/admin summary UI; existing summary API and native photo GETs | Partial — summary UI accepted; latest user full-top shadow retained |
 | Doctor Next Meeting countdown | Native interval/units/right-anchored progress; 3-second Today refresh; lifecycle and pending-request guards | Drafted — Mac verification pending |
@@ -36,6 +36,15 @@ Status vocabulary:
 | HR, Accounts, approvals and analytics | Not implemented | Pending |
 | Camera and PDF iOS feasibility trials | Not performed | Pending |
 | TestFlight/App Store preparation | Not started | Pending |
+
+## Current startup/device checkpoint
+
+The user considers dashboard-owned work complete; destination screen modules
+remain separate. Splash update and real loginLog metadata now have33 additional
+automated cases (220 total passing). Read STARTUP_DEVICE_UPDATE_BN.md for iOS
+adaptations, configuration and Mac/iPhone acceptance. Existing chart/UI changes
+and native Android source are untouched. No complete app conversion or App Store
+release acceptance is claimed.
 
 ## Next checkpoint
 

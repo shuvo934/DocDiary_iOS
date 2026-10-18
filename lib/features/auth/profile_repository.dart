@@ -1,4 +1,5 @@
-import 'dart:io';
+import '../../core/client_descriptor.dart';
+export '../../core/client_descriptor.dart' show ClientDescriptor;
 
 import '../../core/failure.dart';
 import '../../core/native_dates.dart';
@@ -39,37 +40,6 @@ class AccountProfile {
     '0',
   );
   String get expiryDate => value('exp_date');
-}
-
-class ClientDescriptor {
-  const ClientDescriptor({
-    this.host = 'Apple iOS',
-    this.ip = '0.0.0.0',
-    this.hostUser = 'iOS',
-    this.os = 'iOS',
-  });
-  final String host;
-  final String ip;
-  final String hostUser;
-  final String os;
-
-  static Future<ClientDescriptor> collect() async {
-    var ip = '0.0.0.0';
-    try {
-      final interfaces = await NetworkInterface.list(
-        type: InternetAddressType.IPv4,
-      );
-      for (final interface in interfaces) {
-        if (interface.name == 'en0' && interface.addresses.isNotEmpty) {
-          ip = interface.addresses.first.address;
-          break;
-        }
-      }
-    } catch (_) {
-      // Local interface metadata is optional; login itself still works.
-    }
-    return ClientDescriptor(ip: ip, os: Platform.operatingSystemVersion);
-  }
 }
 
 class ProfileRepository {

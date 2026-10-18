@@ -10,6 +10,8 @@ import 'features/dashboard/dashboard_repository.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/dashboard/dashboard_services.dart';
 import 'features/splash/native_splash_screen.dart';
+import 'features/startup/app_update_controller.dart';
+import 'features/startup/native_startup_update_gate.dart';
 
 class DocDiaryApp extends StatefulWidget {
   const DocDiaryApp({
@@ -19,44 +21,76 @@ class DocDiaryApp extends StatefulWidget {
     this.onDispose,
     this.initializeOnStart = true,
     this.dashboardServices = const DashboardServices(),
+    this.updates,
   });
   final AuthController auth;
   final DashboardRepository dashboard;
   final VoidCallback? onDispose;
   final bool initializeOnStart;
   final DashboardServices dashboardServices;
+  final AppUpdateController? updates;
 
   @override
   State<DocDiaryApp> createState() => _DocDiaryAppState();
 }
 
-class _DocDiaryAppState extends State<DocDiaryApp> {
+class _DocDiaryAppState extends State<DocDiaryApp> with WidgetsBindingObserver {
   Timer? _splashTimer;
   late bool _showStartupSplash;
+  bool _restoringStarted = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    widget.updates?.addListener(_updatesChanged);
     _showStartupSplash = widget.initializeOnStart;
     if (widget.initializeOnStart) {
-      unawaited(widget.auth.initialize());
-      // Match MainActivity's 1000ms delay, starting after the first frame.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-        _splashTimer = Timer(const Duration(seconds: 1), () {
-          if (mounted) {
-            setState(() => _showStartupSplash = false);
-          }
-        });
-      });
+      final updates = widget.updates;
+      if (updates == null) {
+        _restoreSession();
+      } else {
+        unawaited(updates.check());
+      }
     }
+  }
+
+  void _updatesChanged() {
+    if (mounted && widget.initializeOnStart && widget.updates!.allowsStartup) {
+      _restoreSession();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    widget.updates?.didChangeAppLifecycleState(state);
+  }
+
+  void _restoreSession() {
+    if (_restoringStarted || !mounted) {
+      return;
+    }
+    _restoringStarted = true;
+    unawaited(widget.auth.initialize());
+    // Match MainActivity's 1000ms delay, starting after the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _splashTimer = Timer(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() => _showStartupSplash = false);
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
     _splashTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    widget.updates?.removeListener(_updatesChanged);
+    widget.updates?.dispose();
     widget.auth.dispose();
     widget.onDispose?.call();
     super.dispose();
@@ -68,9 +102,21 @@ class _DocDiaryAppState extends State<DocDiaryApp> {
     debugShowCheckedModeBanner: false,
     theme: docDiaryTheme(),
     home: ListenableBuilder(
-      listenable: widget.auth,
+      listenable: Listenable.merge([
+        widget.auth,
+        if (widget.updates != null) widget.updates!,
+      ]),
       builder: (context, _) {
         final auth = widget.auth;
+        final updates = widget.updates;
+        if (widget.initializeOnStart &&
+            updates != null &&
+            !updates.allowsStartup) {
+          return NativeStartupUpdateGate(
+            key: ValueKey('startup:${updates.revision}'),
+            updates: updates,
+          );
+        }
         if (_showStartupSplash || auth.stage == AuthStage.booting) {
           return const NativeSplashScreen();
         }
