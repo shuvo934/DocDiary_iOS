@@ -1,3 +1,27 @@
+# Doctor Profile verification — 18 October 2026 (current)
+
+- Flutter3.29.2/Dart3.7.2: analyzer clean, all250 Flutter tests pass on Linux.
+  Previous220 retained;12 new contract and18 real-font widget cases.
+- Log: verification/profile_flutter_tests_2026-10-18.log.
+- No dependency, pubspec/lock, iOS Runner/signing, startup or auth code changes.
+  Accepted dashboard render/assets remain byte-identical to full-sourcev17;
+  only the default Profile destination is added to DashboardScreen.
+- Nine installer fixtures pass: reconstruction of all79 analyzed Dart files,
+  preservation of local dashboard logic/UI/settings, formatting/CRLF, exact
+  restore/idempotence, missing dependency/route-anchor rejection, changed local
+  preview rejection, payload tamper detection and write-failure rollback.
+- Existing unavailable-module UI test now checks Appointment; real Profile
+  routing/return/write behavior is covered by the new Profile widget tests.
+- New API/crop/upload logic is tested with synthetic doctor/image fixtures;
+  no real DocDiary writes or live video launches were performed by tests.
+- Mac simulator/Xcode build, iPhone camera/permission/crop, live updateImage
+  persistence and Android-vs-iPhone screenshot acceptance remain pending.
+- This is the first Profile checkpoint. Address/password editing is pending.
+
+---
+
+## Earlier checkpoints
+
 # Startup/device verification — 18 October 2026 (current)
 
 - Flutter3.29.2 / Dart3.7.2, framework c23637390482d4cf9598c3ce3f2be31aa7332daf.

@@ -1,3 +1,14 @@
+# Doctor Profile — first checkpoint, 18 October 2026 (current)
+
+Doctor Profile main UI/data/photo/video and default dashboard routing are
+implemented. Analyzer clean;250 Flutter tests pass on Linux. Update Address
+and Change Password child screens remain the next checkpoint. Mac/iPhone
+native visual/plugin/live-backend acceptance remains pending.
+
+Apply and preview: `docs/PROFILE_PATCH_BN.md`. Native mapping: `docs/PROFILE_NATIVE_AUDIT.md`.
+
+---
+
 # Startup/device update — 18 October 2026 (current)
 
 Splash now checks compatible public App Store versions before session restore;

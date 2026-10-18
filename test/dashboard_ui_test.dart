@@ -56,7 +56,7 @@ void main() {
       expect(find.byKey(const Key('dashboard_nav_payment')), findsNothing);
       expect(find.byKey(const Key('dashboard_change_photo')), findsNothing);
       final before = h.posts.length;
-      await tester.tap(find.byKey(const Key('dashboard_nav_profile')));
+      await tester.tap(find.byKey(const Key('dashboard_nav_appointment')));
       await tester.pumpAndSettle();
       expect(
         find.text('This screen is not available in this development build.'),

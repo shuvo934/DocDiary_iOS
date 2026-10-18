@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -105,6 +106,7 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
   final String role;
   final String access;
   bool _failedOnce = false;
+  Uint8List? _doctorProfilePicture;
   final DateTime first;
   final Duration duration;
   final DateTime Function() now;
@@ -116,7 +118,13 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
     Uint8List body, {
     Map<String, String> headers = const {},
     String contentType = 'application/binary',
-  }) async => {'string_out': 'Successfully Created'};
+  }) async {
+    if (uri.path.endsWith('/doc_profile/updateImage')) {
+      _doctorProfilePicture = Uint8List.fromList(body);
+    }
+    return {'string_out': 'Successfully Created'};
+  }
+
   String get _expiry => oracleDate(
     first.add(
       Duration(
@@ -147,6 +155,27 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
       );
     }
     switch (route) {
+      case 'getDocProfile':
+        return {
+          'count': 1,
+          'items': [
+            {
+              'doc_village': 'Example Road',
+              'doc_poffice': 'Savar',
+              'dd_thana_name': 'Savar',
+              'dist_name': 'Dhaka',
+              'doc_dd_id': '12',
+              'dist_id': '1',
+              'doc_cell': '01700000000',
+              'doc_phone': '',
+              'doc_email': 'doctor@example.invalid',
+              'doc_profile_pic':
+                  _doctorProfilePicture == null
+                      ? null
+                      : base64Encode(_doctorProfilePicture!),
+            },
+          ],
+        };
       case 'getDocData':
         return {
           'items': [
@@ -313,6 +342,14 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
           'total_pay_rtn': '1250.25',
         };
       case 'getDocPic':
+        return _doctorProfilePicture == null
+            ? {'count': 0, 'items': <Object?>[]}
+            : {
+              'count': 1,
+              'items': [
+                {'doc_profile_pic': base64Encode(_doctorProfilePicture!)},
+              ],
+            };
       case 'getAdminPic':
         return {'count': 0, 'items': <Object?>[]};
       default:

@@ -23,10 +23,11 @@ Status vocabulary:
 | Dashboard | Native-derived header/identity, role/permission buttons and icon menus, 4 date tabs, doctor/admin summary UI; existing summary API and native photo GETs | Partial — summary UI accepted; latest user full-top shadow retained |
 | Doctor Next Meeting countdown | Native interval/units/right-anchored progress; 3-second Today refresh; lifecycle and pending-request guards | Drafted — Mac verification pending |
 | Admin OVERVIEW charts | Native endpoints, independent dates, Monthly/Yearly, allowed type filters, cubic plots, totals, tap markers, zoom and retry | Drafted — Mac verification pending |
-| Dashboard destination screens | Native target/permission mapping and owned-route return refresh implemented; destination content still shows availability notice | Pending destination modules |
+| Dashboard destination screens | Native target/permission mapping and owned-route return refresh implemented; Profile implemented; remaining destinations show availability notice | Pending destination modules |
 | Admin Dashboard photo/camera/crop/upload/retry | Implemented; all relevant automated cases pass; actual iOS plugin build/camera/upload acceptance pending | Drafted |
 | iOS review integration | Optional StoreKit request after later full success; debug disabled and bounded once per entry | Drafted |
-| Doctor Profile edit/photo | Separate DocProfile module, not yet implemented | Pending |
+| Doctor Profile main/data/photo/video | Native-derived UI, getDocProfile/updateImage, lifecycle/error/retry and dashboard navigation | Implemented checkpoint — Mac/iPhone acceptance pending |
+| Doctor Profile Update Address / Change Password | Entry buttons present; editing/validation/write/session flows next | Pending next checkpoint |
 | Appointment schedules/unit/all/admin changes | Not implemented | Pending |
 | Patient search/history/health progress | Not implemented | Pending |
 | Old prescription workflows | Not implemented | Pending |
@@ -46,7 +47,15 @@ adaptations, configuration and Mac/iPhone acceptance. Existing chart/UI changes
 and native Android source are untouched. No complete app conversion or App Store
 release acceptance is claimed.
 
-## Next checkpoint
+## Current Profile checkpoint
+
+The user selected Doc Profile before Appointment. Main UI/API/photo/video and
+Dashboard entry/return are implemented, with30 new automated cases (250 total).
+Next work: native Update Address, then Change Password. See PROFILE_PATCH_BN.md
+and PROFILE_NATIVE_AUDIT.md. Existing accepted dashboard rendering, startup and
+login implementation remain unchanged.
+
+## Earlier dashboard checkpoint
 
 Dashboard-owned behavior is implemented, including the uploaded dashboard's
 Retry callback lint correction, native Admin chooser/custom camera/free crop/
@@ -63,8 +72,7 @@ check native camera, permissions, crop/HEIC and live image persistence on iPhone
 These native plugin/device checks cannot be established by the Linux suite.
 Use DASHBOARD_COMPLETION_AUDIT.md for exact scope and intentional iOS differences.
 
-The next screen module is Doctor Appointment schedule/list, then its filters
-and appointment details. Profile/doctor photo edit, patient/prescription/payment/
+Doctor Appointment schedule/list and its filters/details follow the Profile module. Profile address/password, patient/prescription/payment/
 reports/HR/accounts destination workflows and PDF printing remain separate
 migration modules. No full app/production-release completion is claimed.
 

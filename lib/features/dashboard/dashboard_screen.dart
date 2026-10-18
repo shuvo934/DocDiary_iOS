@@ -20,6 +20,8 @@ import 'dashboard_services.dart';
 import 'native_camera_screen.dart';
 import 'native_photo_dialogs.dart';
 import 'dashboard_navigation.dart';
+import '../profile/doctor_profile_repository.dart';
+import '../profile/doctor_profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
@@ -652,7 +654,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (route == null) {
       return;
     }
-    final page = widget.services.destinationBuilder?.call(context, route);
+    final page =
+        widget.services.destinationBuilder?.call(context, route) ??
+        (route.module == DashboardModule.doctorProfile
+            ? DoctorProfileScreen(
+              auth: widget.auth,
+              repository: DoctorProfileRepository(
+                widget.repository.transport,
+                now: widget.repository.now,
+              ),
+              media: widget.services.media,
+            )
+            : null);
     if (page != null) {
       _noticeOpen = true;
       _navigationAway = true;

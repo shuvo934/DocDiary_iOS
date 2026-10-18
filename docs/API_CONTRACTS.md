@@ -51,3 +51,16 @@ Separate public reads: Apple HTTPS lookup by actual bundle ID/optional numeric
 Apple ID and country; HTTPS public-IP echo only without usable Wi-Fi. Neither
 request carries DocDiary identity/custom login headers. The default public echo
 can be disabled or replaced with a first-party HTTPS JSON endpoint.
+
+## Doctor Profile first checkpoint
+
+| Request | Contract |
+| --- | --- |
+| GET doc_profile/getDocProfile | query doc_id; count/items encoded or direct; last row; null strings become empty |
+| POST doc_profile/updateImage | header p_doc_id, raw JPEG application/binary, exact string_out=Successfully Created |
+| GET doc_dashboard/getDocFLFlag | query p_doc_id before explicit photo POST |
+
+ProfileRepository.open(recordLogin:false) revalidates access without loginLog
+or expiry-init writes. Background success does not replay an image POST. Video
+flags/link remain account data, not a new endpoint. Address/password endpoints
+are not implemented by this checkpoint; their buttons do not perform writes.
