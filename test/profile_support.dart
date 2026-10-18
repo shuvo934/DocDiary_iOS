@@ -18,6 +18,27 @@ JsonMap profileDetails({String street = 'Example Road'}) => {
   'doc_email': 'doctor@example.invalid',
   'doc_profile_pic': null,
 };
+List<JsonMap> profileThanas() => [
+  {
+    'dd_id': '12',
+    'dd_dist_id': '1',
+    'dd_thana_name': 'Savar',
+    'dist_name': 'Dhaka',
+  },
+  {
+    'dd_id': '13',
+    'dd_dist_id': '1',
+    'dd_thana_name': 'Dhamrai',
+    'dist_name': 'Dhaka',
+  },
+  {
+    'dd_id': '21',
+    'dd_dist_id': '2',
+    'dd_thana_name': 'Gazipur Sadar',
+    'dist_name': 'Gazipur',
+  },
+];
+
 Harness profileHarness() {
   final h = Harness();
   h.doctorData.addAll({
@@ -34,6 +55,8 @@ Harness profileHarness() {
                 'count': 1,
                 'items': [profileDetails()],
               }
+              : uri.path.endsWith('getDocThana')
+              ? {'count': 3, 'items': profileThanas()}
               : await h.defaultGet(uri);
   return h;
 }

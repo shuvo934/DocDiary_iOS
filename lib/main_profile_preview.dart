@@ -18,7 +18,8 @@ import 'features/profile/doctor_profile_repository.dart';
 import 'features/profile/doctor_profile_screen.dart';
 
 /// Offline API/Keychain fixtures. Camera/gallery still use real iOS plugins.
-/// PROFILE_PREVIEW: normal, empty, retry, upload_retry, video, long.
+/// PROFILE_PREVIEW: normal, empty, retry, upload_retry, video, long,
+/// address_retry, address_save_retry, address_empty.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   const mode = String.fromEnvironment(
@@ -133,7 +134,29 @@ class _PreviewTransport implements BinaryTransport {
   _PreviewTransport(this.mode);
   final String mode;
   bool _readFailed = false, _uploadFailed = false;
+  bool _addressReadFailed = false, _addressSaveFailed = false;
+  JsonMap? _savedAddress;
   Uint8List? picture;
+  final _thanas = <JsonMap>[
+    {
+      'dd_id': '12',
+      'dd_dist_id': '1',
+      'dd_thana_name': 'Savar',
+      'dist_name': 'Dhaka',
+    },
+    {
+      'dd_id': '13',
+      'dd_dist_id': '1',
+      'dd_thana_name': 'Dhamrai',
+      'dist_name': 'Dhaka',
+    },
+    {
+      'dd_id': '21',
+      'dd_dist_id': '2',
+      'dd_thana_name': 'Gazipur Sadar',
+      'dist_name': 'Gazipur',
+    },
+  ];
   JsonMap get doctor => {
     'user_avail': '1',
     'doc_id': '10',
@@ -170,7 +193,7 @@ class _PreviewTransport implements BinaryTransport {
           _readFailed = true;
           throw const AppFailure('Server problem or Internet not connected');
         }
-        if (mode == 'empty') {
+        if (mode == 'empty' && _savedAddress == null) {
           return {'count': 0, 'items': null};
         }
         return {
@@ -194,9 +217,18 @@ class _PreviewTransport implements BinaryTransport {
                       : 'doctor@example.invalid',
               'doc_profile_pic':
                   picture == null ? null : base64Encode(picture!),
+              ...?_savedAddress,
             },
           ],
         };
+      case 'getDocThana':
+        if (mode == 'address_retry' && !_addressReadFailed) {
+          _addressReadFailed = true;
+          throw const AppFailure('Synthetic Thana/Upazila load interruption');
+        }
+        return mode == 'address_empty'
+            ? {'count': 0, 'items': null}
+            : {'count': _thanas.length, 'items': _thanas};
       default:
         throw StateError('Unexpected offline preview request');
     }
@@ -228,7 +260,29 @@ class _PreviewTransport implements BinaryTransport {
   Future<JsonMap> post(
     Uri uri, {
     Map<String, String> headers = const {},
-  }) async => throw StateError('No account mutations in Profile preview');
+  }) async {
+    if (!uri.path.endsWith('/doc_profile/updateAddress') ||
+        headers['P_DOC_ID'] != '10') {
+      throw StateError('Unexpected offline preview mutation');
+    }
+    if (mode == 'address_save_retry' && !_addressSaveFailed) {
+      _addressSaveFailed = true;
+      throw const AppFailure('Synthetic address save interruption');
+    }
+    final thana = _thanas.lastWhere(
+      (row) => row['dd_id'] == headers['P_DD_ID'],
+    );
+    _savedAddress = {
+      'doc_village': headers['P_S_ADDRESS'],
+      'doc_poffice': headers['P_POST_OFFICE'],
+      'doc_dd_id': thana['dd_id'],
+      'dist_id': thana['dd_dist_id'],
+      'dd_thana_name': thana['dd_thana_name'],
+      'dist_name': thana['dist_name'],
+    };
+    return {'string_out': 'Successfully Created'};
+  }
+
   @override
   void close() {}
 }

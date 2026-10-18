@@ -27,7 +27,8 @@ Status vocabulary:
 | Admin Dashboard photo/camera/crop/upload/retry | Implemented; all relevant automated cases pass; actual iOS plugin build/camera/upload acceptance pending | Drafted |
 | iOS review integration | Optional StoreKit request after later full success; debug disabled and bounded once per entry | Drafted |
 | Doctor Profile main/data/photo/video | Native-derived UI, getDocProfile/updateImage, lifecycle/error/retry and dashboard navigation | Implemented checkpoint — Mac/iPhone acceptance pending |
-| Doctor Profile Update Address / Change Password | Entry buttons present; editing/validation/write/session flows next | Pending next checkpoint |
+| Doctor Profile Update Address | Native form/search/district/validation/confirmation/header POST, manual errors, access/lifecycle guards and Profile refresh;280-case suite passes | Implemented checkpoint — Mac/iPhone acceptance pending |
+| Doctor Profile Change Password | Entry button present; editing/validation/write/session flows next | Pending next checkpoint |
 | Appointment schedules/unit/all/admin changes | Not implemented | Pending |
 | Patient search/history/health progress | Not implemented | Pending |
 | Old prescription workflows | Not implemented | Pending |
@@ -51,7 +52,9 @@ release acceptance is claimed.
 
 The user selected Doc Profile before Appointment. Main UI/API/photo/video and
 Dashboard entry/return are implemented, with30 new automated cases (250 total).
-Next work: native Update Address, then Change Password. See PROFILE_PATCH_BN.md
+Update Address now adds30 automated cases (280 total); the user's latest Profile
+layout is retained byte for byte. Next work: Change Password. See PROFILE_ADDRESS_PATCH_BN.md,
+PROFILE_ADDRESS_NATIVE_AUDIT.md, PROFILE_PATCH_BN.md
 and PROFILE_NATIVE_AUDIT.md. Existing accepted dashboard rendering, startup and
 login implementation remain unchanged.
 
@@ -72,7 +75,7 @@ check native camera, permissions, crop/HEIC and live image persistence on iPhone
 These native plugin/device checks cannot be established by the Linux suite.
 Use DASHBOARD_COMPLETION_AUDIT.md for exact scope and intentional iOS differences.
 
-Doctor Appointment schedule/list and its filters/details follow the Profile module. Profile address/password, patient/prescription/payment/
+Doctor Appointment schedule/list and its filters/details follow the Profile module. Profile password, patient/prescription/payment/
 reports/HR/accounts destination workflows and PDF printing remain separate
 migration modules. No full app/production-release completion is claimed.
 

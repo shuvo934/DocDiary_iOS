@@ -474,7 +474,7 @@ void main() {
     },
   );
   testWidgets(
-    'next-step Address and Password entry points are explicit and cannot fake saved data',
+    'Address opens its native form while Password remains an explicit next-step entry point',
     (tester) async {
       final h = profileHarness();
       await _show(tester, h, _Media());

@@ -1,4 +1,17 @@
-# Doctor Profile — first checkpoint, 18 October 2026 (current)
+# Doctor Profile — Update Address, 18 October 2026 (current)
+
+The supplied Profile layout is retained exactly. Native Address form, searchable
+Thana/District selection, validation, Yes/No confirmation, exact header POST,
+error Retry/Cancel/Exit and return-to-Profile refresh are implemented. Analyzer
+clean; all280 Flutter tests pass on Linux. No dependency/iOS setting changes.
+Mac/iPhone visual, build and live-backend acceptance remain pending.
+
+Apply/preview: `docs/PROFILE_ADDRESS_PATCH_BN.md`.
+Native mapping: `docs/PROFILE_ADDRESS_NATIVE_AUDIT.md`. Next: Change Password.
+
+---
+
+# Doctor Profile — first checkpoint, 18 October 2026
 
 Doctor Profile main UI/data/photo/video and default dashboard routing are
 implemented. Analyzer clean;250 Flutter tests pass on Linux. Update Address

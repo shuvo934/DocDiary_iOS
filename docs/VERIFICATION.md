@@ -1,4 +1,27 @@
-# Doctor Profile verification — 18 October 2026 (current)
+# Profile Address verification — 18 October 2026 (current)
+
+- Flutter3.29.2/Dart3.7.2: analyzer clean, all280 Flutter tests pass on Linux.
+  Previous250 retained;11 new contract and19 real-font widget cases.
+- Logs: verification/profile_address_flutter_tests_2026-10-18.log and
+  verification/profile_address_flutter_analyze_2026-10-18.log.
+- All85 Dart source/test files pass import/asset consistency checks.
+- Ten installer fixtures pass: complete source reconstruction, preserved local
+  Profile/Dashboard/settings, idempotence, exact restore, CRLF/format handling,
+  conflict/missing-anchor/missing-checkpoint rejection, payload tamper rejection,
+  write-failure rollback and protection of newer edits during restore.
+  Log: verification/profile_address_installer_tests_2026-10-18.log.
+- Uploaded native_doctor_profile_layout.dart is byte-identical. Dashboard UI,
+  DashboardScreen, auth, startup, splash, dependencies/lock and iOS configuration
+  are unchanged from full-sourcev18. Only Profile's default Address destination
+  is integrated; preview fixtures and related test support also updated.
+- Tests use synthetic backend/session data. No real DocDiary API mutations.
+- Mac/Xcode simulator compilation, iPhone keyboard/runtime/live persistence and
+  Android-vs-iOS visual acceptance remain pending. Next: Change Password.
+- Apply and acceptance commands: PROFILE_ADDRESS_PATCH_BN.md.
+
+---
+
+# Doctor Profile verification — 18 October 2026
 
 - Flutter3.29.2/Dart3.7.2: analyzer clean, all250 Flutter tests pass on Linux.
   Previous220 retained;12 new contract and18 real-font widget cases.

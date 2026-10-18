@@ -107,6 +107,27 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
   final String access;
   bool _failedOnce = false;
   Uint8List? _doctorProfilePicture;
+  JsonMap? _profileAddress;
+  final _thanas = <JsonMap>[
+    {
+      'dd_id': '12',
+      'dd_dist_id': '1',
+      'dd_thana_name': 'Savar',
+      'dist_name': 'Dhaka',
+    },
+    {
+      'dd_id': '13',
+      'dd_dist_id': '1',
+      'dd_thana_name': 'Dhamrai',
+      'dist_name': 'Dhaka',
+    },
+    {
+      'dd_id': '21',
+      'dd_dist_id': '2',
+      'dd_thana_name': 'Gazipur Sadar',
+      'dist_name': 'Gazipur',
+    },
+  ];
   final DateTime first;
   final Duration duration;
   final DateTime Function() now;
@@ -155,6 +176,8 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
       );
     }
     switch (route) {
+      case 'getDocThana':
+        return {'count': _thanas.length, 'items': _thanas};
       case 'getDocProfile':
         return {
           'count': 1,
@@ -173,6 +196,7 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
                   _doctorProfilePicture == null
                       ? null
                       : base64Encode(_doctorProfilePicture!),
+              ...?_profileAddress,
             },
           ],
         };
@@ -363,7 +387,22 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
   Future<JsonMap> post(
     Uri uri, {
     Map<String, String> headers = const {},
-  }) async => {'string_out': 'Successfully Created'};
+  }) async {
+    if (uri.path.endsWith('/doc_profile/updateAddress')) {
+      final thana = _thanas.lastWhere(
+        (row) => row['dd_id'] == headers['P_DD_ID'],
+      );
+      _profileAddress = {
+        'doc_village': headers['P_S_ADDRESS'],
+        'doc_poffice': headers['P_POST_OFFICE'],
+        'doc_dd_id': thana['dd_id'],
+        'dist_id': thana['dd_dist_id'],
+        'dd_thana_name': thana['dd_thana_name'],
+        'dist_name': thana['dist_name'],
+      };
+    }
+    return {'string_out': 'Successfully Created'};
+  }
 
   @override
   void close() {}

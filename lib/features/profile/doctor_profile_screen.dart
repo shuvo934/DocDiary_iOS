@@ -14,6 +14,8 @@ import '../dashboard/dashboard_services.dart';
 import '../dashboard/native_camera_screen.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
 import '../dashboard/native_photo_dialogs.dart';
+import 'doctor_address_repository.dart';
+import 'doctor_address_screen.dart';
 import 'doctor_profile_repository.dart';
 import 'native_doctor_profile_layout.dart';
 
@@ -253,11 +255,18 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen>
     if (!_canAct) {
       return;
     }
-    final page = widget.destinationBuilder?.call(
-      context,
-      destination,
-      _details,
-    );
+    final page =
+        widget.destinationBuilder?.call(context, destination, _details) ??
+        (destination == DoctorProfileDestination.address
+            ? DoctorAddressScreen(
+              auth: widget.auth,
+              repository: DoctorAddressRepository(
+                widget.repository.transport,
+                now: widget.repository.now,
+              ),
+              details: _details,
+            )
+            : null);
     if (page == null) {
       await _dialogs.show<void>(
         context,
