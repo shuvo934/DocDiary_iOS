@@ -1,0 +1,15 @@
+{
+  "baseline_zip": "DocDiary.zip",
+  "baseline_zip_sha256": "533a769a6bb707fc7596fad7bc569ec72f08efd79b7705c384cb6859d1251ca3",
+  "native_version": "1.3.9.5",
+  "native_version_code": 27,
+  "created_date": "2026-10-15",
+  "milestone": "M1 - authentication and dashboard entry",
+  "source_files": {
+    "app/src/main/java/ttit/com/shuvo/docdiary/login/DocLogin.java": "9fb7e11d1445b4330ca3c559c8c0180f8f7e07c9df501fbdf7bb7dff77dca8ef",
+    "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/DocDashboard.java": "2fa1c06be7211c5899bd58ea1f5d0a984ded7d477e27a8f6eb817ff59a2f57f8",
+    "app/src/main/java/ttit/com/shuvo/docdiary/MainActivity.java": "c6a8869c6812f224becba5e55ea07aadfcc2c5438c50618fe318117098af10c7",
+    "app/src/main/res/layout/activity_doc_login.xml": "2d622327abb7559ae27bbac916d7be7f0e06bcf6700af4fa12201d6b1c9945ca",
+    "app/src/main/res/layout/activity_doc_dashboard.xml": "8b0a9e47c2241b09c2880d1e9c3cb9e26e1f912476ac2b09e724f2526d32591a"
+  }
+}

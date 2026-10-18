@@ -1,0 +1,37 @@
+[
+  {
+    "file": "Poppins-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Regular.ttf",
+    "sha256": "7e65201e9b79159e2300267cc885e16c8dcef2424cdfa09a29bfb0980a94a7ba"
+  },
+  {
+    "file": "Poppins-Medium.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Medium.ttf",
+    "sha256": "90373e7d838d32468438fc3e152dca0bdb12edcab99ea639f158790b1ba1fd05"
+  },
+  {
+    "file": "Poppins-SemiBold.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-SemiBold.ttf",
+    "sha256": "d3bf1bdaf0550e83da9ac0b1d1d9fe6db086835a83aa28578e609a394b9a0286"
+  },
+  {
+    "file": "Poppins-Bold.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf",
+    "sha256": "983676516167748b74de6f4771fb384c664fd913acb8b471122ecacf5da5ea6c"
+  },
+  {
+    "file": "PatuaOne-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/patuaone/PatuaOne-Regular.ttf",
+    "sha256": "a3faa8b9efdd9d89980b56fa2b080669d66f3f977f07a2a6295498dbe7c26a7c"
+  },
+  {
+    "file": "Ubuntu-Medium.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/Ubuntu-Medium.ttf",
+    "sha256": "3cd952b8b52581e48a8fa95b31c8829c2baa41b635042a69587d57f98092961e"
+  },
+  {
+    "file": "OpenSans[wdth,wght].ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/opensans/OpenSans%5Bwdth%2Cwght%5D.ttf",
+    "sha256": "36643644f318a812aab2d2ed3bb98f8cf0872527f835fe9398d95fe6b9adb878"
+  }
+]

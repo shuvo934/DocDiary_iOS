@@ -1,0 +1,2623 @@
+{
+  "native_java_files": 374,
+  "files": [
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/MainActivity.java",
+      "class": "MainActivity",
+      "extends": "AppCompatActivity",
+      "lines": 141,
+      "status": "drafted_or_partial_see_migration_status"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/all_appointment/AllAppointment.java",
+      "class": "AllAppointment",
+      "extends": "AppCompatActivity",
+      "lines": 1366,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/all_appointment/arraylists/ChoiceDepartmentList.java",
+      "class": "ChoiceDepartmentList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/AppointmentModify.java",
+      "class": "AppointmentModify",
+      "extends": "AppCompatActivity",
+      "lines": 2620,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/adapters/SavedAppointmentDateTimeAdapter.java",
+      "class": "SavedAppointmentDateTimeAdapter",
+      "extends": "RecyclerView",
+      "lines": 238,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/adapters/SearchDoctorForAppAdapter.java",
+      "class": "SearchDoctorForAppAdapter",
+      "extends": "RecyclerView",
+      "lines": 87,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/adapters/SearchPatientForAppAdapter.java",
+      "class": "SearchPatientForAppAdapter",
+      "extends": "RecyclerView",
+      "lines": 95,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/adapters/SearchPaymentForAppAdapter.java",
+      "class": "SearchPaymentForAppAdapter",
+      "extends": "RecyclerView",
+      "lines": 79,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/add_schedule/AddSchedule.java",
+      "class": "AddSchedule",
+      "extends": "AppCompatActivity",
+      "lines": 978,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/add_schedule/adapters/TakenScheduleAdapter.java",
+      "class": "TakenScheduleAdapter",
+      "extends": "RecyclerView",
+      "lines": 50,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/add_schedule/arraylists/SelectableAppointmentDateList.java",
+      "class": "SelectableAppointmentDateList",
+      "extends": null,
+      "lines": 19,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/add_schedule/arraylists/SelectableTimeList.java",
+      "class": "SelectableTimeList",
+      "extends": null,
+      "lines": 31,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/AppointDateTimeCancelList.java",
+      "class": "AppointDateTimeCancelList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/AppointTimeCancelList.java",
+      "class": "AppointTimeCancelList",
+      "extends": null,
+      "lines": 19,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/DoctorForAppList.java",
+      "class": "DoctorForAppList",
+      "extends": null,
+      "lines": 107,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/PatientForAppointList.java",
+      "class": "PatientForAppointList",
+      "extends": null,
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/PaymentForAppList.java",
+      "class": "PaymentForAppList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/SavedAppointmentDateTimeList.java",
+      "class": "SavedAppointmentDateTimeList",
+      "extends": null,
+      "lines": 138,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/arraylists/ServiceForAppList.java",
+      "class": "ServiceForAppList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/dialogue/SearchDoctorAppDialog.java",
+      "class": "SearchDoctorAppDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 236,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/dialogue/SearchDoctorCancelAppDialog.java",
+      "class": "SearchDoctorCancelAppDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 242,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/dialogue/SearchPatientAppDialog.java",
+      "class": "SearchPatientAppDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 552,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/dialogue/SearchPatientCancelAppDialog.java",
+      "class": "SearchPatientCancelAppDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 564,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/dialogue/SearchPaymentAppDialog.java",
+      "class": "SearchPaymentAppDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 219,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/interfaces/AppCancelDoctorSelectListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/interfaces/PatAppCancelCallBackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/interfaces/PatAppDoctorSelectionListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/interfaces/PatAppPaymentSelectionListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/interfaces/PatAppSelectCallBackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/AppointmentSchedule.java",
+      "class": "AppointmentSchedule",
+      "extends": "AppCompatActivity",
+      "lines": 604,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/adapters/TimeLineAdapter.java",
+      "class": "TimeLineAdapter",
+      "extends": "RecyclerView",
+      "lines": 995,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/arraylists/ApptScheduleInfoList.java",
+      "class": "ApptScheduleInfoList",
+      "extends": null,
+      "lines": 273,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/arraylists/MonthSelectionList.java",
+      "class": "MonthSelectionList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/dialogue/AvailScheduleDialogue.java",
+      "class": "AvailScheduleDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 255,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/HealthProgress.java",
+      "class": "HealthProgress",
+      "extends": "AppCompatActivity",
+      "lines": 1265,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/adapters/HealthProgressAdapter.java",
+      "class": "HealthProgressAdapter",
+      "extends": "RecyclerView",
+      "lines": 76,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/arraylists/ChoiceDoctorList.java",
+      "class": "ChoiceDoctorList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/arraylists/ChoiceServiceList.java",
+      "class": "ChoiceServiceList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/arraylists/ChoiceUnitList.java",
+      "class": "ChoiceUnitList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/arraylists/HealthProgressAdder.java",
+      "class": "HealthProgressAdder",
+      "extends": null,
+      "lines": 112,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/arraylists/HealthProgressList.java",
+      "class": "HealthProgressList",
+      "extends": null,
+      "lines": 137,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/arraylists/HealthProgressResponse.java",
+      "class": "HealthProgressResponse",
+      "extends": null,
+      "lines": 13,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/retrofit_process/ApiClient.java",
+      "class": "ApiClient",
+      "extends": null,
+      "lines": 28,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/retrofit_process/HealthProgressService.java",
+      "class": null,
+      "extends": null,
+      "lines": 12,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/interfaces/AvailCallBack.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/pat_history/PatientAppointmentHistory.java",
+      "class": "PatientAppointmentHistory",
+      "extends": "AppCompatActivity",
+      "lines": 780,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/pat_history/adapters/AppointHistoryAdapter.java",
+      "class": "AppointHistoryAdapter",
+      "extends": "RecyclerView",
+      "lines": 186,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/pat_history/arraylists/PatAppHistList.java",
+      "class": "PatAppHistList",
+      "extends": null,
+      "lines": 191,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/PrescriptionSetup.java",
+      "class": "PrescriptionSetup",
+      "extends": "AppCompatActivity",
+      "lines": 1586,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/adapters/ComplainAdapter.java",
+      "class": "ComplainAdapter",
+      "extends": "RecyclerView",
+      "lines": 234,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/adapters/PatDiagnosisAdapter.java",
+      "class": "PatDiagnosisAdapter",
+      "extends": "RecyclerView",
+      "lines": 124,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/adapters/PatRefServiceAdapter.java",
+      "class": "PatRefServiceAdapter",
+      "extends": "RecyclerView",
+      "lines": 228,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/adapters/PatReferralUnitAdapter.java",
+      "class": "PatReferralUnitAdapter",
+      "extends": "RecyclerView",
+      "lines": 135,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/ComplainModify.java",
+      "class": "ComplainModify",
+      "extends": "AppCompatActivity",
+      "lines": 839,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/DiagnosisModify.java",
+      "class": "DiagnosisModify",
+      "extends": "AppCompatActivity",
+      "lines": 709,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/RefServiceModify.java",
+      "class": "RefServiceModify",
+      "extends": "AppCompatActivity",
+      "lines": 615,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/ReferralUnitModify.java",
+      "class": "ReferralUnitModify",
+      "extends": "AppCompatActivity",
+      "lines": 1091,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/arraylists/DiagnosisList.java",
+      "class": "DiagnosisList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/arraylists/ListOfComplains.java",
+      "class": "ListOfComplains",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/arraylists/ListOfInjuries.java",
+      "class": "ListOfInjuries",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/arraylists/RefServiceList.java",
+      "class": "RefServiceList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/arraylists/ReferralDoctorList.java",
+      "class": "ReferralDoctorList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/arraylists/ReferralUnitList.java",
+      "class": "ReferralUnitList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/arraylists/ComplainLists.java",
+      "class": "ComplainLists",
+      "extends": null,
+      "lines": 77,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/arraylists/PatDiagnosisList.java",
+      "class": "PatDiagnosisList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/arraylists/PatRefServiceList.java",
+      "class": "PatRefServiceList",
+      "extends": null,
+      "lines": 67,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/arraylists/PatReferralList.java",
+      "class": "PatReferralList",
+      "extends": null,
+      "lines": 77,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/ClinicalFindings.java",
+      "class": "ClinicalFindings",
+      "extends": "Fragment",
+      "lines": 288,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/DrugHistory.java",
+      "class": "DrugHistory",
+      "extends": "Fragment",
+      "lines": 286,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/ManagementPlan.java",
+      "class": "ManagementPlan",
+      "extends": "Fragment",
+      "lines": 284,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/MedicalHistory.java",
+      "class": "MedicalHistory",
+      "extends": "Fragment",
+      "lines": 285,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/Medication.java",
+      "class": "Medication",
+      "extends": "Fragment",
+      "lines": 296,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/PatAdvice.java",
+      "class": "PatAdvice",
+      "extends": "Fragment",
+      "lines": 284,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/PatReference.java",
+      "class": "PatReference",
+      "extends": "Fragment",
+      "lines": 284,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatAdviceAdapter.java",
+      "class": "PatAdviceAdapter",
+      "extends": "RecyclerView",
+      "lines": 216,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatClFindingsAdapter.java",
+      "class": "PatClFindingsAdapter",
+      "extends": "RecyclerView",
+      "lines": 226,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatDrugHistAdapter.java",
+      "class": "PatDrugHistAdapter",
+      "extends": "RecyclerView",
+      "lines": 227,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatManagementAdapter.java",
+      "class": "PatManagementAdapter",
+      "extends": "RecyclerView",
+      "lines": 216,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatMedicHistAdapter.java",
+      "class": "PatMedicHistAdapter",
+      "extends": "RecyclerView",
+      "lines": 226,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatMedicationAdapter.java",
+      "class": "PatMedicationAdapter",
+      "extends": "RecyclerView",
+      "lines": 239,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/adapters/PatReferenceAdapter.java",
+      "class": "PatReferenceAdapter",
+      "extends": "RecyclerView",
+      "lines": 218,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/AdviceModify.java",
+      "class": "AdviceModify",
+      "extends": "AppCompatActivity",
+      "lines": 526,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/ClinicalFindingsModify.java",
+      "class": "ClinicalFindingsModify",
+      "extends": "AppCompatActivity",
+      "lines": 615,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/DrugHistoryModify.java",
+      "class": "DrugHistoryModify",
+      "extends": "AppCompatActivity",
+      "lines": 612,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/ManagementModify.java",
+      "class": "ManagementModify",
+      "extends": "AppCompatActivity",
+      "lines": 530,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/MedHistoryModify.java",
+      "class": "MedHistoryModify",
+      "extends": "AppCompatActivity",
+      "lines": 617,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/MedicationModify.java",
+      "class": "MedicationModify",
+      "extends": "AppCompatActivity",
+      "lines": 934,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/ReferenceModify.java",
+      "class": "ReferenceModify",
+      "extends": "AppCompatActivity",
+      "lines": 528,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/arraylists/ClinicalFindingsList.java",
+      "class": "ClinicalFindingsList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/arraylists/DoseList.java",
+      "class": "DoseList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/arraylists/DrugNameList.java",
+      "class": "DrugNameList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/arraylists/MedTakeTimeList.java",
+      "class": "MedTakeTimeList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/arraylists/MedicalHistoryList.java",
+      "class": "MedicalHistoryList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/arraylists/MedicineList.java",
+      "class": "MedicineList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatAdviceList.java",
+      "class": "PatAdviceList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatClinicalFindingsList.java",
+      "class": "PatClinicalFindingsList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatDrugHistList.java",
+      "class": "PatDrugHistList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatManagementList.java",
+      "class": "PatManagementList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatMedicHistList.java",
+      "class": "PatMedicHistList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatMedicationList.java",
+      "class": "PatMedicationList",
+      "extends": null,
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/arraylists/PatReferenceList.java",
+      "class": "PatReferenceList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/interfaces/AdapterCallBack.java",
+      "class": null,
+      "extends": null,
+      "lines": 13,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/interfaces/FragmentAdapterCallBack.java",
+      "class": null,
+      "extends": null,
+      "lines": 13,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/camera_preview/BitmapCallBack.java",
+      "class": null,
+      "extends": null,
+      "lines": 7,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/camera_preview/CameraPreview.java",
+      "class": "CameraPreview",
+      "extends": "AppCompatActivity",
+      "lines": 500,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/DocDashboard.java",
+      "class": "DocDashboard",
+      "extends": "AppCompatActivity",
+      "lines": 6747,
+      "status": "drafted_or_partial_see_migration_status"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/arraylists/AdminInfoList.java",
+      "class": "AdminInfoList",
+      "extends": null,
+      "lines": 201,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/arraylists/AppointmentChartList.java",
+      "class": "AppointmentChartList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/arraylists/PaymentChartList.java",
+      "class": "PaymentChartList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/arraylists/UserInfoList.java",
+      "class": "UserInfoList",
+      "extends": null,
+      "lines": 250,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/dialogue/CenterSelectDialogue.java",
+      "class": "CenterSelectDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 220,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/dialogue/ErrorHandlerDialogue.java",
+      "class": "ErrorHandlerDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/dialogue/ImageTakerChoiceDialog.java",
+      "class": "ImageTakerChoiceDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 71,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/dialogue/UserSelectDialogue.java",
+      "class": "UserSelectDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 186,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/extra/AppointMarkerView.java",
+      "class": "AppointMarkerView",
+      "extends": "MarkerView",
+      "lines": 48,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/extra/MyMarkerView.java",
+      "class": "MyMarkerView",
+      "extends": "MarkerView",
+      "lines": 48,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/interfaces/ErrorHandlerListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/interfaces/PictureChooseListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/PrescriptionBuilder.java",
+      "class": "PrescriptionBuilder",
+      "extends": "AppCompatActivity",
+      "lines": 1598,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/ClinicalOptionAdapter.java",
+      "class": "ClinicalOptionAdapter",
+      "extends": "BaseAdapter",
+      "lines": 191,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionAdviceEntryAdapter.java",
+      "class": "PrescriptionAdviceEntryAdapter",
+      "extends": "RecyclerView",
+      "lines": 79,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionClinicalEntryAdapter.java",
+      "class": "PrescriptionClinicalEntryAdapter",
+      "extends": "RecyclerView",
+      "lines": 89,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionHistoryAdapter.java",
+      "class": "PrescriptionHistoryAdapter",
+      "extends": "RecyclerView",
+      "lines": 234,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionMedicineAdapter.java",
+      "class": "PrescriptionMedicineAdapter",
+      "extends": "RecyclerView",
+      "lines": 112,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionObjectiveInfoAdapter.java",
+      "class": "PrescriptionObjectiveInfoAdapter",
+      "extends": "RecyclerView",
+      "lines": 119,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionPagerAdapter.java",
+      "class": "PrescriptionPagerAdapter",
+      "extends": "FragmentStateAdapter",
+      "lines": 141,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionPatientAdapter.java",
+      "class": "PrescriptionPatientAdapter",
+      "extends": "RecyclerView",
+      "lines": 195,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionReviewRowAdapter.java",
+      "class": "PrescriptionReviewRowAdapter",
+      "extends": "RecyclerView",
+      "lines": 68,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionTemplateAdapter.java",
+      "class": "PrescriptionTemplateAdapter",
+      "extends": "RecyclerView",
+      "lines": 216,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionTextItemAdapter.java",
+      "class": "PrescriptionTextItemAdapter",
+      "extends": "RecyclerView",
+      "lines": 188,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionTherapyAdapter.java",
+      "class": "PrescriptionTherapyAdapter",
+      "extends": "RecyclerView",
+      "lines": 93,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionTreatmentPlanAdapter.java",
+      "class": "PrescriptionTreatmentPlanAdapter",
+      "extends": "RecyclerView",
+      "lines": 84,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionVitalsAdapter.java",
+      "class": "PrescriptionVitalsAdapter",
+      "extends": "RecyclerView",
+      "lines": 128,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionAdviceEntryBottomSheet.java",
+      "class": "PrescriptionAdviceEntryBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 499,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionClinicalEntryBottomSheet.java",
+      "class": "PrescriptionClinicalEntryBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 526,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionHistoryBottomSheet.java",
+      "class": "PrescriptionHistoryBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 414,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionMedicineBottomSheet.java",
+      "class": "PrescriptionMedicineBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 536,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionObjectiveInfoBottomSheet.java",
+      "class": "PrescriptionObjectiveInfoBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 902,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionPatientDetailsBottomSheet.java",
+      "class": "PrescriptionPatientDetailsBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 269,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionPatientSelectionBottomSheet.java",
+      "class": "PrescriptionPatientSelectionBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 595,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionTemplateBottomSheet.java",
+      "class": "PrescriptionTemplateBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 758,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionTherapyBottomSheet.java",
+      "class": "PrescriptionTherapyBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 382,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionTreatmentPlanBottomSheet.java",
+      "class": "PrescriptionTreatmentPlanBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 387,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionVitalsBottomSheet.java",
+      "class": "PrescriptionVitalsBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 439,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionAdviceFragment.java",
+      "class": "PrescriptionAdviceFragment",
+      "extends": "Fragment",
+      "lines": 234,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionClinicalFragment.java",
+      "class": "PrescriptionClinicalFragment",
+      "extends": "Fragment",
+      "lines": 409,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionReviewFragment.java",
+      "class": "PrescriptionReviewFragment",
+      "extends": "Fragment",
+      "lines": 365,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionRxFragment.java",
+      "class": "PrescriptionRxFragment",
+      "extends": "Fragment",
+      "lines": 443,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/helper/PrescriptionSectionUiHelper.java",
+      "class": "PrescriptionSectionUiHelper",
+      "extends": null,
+      "lines": 89,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/helper/ReviewSectionViews.java",
+      "class": "ReviewSectionViews",
+      "extends": null,
+      "lines": 38,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/helper/SectionViews.java",
+      "class": "SectionViews",
+      "extends": null,
+      "lines": 42,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/AdviceEntryItem.java",
+      "class": "AdviceEntryItem",
+      "extends": null,
+      "lines": 112,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/AdviceEntryType.java",
+      "class": null,
+      "extends": null,
+      "lines": 113,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/ClinicalEntryItem.java",
+      "class": "ClinicalEntryItem",
+      "extends": null,
+      "lines": 119,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/ClinicalEntryType.java",
+      "class": null,
+      "extends": null,
+      "lines": 140,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/ClinicalOption.java",
+      "class": "ClinicalOption",
+      "extends": null,
+      "lines": 45,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/MedicineEntryItem.java",
+      "class": "MedicineEntryItem",
+      "extends": null,
+      "lines": 152,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/ObjectiveInfoItem.java",
+      "class": "ObjectiveInfoItem",
+      "extends": null,
+      "lines": 199,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/PrescriptionHistoryItem.java",
+      "class": "PrescriptionHistoryItem",
+      "extends": null,
+      "lines": 159,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/PrescriptionPatientDetails.java",
+      "class": "PrescriptionPatientDetails",
+      "extends": null,
+      "lines": 130,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/PrescriptionPatientItem.java",
+      "class": "PrescriptionPatientItem",
+      "extends": null,
+      "lines": 120,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/PrescriptionPreviewData.java",
+      "class": "PrescriptionPreviewData",
+      "extends": null,
+      "lines": 890,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/PrescriptionTemplateItem.java",
+      "class": "PrescriptionTemplateItem",
+      "extends": null,
+      "lines": 40,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/ReviewSummaryItem.java",
+      "class": "ReviewSummaryItem",
+      "extends": null,
+      "lines": 24,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/TherapyEntryItem.java",
+      "class": "TherapyEntryItem",
+      "extends": null,
+      "lines": 79,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/TreatmentPlanEntryItem.java",
+      "class": "TreatmentPlanEntryItem",
+      "extends": null,
+      "lines": 102,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/model/VitalData.java",
+      "class": "VitalData",
+      "extends": null,
+      "lines": 77,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/preview/PrescriptionPdfGenerator.java",
+      "class": "PrescriptionPdfGenerator",
+      "extends": null,
+      "lines": 789,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/preview/PrescriptionPdfGeneratorNew.java",
+      "class": "PrescriptionPdfGeneratorNew",
+      "extends": null,
+      "lines": 876,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/preview/PrescriptionPdfPrintAdapter.java",
+      "class": "PrescriptionPdfPrintAdapter",
+      "extends": "PrintDocumentAdapter",
+      "lines": 85,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/preview/PrescriptionPreview.java",
+      "class": "PrescriptionPreview",
+      "extends": "AppCompatActivity",
+      "lines": 582,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/preview/PrescriptionPreviewHtmlBuilder.java",
+      "class": "PrescriptionPreviewHtmlBuilder",
+      "extends": null,
+      "lines": 1595,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/repository/PrescriptionMainDataRepository.java",
+      "class": "PrescriptionMainDataRepository",
+      "extends": null,
+      "lines": 1293,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/repository/PrescriptionPatientRepository.java",
+      "class": "PrescriptionPatientRepository",
+      "extends": null,
+      "lines": 302,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/repository/PrescriptionPreviewRepository.java",
+      "class": "PrescriptionPreviewRepository",
+      "extends": null,
+      "lines": 140,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/viewmodel/PrescriptionBuilderViewModel.java",
+      "class": "PrescriptionBuilderViewModel",
+      "extends": "AndroidViewModel",
+      "lines": 2748,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/viewmodel/PrescriptionPreviewViewModel.java",
+      "class": "PrescriptionPreviewViewModel",
+      "extends": "AndroidViewModel",
+      "lines": 149,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/HRAccounts.java",
+      "class": "HRAccounts",
+      "extends": "AppCompatActivity",
+      "lines": 135,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger/AccountLedger.java",
+      "class": "AccountLedger",
+      "extends": "AppCompatActivity",
+      "lines": 1079,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger/adapters/AccountLedgerAdapter.java",
+      "class": "AccountLedgerAdapter",
+      "extends": "RecyclerView",
+      "lines": 123,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger/arraylists/AccountLedgerLists.java",
+      "class": "AccountLedgerLists",
+      "extends": null,
+      "lines": 169,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger/arraylists/AccountList.java",
+      "class": "AccountList",
+      "extends": null,
+      "lines": 49,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger_pat/AccountLedgerPatient.java",
+      "class": "AccountLedgerPatient",
+      "extends": "AppCompatActivity",
+      "lines": 797,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger_pat/adapters/SearchPatientALAdapter.java",
+      "class": "SearchPatientALAdapter",
+      "extends": "RecyclerView",
+      "lines": 79,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger_pat/dialogs/SearchPatientALDialog.java",
+      "class": "SearchPatientALDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 565,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger_pat/interfaces/PatientForALListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/AttendanceUpdateReqApproval.java",
+      "class": "AttendanceUpdateReqApproval",
+      "extends": "AppCompatActivity",
+      "lines": 872,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/DailyAttendance.java",
+      "class": "DailyAttendance",
+      "extends": "AppCompatActivity",
+      "lines": 1654,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/EmpWiseAttendance.java",
+      "class": "EmpWiseAttendance",
+      "extends": "AppCompatActivity",
+      "lines": 3403,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/adapters/AttUpReqAdapter.java",
+      "class": "AttUpReqAdapter",
+      "extends": "RecyclerView",
+      "lines": 90,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/adapters/AttendanceReportAdapter.java",
+      "class": "AttendanceReportAdapter",
+      "extends": "RecyclerView",
+      "lines": 162,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/adapters/DailyAttendanceAdapter.java",
+      "class": "DailyAttendanceAdapter",
+      "extends": "RecyclerView",
+      "lines": 151,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/AttendanceReportList.java",
+      "class": "AttendanceReportList",
+      "extends": null,
+      "lines": 138,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/AttendanceUpReqList.java",
+      "class": "AttendanceUpReqList",
+      "extends": null,
+      "lines": 77,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/BranchList.java",
+      "class": "BranchList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/DailyAttendanceList.java",
+      "class": "DailyAttendanceList",
+      "extends": null,
+      "lines": 147,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/DepartmentList.java",
+      "class": "DepartmentList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/DesignationList.java",
+      "class": "DesignationList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/DivisionList.java",
+      "class": "DivisionList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/araylists/EmployeeList.java",
+      "class": "EmployeeList",
+      "extends": null,
+      "lines": 87,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/dialogs/AttUpReqSelectionDialog.java",
+      "class": "AttUpReqSelectionDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 359,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/interfaces/AttendanceUpReqSelectedListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/AccountsDashboard.java",
+      "class": "AccountsDashboard",
+      "extends": "AppCompatActivity",
+      "lines": 949,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/AnalyticsDashboard.java",
+      "class": "AnalyticsDashboard",
+      "extends": "AppCompatActivity",
+      "lines": 3424,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/HumanResDashboard.java",
+      "class": "HumanResDashboard",
+      "extends": "AppCompatActivity",
+      "lines": 2101,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/adapters/CardWiseErrorAdapter.java",
+      "class": "CardWiseErrorAdapter",
+      "extends": "RecyclerView",
+      "lines": 63,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/adapters/CardWisePayAdapter.java",
+      "class": "CardWisePayAdapter",
+      "extends": "RecyclerView",
+      "lines": 119,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/adapters/LeaveHRAdapter.java",
+      "class": "LeaveHRAdapter",
+      "extends": "RecyclerView",
+      "lines": 123,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/DateWiseLeaveList.java",
+      "class": "DateWiseLeaveList",
+      "extends": null,
+      "lines": 43,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/EmpWiseLeaveList.java",
+      "class": "EmpWiseLeaveList",
+      "extends": null,
+      "lines": 87,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/LoginChartList.java",
+      "class": "LoginChartList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/OpasAppointChartList.java",
+      "class": "OpasAppointChartList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/OpasCardWiseErrorList.java",
+      "class": "OpasCardWiseErrorList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/OpasPayCardWiseList.java",
+      "class": "OpasPayCardWiseList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/arraylists/OpasPayChartList.java",
+      "class": "OpasPayChartList",
+      "extends": null,
+      "lines": 67,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/extra/NormalMarker.java",
+      "class": "NormalMarker",
+      "extends": "MarkerView",
+      "lines": 49,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/income_expense/IncomeExpenseStatement.java",
+      "class": "IncomeExpenseStatement",
+      "extends": "AppCompatActivity",
+      "lines": 1745,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/income_expense/adapters/IncomeExpenseStateAdapter.java",
+      "class": "IncomeExpenseStateAdapter",
+      "extends": "RecyclerView",
+      "lines": 595,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/income_expense/arraylists/IncExpStatementList.java",
+      "class": "IncExpStatementList",
+      "extends": null,
+      "lines": 107,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/LeaveApproval.java",
+      "class": "LeaveApproval",
+      "extends": "AppCompatActivity",
+      "lines": 795,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/LeaveBalance.java",
+      "class": "LeaveBalance",
+      "extends": "AppCompatActivity",
+      "lines": 2415,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/LeaveRecord.java",
+      "class": "LeaveRecord",
+      "extends": "AppCompatActivity",
+      "lines": 1642,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/adapters/LeaveBalanceAdapter.java",
+      "class": "LeaveBalanceAdapter",
+      "extends": "RecyclerView",
+      "lines": 76,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/adapters/LeaveRecordAdapter.java",
+      "class": "LeaveRecordAdapter",
+      "extends": "RecyclerView",
+      "lines": 204,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/adapters/LeaveRequestAdapter.java",
+      "class": "LeaveRequestAdapter",
+      "extends": "RecyclerView",
+      "lines": 88,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/arraylists/LeaveBalanceList.java",
+      "class": "LeaveBalanceList",
+      "extends": null,
+      "lines": 88,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/arraylists/LeaveRecList.java",
+      "class": "LeaveRecList",
+      "extends": null,
+      "lines": 167,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/arraylists/LeaveRequestList.java",
+      "class": "LeaveRequestList",
+      "extends": null,
+      "lines": 77,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/dialogs/LeaveReqSelectionDialog.java",
+      "class": "LeaveReqSelectionDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 359,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/interfaces/LeaveSelectedListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/pay_invoice/PaymentInvoice.java",
+      "class": "PaymentInvoice",
+      "extends": "AppCompatActivity",
+      "lines": 418,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/pay_invoice/adapters/PaymentInvoiceAdapter.java",
+      "class": "PaymentInvoiceAdapter",
+      "extends": "RecyclerView",
+      "lines": 100,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/pay_invoice/arraylists/PaymentInvoiceItemList.java",
+      "class": "PaymentInvoiceItemList",
+      "extends": null,
+      "lines": 108,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/CreditVoucherApproval.java",
+      "class": "CreditVoucherApproval",
+      "extends": "AppCompatActivity",
+      "lines": 825,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/DebitVoucherApproval.java",
+      "class": "DebitVoucherApproval",
+      "extends": "AppCompatActivity",
+      "lines": 1007,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/JournalVoucherApproval.java",
+      "class": "JournalVoucherApproval",
+      "extends": "AppCompatActivity",
+      "lines": 822,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/adapters/CreditVoucherApprovedAdapter.java",
+      "class": "CreditVoucherApprovedAdapter",
+      "extends": "RecyclerView",
+      "lines": 70,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/adapters/DebitVoucherApprovedAdapter.java",
+      "class": "DebitVoucherApprovedAdapter",
+      "extends": "RecyclerView",
+      "lines": 68,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/adapters/JournalVoucherApprovedAdapter.java",
+      "class": "JournalVoucherApprovedAdapter",
+      "extends": "RecyclerView",
+      "lines": 68,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/adapters/VoucherSelectAdapter.java",
+      "class": "VoucherSelectAdapter",
+      "extends": "RecyclerView",
+      "lines": 89,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/arraylists/CreditVoucherDetailList.java",
+      "class": "CreditVoucherDetailList",
+      "extends": null,
+      "lines": 242,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/arraylists/DebitVoucherDetailList.java",
+      "class": "DebitVoucherDetailList",
+      "extends": null,
+      "lines": 257,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/arraylists/JournalVoucherDetailList.java",
+      "class": "JournalVoucherDetailList",
+      "extends": null,
+      "lines": 242,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/arraylists/VoucherSelectionList.java",
+      "class": "VoucherSelectionList",
+      "extends": null,
+      "lines": 130,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/dialogs/VoucherSelectionDialogue.java",
+      "class": "VoucherSelectionDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 452,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/interfaces/VoucherSelectListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/VoucherTransaction.java",
+      "class": "VoucherTransaction",
+      "extends": "AppCompatActivity",
+      "lines": 1075,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/adapters/DebitCreditVoucherAdapter.java",
+      "class": "DebitCreditVoucherAdapter",
+      "extends": "RecyclerView",
+      "lines": 65,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/adapters/VouchTrans1Adapter.java",
+      "class": "VouchTrans1Adapter",
+      "extends": "RecyclerView",
+      "lines": 84,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/adapters/VouchTrans2Adapter.java",
+      "class": "VouchTrans2Adapter",
+      "extends": "RecyclerView",
+      "lines": 160,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/adapters/VouchTrans3Adapter.java",
+      "class": "VouchTrans3Adapter",
+      "extends": "RecyclerView",
+      "lines": 70,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/arraylists/DebitCreditVoucherItemList.java",
+      "class": "DebitCreditVoucherItemList",
+      "extends": null,
+      "lines": 67,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/arraylists/VoucherAllData.java",
+      "class": "VoucherAllData",
+      "extends": null,
+      "lines": 108,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/arraylists/VoucherLists1.java",
+      "class": "VoucherLists1",
+      "extends": null,
+      "lines": 39,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/arraylists/VoucherLists2.java",
+      "class": "VoucherLists2",
+      "extends": null,
+      "lines": 90,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/arraylists/VoucherLists3.java",
+      "class": "VoucherLists3",
+      "extends": null,
+      "lines": 38,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/dialogs/VoucherDialog.java",
+      "class": "VoucherDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 289,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/leave_schedule/DocLeave.java",
+      "class": "DocLeave",
+      "extends": "AppCompatActivity",
+      "lines": 672,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/leave_schedule/adapters/TimeSchAdapter.java",
+      "class": "TimeSchAdapter",
+      "extends": "RecyclerView",
+      "lines": 49,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/leave_schedule/arraylists/LeaveCalenderValues.java",
+      "class": "LeaveCalenderValues",
+      "extends": null,
+      "lines": 50,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/leave_schedule/arraylists/LeaveDays.java",
+      "class": "LeaveDays",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/leave_schedule/arraylists/LeaveTimeSchedule.java",
+      "class": "LeaveTimeSchedule",
+      "extends": null,
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/DocLogin.java",
+      "class": "DocLogin",
+      "extends": "AppCompatActivity",
+      "lines": 937,
+      "status": "drafted_or_partial_see_migration_status"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/adapters/CenterAdapter.java",
+      "class": "CenterAdapter",
+      "extends": "RecyclerView",
+      "lines": 95,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/adapters/MultipleUserAdapter.java",
+      "class": "MultipleUserAdapter",
+      "extends": "RecyclerView",
+      "lines": 140,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/arraylists/AllUrlList.java",
+      "class": "AllUrlList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/arraylists/CenterList.java",
+      "class": "CenterList",
+      "extends": null,
+      "lines": 70,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/arraylists/MultipleUserList.java",
+      "class": "MultipleUserList",
+      "extends": null,
+      "lines": 90,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/dialogue/SelectCenterDialogue.java",
+      "class": "SelectCenterDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 175,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/dialogue/SelectUserIdDialogue.java",
+      "class": "SelectUserIdDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 143,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/interfaces/AdminCallBackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/interfaces/AdminIDCallbackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/interfaces/CallBackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/interfaces/CloseCallBack.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/interfaces/IDCallbackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/PatientSearch.java",
+      "class": "PatientSearch",
+      "extends": "AppCompatActivity",
+      "lines": 426,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/PatientSearchAdmin.java",
+      "class": "PatientSearchAdmin",
+      "extends": "AppCompatActivity",
+      "lines": 667,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/PatientSearchDyPrescription.java",
+      "class": "PatientSearchDyPrescription",
+      "extends": "AppCompatActivity",
+      "lines": 622,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/adapters/PatientSearchAdapter.java",
+      "class": "PatientSearchAdapter",
+      "extends": "RecyclerView",
+      "lines": 252,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/adapters/PatientSearchDypAdapter.java",
+      "class": "PatientSearchDypAdapter",
+      "extends": "RecyclerView",
+      "lines": 183,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/adapters/PatientSearchPresHistAdapter.java",
+      "class": "PatientSearchPresHistAdapter",
+      "extends": "RecyclerView",
+      "lines": 220,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/appointment_calendar/PatAppointmentCalendar.java",
+      "class": "PatAppointmentCalendar",
+      "extends": "AppCompatActivity",
+      "lines": 700,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/appointment_calendar/adapters/PatientAppSchAdapter.java",
+      "class": "PatientAppSchAdapter",
+      "extends": "RecyclerView",
+      "lines": 175,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/appointment_calendar/arraylist/PatAppCalendarList.java",
+      "class": "PatAppCalendarList",
+      "extends": null,
+      "lines": 40,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/appointment_calendar/arraylist/PatAppointmentList.java",
+      "class": "PatAppointmentList",
+      "extends": null,
+      "lines": 147,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/appointment_calendar/arraylist/PatAppointmentViewList.java",
+      "class": "PatAppointmentViewList",
+      "extends": null,
+      "lines": 117,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/arraylists/PatientSearchDypList.java",
+      "class": "PatientSearchDypList",
+      "extends": null,
+      "lines": 67,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/arraylists/PatientSearchList.java",
+      "class": "PatientSearchList",
+      "extends": null,
+      "lines": 119,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/bottomsheet/PatientPrescriptionSearchBottomSheet.java",
+      "class": "PatientPrescriptionSearchBottomSheet",
+      "extends": "BottomSheetDialogFragment",
+      "lines": 300,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/PatPrescriptionV.java",
+      "class": "PatPrescriptionV",
+      "extends": "AppCompatActivity",
+      "lines": 1148,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/adapters/ComplainPSVAdapter.java",
+      "class": "ComplainPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 58,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/adapters/PatDiagnosisPSVAdapter.java",
+      "class": "PatDiagnosisPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 80,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/adapters/PatRefServicePSVAdapter.java",
+      "class": "PatRefServicePSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 56,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/adapters/PatReferralUniPSVAdapter.java",
+      "class": "PatReferralUniPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 88,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/ClinicalFindPSV.java",
+      "class": "ClinicalFindPSV",
+      "extends": "Fragment",
+      "lines": 241,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/DrugHistPSV.java",
+      "class": "DrugHistPSV",
+      "extends": "Fragment",
+      "lines": 242,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/ManagementPlanPSV.java",
+      "class": "ManagementPlanPSV",
+      "extends": "Fragment",
+      "lines": 238,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/MedicalHistPSV.java",
+      "class": "MedicalHistPSV",
+      "extends": "Fragment",
+      "lines": 241,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/MedicationPSV.java",
+      "class": "MedicationPSV",
+      "extends": "Fragment",
+      "lines": 250,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/PatAdvicePSV.java",
+      "class": "PatAdvicePSV",
+      "extends": "Fragment",
+      "lines": 237,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/PatReferencePSV.java",
+      "class": "PatReferencePSV",
+      "extends": "Fragment",
+      "lines": 238,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatAdvicePSVAdapter.java",
+      "class": "PatAdvicePSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 52,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatClFindPSVAdapter.java",
+      "class": "PatClFindPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 55,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatDrugHistPSVAdapter.java",
+      "class": "PatDrugHistPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 56,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatManagementPSVAdapter.java",
+      "class": "PatManagementPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 51,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatMedicHistPSVAdapter.java",
+      "class": "PatMedicHistPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 55,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatMedicationPSVAdapter.java",
+      "class": "PatMedicationPSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 61,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/adapters/PatReferencePSVAdapter.java",
+      "class": "PatReferencePSVAdapter",
+      "extends": "RecyclerView",
+      "lines": 53,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/AddPayment.java",
+      "class": "AddPayment",
+      "extends": "AppCompatActivity",
+      "lines": 1838,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/adapters/AddedServiceAdapter.java",
+      "class": "AddedServiceAdapter",
+      "extends": "RecyclerView",
+      "lines": 135,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/adapters/SearchPaymentAdapter.java",
+      "class": "SearchPaymentAdapter",
+      "extends": "RecyclerView",
+      "lines": 102,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/adapters/SearchPrescriptionAdapter.java",
+      "class": "SearchPrescriptionAdapter",
+      "extends": "RecyclerView",
+      "lines": 103,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/adapters/SelectedPayMethodAdapter.java",
+      "class": "SelectedPayMethodAdapter",
+      "extends": "RecyclerView",
+      "lines": 82,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/adapters/UpdatedPayMethodAdapter.java",
+      "class": "UpdatedPayMethodAdapter",
+      "extends": "RecyclerView",
+      "lines": 82,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/adapters/UpdatedServiceAdapter.java",
+      "class": "UpdatedServiceAdapter",
+      "extends": "RecyclerView",
+      "lines": 157,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/AddedServiceList.java",
+      "class": "AddedServiceList",
+      "extends": null,
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/PaymentCodeList.java",
+      "class": "PaymentCodeList",
+      "extends": null,
+      "lines": 187,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/PaymentMethodList.java",
+      "class": "PaymentMethodList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/PaymentModeMstList.java",
+      "class": "PaymentModeMstList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/PrescriptionCodeList.java",
+      "class": "PrescriptionCodeList",
+      "extends": null,
+      "lines": 157,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/SelectedPaymentMethodList.java",
+      "class": "SelectedPaymentMethodList",
+      "extends": null,
+      "lines": 87,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/ServiceAmountIdList.java",
+      "class": "ServiceAmountIdList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/ServiceList.java",
+      "class": "ServiceList",
+      "extends": null,
+      "lines": 37,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/ServiceUnitList.java",
+      "class": "ServiceUnitList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/UpdatedPaymentMethodList.java",
+      "class": "UpdatedPaymentMethodList",
+      "extends": null,
+      "lines": 109,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/arraylists/UpdatedServiceList.java",
+      "class": "UpdatedServiceList",
+      "extends": null,
+      "lines": 147,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/dialog/ConfirmPaymentDialog.java",
+      "class": "ConfirmPaymentDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 692,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/dialog/SearchPaymentDialog.java",
+      "class": "SearchPaymentDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 666,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/dialog/SearchPrescriptionDialog.java",
+      "class": "SearchPrescriptionDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 643,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/dialog/UpdateConfirmPayDialog.java",
+      "class": "UpdateConfirmPayDialog",
+      "extends": "AppCompatDialogFragment",
+      "lines": 726,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/interfaces/ConfirmPaymentListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/interfaces/PatCodeCallBackListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/interfaces/PaymentCodeCallListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/interfaces/ServiceDeleteCallBack.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/interfaces/UpdateConfirmPayListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 9,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/service/ServiceModify.java",
+      "class": "ServiceModify",
+      "extends": "AppCompatActivity",
+      "lines": 1234,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/service/ServiceModifyForUp.java",
+      "class": "ServiceModifyForUp",
+      "extends": "AppCompatActivity",
+      "lines": 1145,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/DocProfile.java",
+      "class": "DocProfile",
+      "extends": "AppCompatActivity",
+      "lines": 857,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/UpdateAddress.java",
+      "class": "UpdateAddress",
+      "extends": "AppCompatActivity",
+      "lines": 652,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/UpdatePassword.java",
+      "class": "UpdatePassword",
+      "extends": "AppCompatActivity",
+      "lines": 465,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/arraylists/ThanaList.java",
+      "class": "ThanaList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/progressbar/WaitProgress.java",
+      "class": "WaitProgress",
+      "extends": "AppCompatDialogFragment",
+      "lines": 49,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/ReportManager.java",
+      "class": "ReportManager",
+      "extends": "AppCompatActivity",
+      "lines": 85,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/ReportView.java",
+      "class": "ReportView",
+      "extends": "AppCompatActivity",
+      "lines": 1308,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/adapters/ParameterSelectionAdapter.java",
+      "class": "ParameterSelectionAdapter",
+      "extends": "RecyclerView",
+      "lines": 76,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/arraylists/ParameterList.java",
+      "class": "ParameterList",
+      "extends": null,
+      "lines": 27,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/dialog/ParameterSelectionDialogue.java",
+      "class": "ParameterSelectionDialogue",
+      "extends": "AppCompatDialogFragment",
+      "lines": 355,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/interfaces/DepartmentSelectListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/interfaces/DoctorSelectListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/interfaces/ServiceSelectListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/interfaces/UnitSelectListener.java",
+      "class": null,
+      "extends": null,
+      "lines": 5,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/DocWiseAppRepShow.java",
+      "class": "DocWiseAppRepShow",
+      "extends": "AppCompatActivity",
+      "lines": 329,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/DocWisePayRcvRepShow.java",
+      "class": "DocWisePayRcvRepShow",
+      "extends": "AppCompatActivity",
+      "lines": 337,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/PaymentRcvReportShow.java",
+      "class": "PaymentRcvReportShow",
+      "extends": "AppCompatActivity",
+      "lines": 312,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/PaymentRcvSumRepShow.java",
+      "class": "PaymentRcvSumRepShow",
+      "extends": "AppCompatActivity",
+      "lines": 291,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/ReportShow.java",
+      "class": "ReportShow",
+      "extends": "AppCompatActivity",
+      "lines": 540,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/adapters/DocWiseAppointDataAdapter.java",
+      "class": "DocWiseAppointDataAdapter",
+      "extends": "RecyclerView",
+      "lines": 118,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/adapters/DocWisePayDataAdapter.java",
+      "class": "DocWisePayDataAdapter",
+      "extends": "RecyclerView",
+      "lines": 65,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/adapters/PaymentRcvDataAdapter.java",
+      "class": "PaymentRcvDataAdapter",
+      "extends": "RecyclerView",
+      "lines": 135,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/adapters/PaymentRcvSumDataAdapter.java",
+      "class": "PaymentRcvSumDataAdapter",
+      "extends": "RecyclerView",
+      "lines": 117,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/adapters/PdfPageAdapter.java",
+      "class": "PdfPageAdapter",
+      "extends": "RecyclerView",
+      "lines": 48,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/arraylists/DocWiseAppointDataList.java",
+      "class": "DocWiseAppointDataList",
+      "extends": null,
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/arraylists/DocWisePayDataList.java",
+      "class": "DocWisePayDataList",
+      "extends": null,
+      "lines": 47,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/arraylists/PaymentRcvSumDataList.java",
+      "class": "PaymentRcvSumDataList",
+      "extends": null,
+      "lines": 57,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/arraylists/PaymentReceiveDataList.java",
+      "class": "PaymentReceiveDataList",
+      "extends": null,
+      "lines": 97,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/request/ByteArrayRequest.java",
+      "class": "ByteArrayRequest",
+      "extends": "Request",
+      "lines": 28,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/request/PdfRendererHelper.java",
+      "class": "PdfRendererHelper",
+      "extends": null,
+      "lines": 72,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/web_view/ReportWebView.java",
+      "class": "ReportWebView",
+      "extends": "AppCompatActivity",
+      "lines": 253,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/unit_app_schedule/UnitWiseAppointment.java",
+      "class": "UnitWiseAppointment",
+      "extends": "AppCompatActivity",
+      "lines": 835,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/unit_app_schedule/adapters/DoctorAppSchAdapter.java",
+      "class": "DoctorAppSchAdapter",
+      "extends": "RecyclerView",
+      "lines": 266,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/unit_app_schedule/adapters/DoctorsListAdapter.java",
+      "class": "DoctorsListAdapter",
+      "extends": "RecyclerView",
+      "lines": 102,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/unit_app_schedule/arraylists/DoctorAppSchList.java",
+      "class": "DoctorAppSchList",
+      "extends": null,
+      "lines": 98,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/unit_app_schedule/arraylists/UnitDoctorsList.java",
+      "class": "UnitDoctorsList",
+      "extends": null,
+      "lines": 69,
+      "status": "pending"
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/utilities/EdgeToEdgeHelper.java",
+      "class": "EdgeToEdgeHelper",
+      "extends": null,
+      "lines": 262,
+      "status": "pending"
+    }
+  ]
+}

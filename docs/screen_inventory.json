@@ -1,0 +1,757 @@
+{
+  "baseline": "1.3.9.5 (27)",
+  "entries": [
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/MainActivity.java",
+      "class": "MainActivity",
+      "base_class": "AppCompatActivity",
+      "native_lines": 141,
+      "status": "drafted",
+      "detail": "Startup/session restoration drafted; Google Play update flow excluded for iOS."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/all_appointment/AllAppointment.java",
+      "class": "AllAppointment",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1366,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/AppointmentModify.java",
+      "class": "AppointmentModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 2620,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appointment_admin/add_schedule/AddSchedule.java",
+      "class": "AddSchedule",
+      "base_class": "AppCompatActivity",
+      "native_lines": 978,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/AppointmentSchedule.java",
+      "class": "AppointmentSchedule",
+      "base_class": "AppCompatActivity",
+      "native_lines": 604,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/health_rank/HealthProgress.java",
+      "class": "HealthProgress",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1265,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/pat_history/PatientAppointmentHistory.java",
+      "class": "PatientAppointmentHistory",
+      "base_class": "AppCompatActivity",
+      "native_lines": 780,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/PrescriptionSetup.java",
+      "class": "PrescriptionSetup",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1586,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/ComplainModify.java",
+      "class": "ComplainModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 839,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/DiagnosisModify.java",
+      "class": "DiagnosisModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 709,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/RefServiceModify.java",
+      "class": "RefServiceModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 615,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/addInformation/ReferralUnitModify.java",
+      "class": "ReferralUnitModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1091,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/ClinicalFindings.java",
+      "class": "ClinicalFindings",
+      "base_class": "Fragment",
+      "native_lines": 288,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/DrugHistory.java",
+      "class": "DrugHistory",
+      "base_class": "Fragment",
+      "native_lines": 286,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/ManagementPlan.java",
+      "class": "ManagementPlan",
+      "base_class": "Fragment",
+      "native_lines": 284,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/MedicalHistory.java",
+      "class": "MedicalHistory",
+      "base_class": "Fragment",
+      "native_lines": 285,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/Medication.java",
+      "class": "Medication",
+      "base_class": "Fragment",
+      "native_lines": 296,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/PatAdvice.java",
+      "class": "PatAdvice",
+      "base_class": "Fragment",
+      "native_lines": 284,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/PatReference.java",
+      "class": "PatReference",
+      "base_class": "Fragment",
+      "native_lines": 284,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/AdviceModify.java",
+      "class": "AdviceModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 526,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/ClinicalFindingsModify.java",
+      "class": "ClinicalFindingsModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 615,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/DrugHistoryModify.java",
+      "class": "DrugHistoryModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 612,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/ManagementModify.java",
+      "class": "ManagementModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 530,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/MedHistoryModify.java",
+      "class": "MedHistoryModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 617,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/MedicationModify.java",
+      "class": "MedicationModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 934,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/appt_schedule/prescription/fragments/addinfo/ReferenceModify.java",
+      "class": "ReferenceModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 528,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/camera_preview/CameraPreview.java",
+      "class": "CameraPreview",
+      "base_class": "AppCompatActivity",
+      "native_lines": 500,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dashboard/DocDashboard.java",
+      "class": "DocDashboard",
+      "base_class": "AppCompatActivity",
+      "native_lines": 6747,
+      "status": "partial",
+      "detail": "Identity and summaries drafted; charts, camera/pictures, countdown and full navigation pending."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/PrescriptionBuilder.java",
+      "class": "PrescriptionBuilder",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1598,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/adapter/PrescriptionPagerAdapter.java",
+      "class": "PrescriptionPlaceholderFragment",
+      "base_class": "Fragment",
+      "native_lines": 141,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionAdviceEntryBottomSheet.java",
+      "class": "PrescriptionAdviceEntryBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 499,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionClinicalEntryBottomSheet.java",
+      "class": "PrescriptionClinicalEntryBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 526,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionHistoryBottomSheet.java",
+      "class": "PrescriptionHistoryBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 414,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionMedicineBottomSheet.java",
+      "class": "PrescriptionMedicineBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 536,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionObjectiveInfoBottomSheet.java",
+      "class": "PrescriptionObjectiveInfoBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 902,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionPatientDetailsBottomSheet.java",
+      "class": "PrescriptionPatientDetailsBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 269,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionPatientSelectionBottomSheet.java",
+      "class": "PrescriptionPatientSelectionBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 595,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionTemplateBottomSheet.java",
+      "class": "PrescriptionTemplateBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 758,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionTherapyBottomSheet.java",
+      "class": "PrescriptionTherapyBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 382,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionTreatmentPlanBottomSheet.java",
+      "class": "PrescriptionTreatmentPlanBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 387,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/bottomsheet/PrescriptionVitalsBottomSheet.java",
+      "class": "PrescriptionVitalsBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 439,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionAdviceFragment.java",
+      "class": "PrescriptionAdviceFragment",
+      "base_class": "Fragment",
+      "native_lines": 234,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionClinicalFragment.java",
+      "class": "PrescriptionClinicalFragment",
+      "base_class": "Fragment",
+      "native_lines": 409,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionReviewFragment.java",
+      "class": "PrescriptionReviewFragment",
+      "base_class": "Fragment",
+      "native_lines": 365,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/fragments/PrescriptionRxFragment.java",
+      "class": "PrescriptionRxFragment",
+      "base_class": "Fragment",
+      "native_lines": 443,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/dynamic_prescription/preview/PrescriptionPreview.java",
+      "class": "PrescriptionPreview",
+      "base_class": "AppCompatActivity",
+      "native_lines": 582,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/HRAccounts.java",
+      "class": "HRAccounts",
+      "base_class": "AppCompatActivity",
+      "native_lines": 135,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger/AccountLedger.java",
+      "class": "AccountLedger",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1079,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/acc_ledger_pat/AccountLedgerPatient.java",
+      "class": "AccountLedgerPatient",
+      "base_class": "AppCompatActivity",
+      "native_lines": 797,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/AttendanceUpdateReqApproval.java",
+      "class": "AttendanceUpdateReqApproval",
+      "base_class": "AppCompatActivity",
+      "native_lines": 872,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/DailyAttendance.java",
+      "class": "DailyAttendance",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1654,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/attendance/EmpWiseAttendance.java",
+      "class": "EmpWiseAttendance",
+      "base_class": "AppCompatActivity",
+      "native_lines": 3403,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/AccountsDashboard.java",
+      "class": "AccountsDashboard",
+      "base_class": "AppCompatActivity",
+      "native_lines": 949,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/AnalyticsDashboard.java",
+      "class": "AnalyticsDashboard",
+      "base_class": "AppCompatActivity",
+      "native_lines": 3424,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/dashboards/HumanResDashboard.java",
+      "class": "HumanResDashboard",
+      "base_class": "AppCompatActivity",
+      "native_lines": 2101,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/income_expense/IncomeExpenseStatement.java",
+      "class": "IncomeExpenseStatement",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1745,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/LeaveApproval.java",
+      "class": "LeaveApproval",
+      "base_class": "AppCompatActivity",
+      "native_lines": 795,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/LeaveBalance.java",
+      "class": "LeaveBalance",
+      "base_class": "AppCompatActivity",
+      "native_lines": 2415,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/leave/LeaveRecord.java",
+      "class": "LeaveRecord",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1642,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/pay_invoice/PaymentInvoice.java",
+      "class": "PaymentInvoice",
+      "base_class": "AppCompatActivity",
+      "native_lines": 418,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/CreditVoucherApproval.java",
+      "class": "CreditVoucherApproval",
+      "base_class": "AppCompatActivity",
+      "native_lines": 825,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/DebitVoucherApproval.java",
+      "class": "DebitVoucherApproval",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1007,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_approval/JournalVoucherApproval.java",
+      "class": "JournalVoucherApproval",
+      "base_class": "AppCompatActivity",
+      "native_lines": 822,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/hr_accounts/vouch_trans/VoucherTransaction.java",
+      "class": "VoucherTransaction",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1075,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/leave_schedule/DocLeave.java",
+      "class": "DocLeave",
+      "base_class": "AppCompatActivity",
+      "native_lines": 672,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/login/DocLogin.java",
+      "class": "DocLogin",
+      "base_class": "AppCompatActivity",
+      "native_lines": 937,
+      "status": "drafted",
+      "detail": "Login and role selection drafted; Flutter/device acceptance pending."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/PatientSearch.java",
+      "class": "PatientSearch",
+      "base_class": "AppCompatActivity",
+      "native_lines": 426,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/PatientSearchAdmin.java",
+      "class": "PatientSearchAdmin",
+      "base_class": "AppCompatActivity",
+      "native_lines": 667,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/PatientSearchDyPrescription.java",
+      "class": "PatientSearchDyPrescription",
+      "base_class": "AppCompatActivity",
+      "native_lines": 622,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/appointment_calendar/PatAppointmentCalendar.java",
+      "class": "PatAppointmentCalendar",
+      "base_class": "AppCompatActivity",
+      "native_lines": 700,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/bottomsheet/PatientPrescriptionSearchBottomSheet.java",
+      "class": "PatientPrescriptionSearchBottomSheet",
+      "base_class": "BottomSheetDialogFragment",
+      "native_lines": 300,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/PatPrescriptionV.java",
+      "class": "PatPrescriptionV",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1148,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/ClinicalFindPSV.java",
+      "class": "ClinicalFindPSV",
+      "base_class": "Fragment",
+      "native_lines": 241,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/DrugHistPSV.java",
+      "class": "DrugHistPSV",
+      "base_class": "Fragment",
+      "native_lines": 242,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/ManagementPlanPSV.java",
+      "class": "ManagementPlanPSV",
+      "base_class": "Fragment",
+      "native_lines": 238,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/MedicalHistPSV.java",
+      "class": "MedicalHistPSV",
+      "base_class": "Fragment",
+      "native_lines": 241,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/MedicationPSV.java",
+      "class": "MedicationPSV",
+      "base_class": "Fragment",
+      "native_lines": 250,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/PatAdvicePSV.java",
+      "class": "PatAdvicePSV",
+      "base_class": "Fragment",
+      "native_lines": 237,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/patient_search/prescription/fragments/PatReferencePSV.java",
+      "class": "PatReferencePSV",
+      "base_class": "Fragment",
+      "native_lines": 238,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/AddPayment.java",
+      "class": "AddPayment",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1838,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/service/ServiceModify.java",
+      "class": "ServiceModify",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1234,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/payment/service/ServiceModifyForUp.java",
+      "class": "ServiceModifyForUp",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1145,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/DocProfile.java",
+      "class": "DocProfile",
+      "base_class": "AppCompatActivity",
+      "native_lines": 857,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/UpdateAddress.java",
+      "class": "UpdateAddress",
+      "base_class": "AppCompatActivity",
+      "native_lines": 652,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/profile/UpdatePassword.java",
+      "class": "UpdatePassword",
+      "base_class": "AppCompatActivity",
+      "native_lines": 465,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/ReportManager.java",
+      "class": "ReportManager",
+      "base_class": "AppCompatActivity",
+      "native_lines": 85,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/ReportView.java",
+      "class": "ReportView",
+      "base_class": "AppCompatActivity",
+      "native_lines": 1308,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/DocWiseAppRepShow.java",
+      "class": "DocWiseAppRepShow",
+      "base_class": "AppCompatActivity",
+      "native_lines": 329,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/DocWisePayRcvRepShow.java",
+      "class": "DocWisePayRcvRepShow",
+      "base_class": "AppCompatActivity",
+      "native_lines": 337,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/PaymentRcvReportShow.java",
+      "class": "PaymentRcvReportShow",
+      "base_class": "AppCompatActivity",
+      "native_lines": 312,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/PaymentRcvSumRepShow.java",
+      "class": "PaymentRcvSumRepShow",
+      "base_class": "AppCompatActivity",
+      "native_lines": 291,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/ReportShow.java",
+      "class": "ReportShow",
+      "base_class": "AppCompatActivity",
+      "native_lines": 540,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/report_manager/report_view/reports/web_view/ReportWebView.java",
+      "class": "ReportWebView",
+      "base_class": "AppCompatActivity",
+      "native_lines": 253,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    },
+    {
+      "native_file": "app/src/main/java/ttit/com/shuvo/docdiary/unit_app_schedule/UnitWiseAppointment.java",
+      "class": "UnitWiseAppointment",
+      "base_class": "AppCompatActivity",
+      "native_lines": 835,
+      "status": "pending",
+      "detail": "No Flutter implementation yet."
+    }
+  ]
+}

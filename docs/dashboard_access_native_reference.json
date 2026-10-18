@@ -1,0 +1,13 @@
+{
+  "native_version": "1.3.9.5 (27)",
+  "date": "2026-10-18",
+  "files": {
+    "java/ttit/com/shuvo/docdiary/dashboard/DocDashboard.java": "2fa1c06be7211c5899bd58ea1f5d0a984ded7d477e27a8f6eb817ff59a2f57f8",
+    "java/ttit/com/shuvo/docdiary/dashboard/dialogue/ErrorHandlerDialogue.java": "20b4072ff1eb1901fb1e07bef5e28f503e0c2eda7e516cc4d6ee421f08053357",
+    "java/ttit/com/shuvo/docdiary/dashboard/interfaces/ErrorHandlerListener.java": "a5cc327fbbf847575aab879f6e0732b7147a183cfa5214cbf2da247a40eebb1e",
+    "res/layout/error_screen_logout_layout.xml": "526ccf6b9242899974b94ca531b16765f8c51b04a6e93679e18e47a8af2f17b5",
+    "res/font/lato_bold.xml": "e2124a9078171b81519877088ca7b6a298e41dece82f00ff9bc88c6e28b5fbbc"
+  },
+  "uploaded_overview_sha256": "5a3d7b7fda1bf90614433cd5990d55deaea55ad438da343152d5a10867e62929",
+  "status": "Source mapping; Flutter analyzer/tests/iOS build pending on Mac."
+}

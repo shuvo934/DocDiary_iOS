@@ -1,0 +1,12 @@
+[
+  {
+    "file": "Archivo[wdth,wght].ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/archivo/Archivo%5Bwdth%2Cwght%5D.ttf",
+    "sha256": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053"
+  },
+  {
+    "file": "Baloo-Regular.ttf",
+    "source": "https://fonts.gstatic.com/s/baloo/v14/6xKhdSpJJ92I9MWPCms.ttf",
+    "sha256": "7902141a9c0fe8eea19d1c23f87e6c94bf984493a008e41fd0afd5c76687aa02"
+  }
+]

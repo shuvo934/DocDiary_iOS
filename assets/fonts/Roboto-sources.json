@@ -1,0 +1,12 @@
+[
+  {
+    "file": "Roboto-Regular.ttf",
+    "source": "https://android.googlesource.com/platform/external/roboto-fonts/+/android11-release/Roboto-Regular.ttf?format=TEXT",
+    "sha256": "797e35f7f5d6020a5c6ea13b42ecd668bcfb3bbc4baa0e74773527e5b6cb3174"
+  },
+  {
+    "file": "Roboto-Bold.ttf",
+    "source": "https://android.googlesource.com/platform/external/roboto-fonts/+/android11-release/Roboto-Bold.ttf?format=TEXT",
+    "sha256": "36f3709dea3e3ce3c6aedc058079e55980825f898f1e901d091c73c40de8bab1"
+  }
+]
