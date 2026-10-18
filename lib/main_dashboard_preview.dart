@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'app.dart';
@@ -91,7 +93,7 @@ Future<void> main() async {
   );
 }
 
-class _DashboardPreviewTransport implements Transport {
+class _DashboardPreviewTransport implements Transport, BinaryTransport {
   _DashboardPreviewTransport(
     this.role, {
     required DateTime clock,
@@ -107,6 +109,14 @@ class _DashboardPreviewTransport implements Transport {
   final Duration duration;
   final DateTime Function() now;
   bool get doctor => role == 'doctor' || role == 'unit';
+
+  @override
+  Future<JsonMap> postBytes(
+    Uri uri,
+    Uint8List body, {
+    Map<String, String> headers = const {},
+    String contentType = 'application/binary',
+  }) async => {'string_out': 'Successfully Created'};
   String get _expiry => oracleDate(
     first.add(
       Duration(

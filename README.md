@@ -1,3 +1,16 @@
+# Latest dashboard update — 18 October 2026
+
+The supplied dashboard file is the current integration baseline. Dashboard
+Admin picture/camera/crop/upload, the Retry lint fix, iOS review hook and native
+destination/return wiring are implemented. Flutter3.29.2/Dart3.7.2 analyzer clean;
+187 tests pass on Linux. Mac/iPhone plugin/build/live acceptance remains.
+
+See `docs/DASHBOARD_UPDATE_BN.md` and `docs/DASHBOARD_COMPLETION_AUDIT.md`.
+Existing accepted UI, lighter overview totals, elevations, padding, centered
+meeting and full-top shadow are retained. Android source is untouched.
+
+---
+
 # DocDiary Flutter iOS — Milestone 1
 
 ## Dashboard access/error audit — 18 October 2026

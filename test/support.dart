@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:docdiary_ios/config/server_directory.dart';
 import 'package:docdiary_ios/core/failure.dart';
 import 'package:docdiary_ios/core/native_json.dart';
@@ -15,11 +17,45 @@ class RequestRecord {
   final Map<String, String> headers;
 }
 
-class FakeTransport implements Transport {
+class BinaryRequestRecord {
+  const BinaryRequestRecord(
+    this.uri,
+    this.body,
+    this.headers,
+    this.contentType,
+  );
+  final Uri uri;
+  final Uint8List body;
+  final Map<String, String> headers;
+  final String contentType;
+}
+
+class FakeTransport implements Transport, BinaryTransport {
   Future<String> Function(Uri)? onText;
   Future<JsonMap> Function(Uri)? onGet;
   Future<JsonMap> Function(Uri, Map<String, String>)? onPost;
+  Future<JsonMap> Function(BinaryRequestRecord)? onBytes;
+  final binaryRequests = <BinaryRequestRecord>[];
   final requests = <RequestRecord>[];
+
+  @override
+  Future<JsonMap> postBytes(
+    Uri uri,
+    Uint8List body, {
+    Map<String, String> headers = const {},
+    String contentType = 'application/binary',
+  }) async {
+    final request = BinaryRequestRecord(
+      uri,
+      Uint8List.fromList(body),
+      Map.of(headers),
+      contentType,
+    );
+    binaryRequests.add(request);
+    return onBytes == null
+        ? {'string_out': 'Successfully Created'}
+        : await onBytes!(request);
+  }
 
   @override
   Future<String> getText(Uri uri) async {
@@ -32,7 +68,9 @@ class FakeTransport implements Transport {
   @override
   Future<JsonMap> get(Uri uri) async {
     requests.add(RequestRecord('GET', uri, const {}));
-    if (onGet != null) return onGet!(uri);
+    if (onGet != null) {
+      return onGet!(uri);
+    }
     throw StateError('No fake GET response configured');
   }
 
@@ -161,7 +199,9 @@ class Harness {
   JsonMap adminData = adminProfile();
 
   Future<JsonMap> defaultGet(Uri uri) async {
-    if (uri.path.endsWith('getAllLoginData')) return loginResponse;
+    if (uri.path.endsWith('getAllLoginData')) {
+      return loginResponse;
+    }
     if (uri.path.endsWith('getDocData')) {
       return {
         'count': 1,
@@ -197,6 +237,9 @@ class Harness {
     if (uri.path.endsWith('getMeetingSchedule')) {
       return {'count': 0, 'items': <Object?>[]};
     }
+    if (uri.path.endsWith('getDocPic') || uri.path.endsWith('getAdminPic')) {
+      return {'count': 0, 'items': <Object?>[]};
+    }
     if (uri.path.endsWith('getAdminAppPayCountNew')) {
       return {
         'total_app_count': '12',
@@ -211,16 +254,15 @@ class Harness {
     ).hasMatch(uri.path)) {
       return {'count': 0, 'items': <Object?>[]};
     }
-    if (uri.path.endsWith('getDocPic') || uri.path.endsWith('getAdminPic')) {
-      return {'count': 0, 'items': <Object?>[]};
-    }
     throw StateError('Unexpected fake request');
   }
 
   List<RequestRecord> get posts =>
       transport.requests.where((e) => e.method == 'POST').toList();
   Future<void> signIn({bool remember = false}) async {
-    if (auth.stage == AuthStage.booting) await auth.initialize();
+    if (auth.stage == AuthStage.booting) {
+      await auth.initialize();
+    }
     await auth.login('01700000000', 'test-only-password', remember: remember);
   }
 }

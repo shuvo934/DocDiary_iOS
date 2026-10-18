@@ -15,15 +15,22 @@ import 'dashboard_repository.dart';
 import 'meeting_countdown.dart';
 import 'native_dashboard_layout.dart';
 import 'native_dashboard_dialogs.dart';
+import 'dashboard_photo_repository.dart';
+import 'dashboard_services.dart';
+import 'native_camera_screen.dart';
+import 'native_photo_dialogs.dart';
+import 'dashboard_navigation.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
     required this.auth,
     required this.repository,
+    this.services = const DashboardServices(),
   });
   final AuthController auth;
   final DashboardRepository repository;
+  final DashboardServices services;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -39,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   String? _error;
   bool _loading = false;
   bool _noticeOpen = false;
+  bool _navigationAway = false;
   final _dialogs = NativeDashboardDialogOwner();
   Object? _fullFailure;
   bool _waitingAdmin = false;
@@ -57,6 +65,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool _expiryDue = false;
   bool _resumePending = false;
   bool _meetingRefreshing = false;
+  bool _photoBusy = false;
+  bool _photoUploading = false;
+  bool _photoBackgrounded = false;
+  bool _photoReloadNeeded = false;
+  int _photoOperation = 0;
+  Completer<void>? _photoResume;
+  bool _hasFullSuccess = false;
+  bool _reviewPending = false;
+  bool _reviewAttempted = false;
 
   bool get _current =>
       mounted &&
@@ -83,6 +100,25 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_navigationAway) {
+      _foreground = state == AppLifecycleState.resumed;
+      if (!_foreground) {
+        ++_request;
+        _stopMeetingClock();
+      }
+      return;
+    }
+    if (_photoBusy) {
+      _foreground = state == AppLifecycleState.resumed;
+      if (_foreground) {
+        _wakePhoto();
+      } else {
+        _photoBackgrounded = true;
+      }
+      // Camera, photo picker, cropper and permissions temporarily deactivate
+      // the app. Their return cannot start a competing dashboard reload.
+      return;
+    }
     if (state != AppLifecycleState.resumed) {
       _foreground = false;
       _resumePending = false;
@@ -110,6 +146,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _authChanged() {
     if (!_current) {
+      ++_photoOperation;
+      _wakePhoto();
       ++_request;
       ++_dialogRevision;
       _resumePending = false;
@@ -248,7 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     bool refreshPicture = false,
     bool tabOnly = false,
   }) async {
-    if (!_current || !_foreground || _loading || _waitingAdmin) {
+    if (!_current || !_foreground || _loading || _waitingAdmin || _photoBusy) {
       return;
     }
     final session = widget.auth.session;
@@ -318,7 +356,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         _adoptMeeting(result);
       });
       if (profile.isDoctor) {
-        _showExpiryWarning();
+        if (!tabOnly) {
+          _fullSuccess();
+        }
       }
     } catch (failure) {
       if (!current()) {
@@ -372,10 +412,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       return;
     }
     setState(() => _waitingAdmin = false);
-    _showExpiryWarning();
+    _fullSuccess();
   }
 
-  void _adminFailed(Object failure) async {
+  void _adminFailed(Object failure) {
     if (!_current || !_foreground) {
       return;
     }
@@ -388,8 +428,45 @@ class _DashboardScreenState extends State<DashboardScreen>
       _fullFailure = failure;
       _error = dashboardFailureDetail(failure);
     });
-    _retryLoad = () => _load(refreshPicture: true);
+    _retryLoad = () async {
+      await _load(refreshPicture: true);
+    };
     _queueFullError();
+  }
+
+  void _fullSuccess() {
+    final returning = _hasFullSuccess;
+    _hasFullSuccess = true;
+    _showExpiryWarning();
+    if (!returning || _reviewPending || _reviewAttempted) {
+      return;
+    }
+    final request = _request;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_current &&
+          _foreground &&
+          request == _request &&
+          !_dialogs.isOpen &&
+          !_photoBusy &&
+          !_reviewAttempted &&
+          _error == null &&
+          !_waitingAdmin &&
+          !_reviewPending) {
+        unawaited(_requestReview());
+      }
+    });
+  }
+
+  Future<void> _requestReview() async {
+    _reviewAttempted = true;
+    _reviewPending = true;
+    try {
+      await widget.services.review.request();
+    } catch (_) {
+      // Rating is optional, as in the native task-completion listener.
+    } finally {
+      _reviewPending = false;
+    }
   }
 
   void _showExpiryWarning() {
@@ -495,7 +572,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _refresh() async {
-    if (!_current || !_foreground || _loading || _waitingAdmin) {
+    if (!_current || !_foreground || _loading || _waitingAdmin || _photoBusy) {
       return;
     }
     if (_error != null && _retryLoad != null) {
@@ -507,7 +584,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _selectPeriod(SummaryPeriod period) async {
-    if (!_current || _loading || _waitingAdmin || period == _period) {
+    if (!_current ||
+        _loading ||
+        _waitingAdmin ||
+        _photoBusy ||
+        period == _period) {
       return;
     }
     setState(() => _period = period);
@@ -515,7 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _logout() async {
-    if (!_current || _dialogs.isOpen) {
+    if (!_current || _dialogs.isOpen || _photoBusy) {
       return;
     }
     final confirmed = await _dialogs.show<bool>(
@@ -535,7 +616,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _confirmExit() async {
-    if (!_current || _dialogs.isOpen) {
+    if (!_current || _dialogs.isOpen || _photoBusy) {
       return;
     }
     final confirmed = await _dialogs.show<bool>(
@@ -558,8 +639,36 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (!_current ||
         _loading ||
         _waitingAdmin ||
+        _photoBusy ||
         _noticeOpen ||
         _dialogs.isOpen) {
+      return;
+    }
+    if (destination == DashboardDestination.changePhoto) {
+      await _changePhoto();
+      return;
+    }
+    final route = nativeDashboardRoute(_profile, destination);
+    if (route == null) {
+      return;
+    }
+    final page = widget.services.destinationBuilder?.call(context, route);
+    if (page != null) {
+      _noticeOpen = true;
+      _navigationAway = true;
+      _stopMeetingClock();
+      try {
+        await _dialogs.push<void>(context, page);
+      } finally {
+        _noticeOpen = false;
+        _navigationAway = false;
+        if (_current && _foreground) {
+          // Flutter routes do not trigger Android Activity.onResume. Explicitly
+          // refresh on return so the new appointment/profile data becomes live.
+          setState(() => _period = SummaryPeriod.today);
+          await _load(refreshPicture: true);
+        }
+      }
       return;
     }
     _noticeOpen = true;
@@ -600,9 +709,231 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  void _wakePhoto() {
+    final waiting = _photoResume;
+    _photoResume = null;
+    if (waiting != null && !waiting.isCompleted) {
+      waiting.complete();
+    }
+  }
+
+  bool _photoCurrent(int operation) => _current && operation == _photoOperation;
+
+  Future<bool> _photoReady(int operation) async {
+    while (_photoCurrent(operation) && !_foreground) {
+      final waiting = _photoResume ??= Completer<void>();
+      await waiting.future;
+    }
+    return _photoCurrent(operation);
+  }
+
+  Future<String?> _capturePhoto(int operation) async {
+    if (!await _photoReady(operation) || !mounted) {
+      return null;
+    }
+    return await _dialogs.push<String>(context, const NativeCameraScreen());
+  }
+
+  Future<bool> _photoRetry(Object failure, int operation) async {
+    if (!await _photoReady(operation) || !mounted) {
+      return false;
+    }
+    setState(() => _photoUploading = false);
+    return await _dialogs.show<bool>(
+              context,
+              NativePhotoRetryDialog(failure: failure),
+            ) ==
+            true &&
+        _photoCurrent(operation);
+  }
+
+  void _adoptPhotoProfile(AccountProfile fresh) {
+    final changedScope =
+        _profile.adminFilter != fresh.adminFilter ||
+        _profile.value('all_access_flag') != fresh.value('all_access_flag') ||
+        _profile.value('is_pay_appoint_type_active') !=
+            fresh.value('is_pay_appoint_type_active');
+    setState(() {
+      _profile = fresh;
+      if (changedScope) {
+        _photoReloadNeeded = true;
+        _summary = null;
+        _holdAdminCharts = true;
+      }
+    });
+  }
+
+  /// The server, old picture and chart filters remain intact on cancel/error.
+  /// Selected bytes stay in memory only for the current account's manual Retry.
+  Future<void> _changePhoto() async {
+    if (!_current || !_foreground || _profile.isDoctor || _photoBusy) {
+      return;
+    }
+    final operation = ++_photoOperation;
+    bool current() => _photoCurrent(operation);
+    setState(() {
+      _photoBusy = true;
+      _photoUploading = false;
+      _photoBackgrounded = false;
+      _photoReloadNeeded = false;
+    });
+    var accessVerified = false;
+    try {
+      final source = await _dialogs.show<DashboardPhotoSource>(
+        context,
+        const NativePhotoChoiceDialog(),
+      );
+      if (source == null || !await _photoReady(operation)) {
+        return;
+      }
+      Uint8List? selected;
+      do {
+        setState(() => _photoUploading = true);
+        try {
+          selected = await widget.services.media.select(
+            source,
+            capture: () async => await _capturePhoto(operation),
+            ready: () async => await _photoReady(operation),
+          );
+          break;
+        } catch (failure) {
+          if (!await _photoRetry(failure, operation)) {
+            return;
+          }
+        }
+      } while (current());
+      if (selected == null || !await _photoReady(operation)) {
+        return;
+      }
+      // Keep exactly the same immutable payload across explicit upload retries.
+      final jpeg = Uint8List.fromList(selected);
+      var uploaded = false;
+      while (await _photoReady(operation)) {
+        setState(() => _photoUploading = true);
+        try {
+          var fresh = await widget.auth.profiles.open(
+            _session,
+            recordLogin: false,
+            isCurrent: () => current() && _foreground,
+          );
+          if (!current()) {
+            return;
+          }
+          if (!uploaded) {
+            _photoBackgrounded = false;
+            await DashboardPhotoRepository(
+              widget.repository.transport,
+              now: widget.repository.now,
+            ).upload(
+              _session,
+              fresh,
+              jpeg,
+              isCurrent: current,
+              isForeground: () => _foreground,
+            );
+            uploaded = true;
+          }
+          if (!await _photoReady(operation)) {
+            return;
+          }
+          // A successful POST completed in the background: re-read access, but
+          // never upload again merely because the app was deactivated.
+          if (_photoBackgrounded) {
+            fresh = await widget.auth.profiles.open(
+              _session,
+              recordLogin: false,
+              isCurrent: () => current() && _foreground,
+            );
+          }
+          if (!current()) {
+            return;
+          }
+          ProfileRepository.checkAccess(fresh, widget.repository.now());
+          accessVerified = true;
+          _adoptPhotoProfile(fresh);
+          setState(() {
+            _picture = jpeg;
+          });
+          if (!mounted) {
+            return;
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Picture Uploaded'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        } catch (failure) {
+          if (!current()) {
+            return;
+          }
+          if (failure is AppFailure && failure.kind == FailureKind.denied) {
+            _deny(failure);
+            return;
+          }
+          final reason =
+              failure is ObsoleteRequest
+                  ? const AppFailure(
+                    'The app was paused. Please retry when ready.',
+                  )
+                  : failure;
+          if (!await _photoRetry(reason, operation)) {
+            return;
+          }
+        }
+      }
+    } finally {
+      // Cancel after Camera/Gallery still checks revoked access without resetting
+      // successful chart selections, adding login logs or sending image bytes.
+      if (current() &&
+          _photoBackgrounded &&
+          !accessVerified &&
+          await _photoReady(operation)) {
+        try {
+          final fresh = await widget.auth.profiles.open(
+            _session,
+            recordLogin: false,
+            isCurrent: () => current() && _foreground,
+          );
+          if (current()) {
+            _adoptPhotoProfile(fresh);
+          }
+        } catch (failure) {
+          if (current()) {
+            if (failure is AppFailure && failure.kind == FailureKind.denied) {
+              _deny(failure);
+            } else {
+              setState(() {
+                _fullFailure = failure;
+                _error = dashboardFailureDetail(failure);
+              });
+              _retryLoad = () async {
+                await _load(refreshPicture: true);
+              };
+              _queueFullError();
+            }
+          }
+        }
+      }
+      if (mounted && operation == _photoOperation) {
+        setState(() {
+          _photoBusy = false;
+          _photoUploading = false;
+        });
+        if (_photoReloadNeeded && _current && _foreground) {
+          _photoReloadNeeded = false;
+          await _load(refreshPicture: true);
+        }
+      }
+    }
+  }
+
   @override
   void dispose() {
     ++_request;
+    ++_photoOperation;
+    _wakePhoto();
     _stopMeetingClock();
     _dialogs.dispose();
     widget.auth.removeListener(_authChanged);
@@ -670,7 +1001,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             offstage: _waitingAdmin || (_loading && _summary == null),
             child: body,
           ),
-          if (_waitingAdmin || (_loading && _summary == null))
+          if (_photoUploading ||
+              _waitingAdmin ||
+              (_loading && _summary == null))
             const Positioned.fill(
               child: NativeDashboardGateBackground(loading: true),
             ),

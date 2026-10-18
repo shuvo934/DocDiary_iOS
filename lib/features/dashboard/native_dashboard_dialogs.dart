@@ -65,6 +65,21 @@ class NativeDashboardDialogOwner {
     }
   }
 
+  Future<T?> push<T>(BuildContext context, Widget child) async {
+    if (_disposed || isOpen || !context.mounted) {
+      return null;
+    }
+    final navigator = Navigator.of(context);
+    _navigator = navigator;
+    final route = MaterialPageRoute<T>(builder: (_) => child);
+    _routes.add(route);
+    try {
+      return await navigator.push(route);
+    } finally {
+      _routes.remove(route);
+    }
+  }
+
   void close() {
     final navigator = _navigator;
     final routes = _routes.toList();

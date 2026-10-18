@@ -19,6 +19,8 @@ def configure(root: Path) -> None:
     with info_path.open('rb') as stream:
         base = plistlib.load(stream)
     base['CFBundleDisplayName'] = 'DocDiary'
+    base.setdefault('NSCameraUsageDescription', 'DocDiary uses your camera when you choose to take a profile picture.')
+    base.setdefault('NSPhotoLibraryUsageDescription', 'DocDiary lets you choose a profile picture from your photo library.')
     base['LSApplicationQueriesSchemes'] = sorted(set(base.get('LSApplicationQueriesSchemes', []) + ['mailto']))
     base['UISupportedInterfaceOrientations'] = ['UIInterfaceOrientationPortrait']
     base['UISupportedInterfaceOrientations~ipad'] = [

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'failure.dart';
 import 'native_json.dart';
@@ -12,9 +13,19 @@ abstract interface class Transport {
   void close();
 }
 
+/// The native picture endpoint accepts JPEG bytes, not JSON or multipart data.
+abstract interface class BinaryTransport implements Transport {
+  Future<JsonMap> postBytes(
+    Uri uri,
+    Uint8List body, {
+    Map<String, String> headers = const {},
+    String contentType = 'application/binary',
+  });
+}
+
 /// iOS-only transport. There is deliberately no automatic POST retry and no
 /// request/response logging: legacy login sends credentials in the query.
-class IoTransport implements Transport {
+class IoTransport implements Transport, BinaryTransport {
   IoTransport({this.timeout = const Duration(seconds: 25), HttpClient? client})
     : _client = client ?? HttpClient() {
     _client.connectionTimeout = timeout;
@@ -36,10 +47,28 @@ class IoTransport implements Transport {
     Map<String, String> headers = const {},
   }) async => nativeObject(await _request('POST', uri, headers: headers));
 
+  @override
+  Future<JsonMap> postBytes(
+    Uri uri,
+    Uint8List body, {
+    Map<String, String> headers = const {},
+    String contentType = 'application/binary',
+  }) async => nativeObject(
+    await _request(
+      'POST',
+      uri,
+      headers: headers,
+      body: body,
+      contentType: contentType,
+    ),
+  );
+
   Future<String> _request(
     String method,
     Uri uri, {
     Map<String, String> headers = const {},
+    Uint8List? body,
+    String? contentType,
   }) async {
     HttpClientRequest? request;
     var expired = false;
@@ -69,6 +98,11 @@ class IoTransport implements Transport {
           }
           outgoing.headers.set(key, value, preserveHeaderCase: true);
         });
+        if (body != null) {
+          outgoing.headers.set(HttpHeaders.contentTypeHeader, contentType!);
+          outgoing.contentLength = body.length;
+          outgoing.add(body);
+        }
         final response = await outgoing.close();
         if (response.statusCode < 200 || response.statusCode >= 300) {
           await response.drain<void>();

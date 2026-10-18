@@ -1,3 +1,34 @@
+# Dashboard update verification — 18 October 2026 (current)
+
+- SDK: Flutter3.29.2, framework c23637390482d4cf9598c3ce3f2be31aa7332daf,
+  engine18b71d647a, Dart3.7.2. SDK tools run in CI mode to omit the cloud
+  metadata bot probe.
+- Actual `flutter analyze --no-pub --fatal-infos`: **No issues found**, exit0.
+- Actual `flutter test --no-pub`: **187 tests passed**, exit0, on Linux.
+  Includes the prior150 cases and37 new picture/camera/navigation cases.
+  Full output: verification/dashboard_flutter_tests_2026-10-18.log.
+- Dart formatter parsed all63 Dart sources/tests. Offline imports/assets and
+  Python installer/privacy/setup checks also passed:7 update-installer fixtures,
+  3 targeted media-privacy cases and6 iOS-configuration fixtures. These are
+  separate from the187 Flutter tests.
+- Layout, overview, meeting, line-chart, payment-format and chart-model Dart
+  token streams equal the prior accepted version. Only formatting differs.
+- The update installer reconstructs all63 Dart source/test token streams equal
+  to this analyzed/tested source; accepted UI files are kept byte-for-byte by
+  the installer. Backup/idempotence/conflict/tamper/rollback/restore checks pass.
+- Native Android source is untouched. No live production API requests were
+  sent by these tests.
+- **Not run:** macOS CocoaPods/Xcode build, real iPhone camera/flash/settings,
+  native iOS crop/HEIC handling, live picture upload, Keychain and TestFlight.
+  Automated Linux tests do not establish these results.
+
+Apply/run instructions: DASHBOARD_UPDATE_BN.md. Full behavior mapping and
+remaining destination modules: DASHBOARD_COMPLETION_AUDIT.md.
+
+---
+
+## Earlier checkpoints (historical, before the SDK became available)
+
 # Dashboard access/error checkpoint — 18 October 2026
 
 The uploaded native_admin_overview.dart is the new baseline. Its `_total` and

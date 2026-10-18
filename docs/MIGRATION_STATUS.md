@@ -23,8 +23,10 @@ Status vocabulary:
 | Dashboard | Native-derived header/identity, role/permission buttons and icon menus, 4 date tabs, doctor/admin summary UI; existing summary API and native photo GETs | Partial — summary UI accepted; latest user full-top shadow retained |
 | Doctor Next Meeting countdown | Native interval/units/right-anchored progress; 3-second Today refresh; lifecycle and pending-request guards | Drafted — Mac verification pending |
 | Admin OVERVIEW charts | Native endpoints, independent dates, Monthly/Yearly, allowed type filters, cubic plots, totals, tap markers, zoom and retry | Drafted — Mac verification pending |
-| Dashboard destination screens | Pictures read-only; menu destinations show a development availability notice | Pending / partial |
-| Profile edit/camera/crop | Not implemented | Pending |
+| Dashboard destination screens | Native target/permission mapping and owned-route return refresh implemented; destination content still shows availability notice | Pending destination modules |
+| Admin Dashboard photo/camera/crop/upload/retry | Implemented; all relevant automated cases pass; actual iOS plugin build/camera/upload acceptance pending | Drafted |
+| iOS review integration | Optional StoreKit request after later full success; debug disabled and bounded once per entry | Drafted |
+| Doctor Profile edit/photo | Separate DocProfile module, not yet implemented | Pending |
 | Appointment schedules/unit/all/admin changes | Not implemented | Pending |
 | Patient search/history/health progress | Not implemented | Pending |
 | Old prescription workflows | Not implemented | Pending |
@@ -37,31 +39,25 @@ Status vocabulary:
 
 ## Next checkpoint
 
-The latest uploaded overview is the UI baseline, including its lighter totals.
-The access/error audit corrects the missing native dialogs and warning/action
-flows. The focused access patch requires Mac verification before proceeding.
-It includes36 authored regression cases; no corrected full-suite/build result
-has yet been supplied. See DASHBOARD_ACCESS_PARITY.md for behavior mapping,
-remaining native methods and intentional iOS/defensive differences.
+Dashboard-owned behavior is implemented, including the uploaded dashboard's
+Retry callback lint correction, native Admin chooser/custom camera/free crop/
+binary picture upload/manual Retry-Cancel, StoreKit review and destination
+return refresh. Native Android files remain unchanged. UI/chart/format tokens
+match the prior approved files, including lighter totals and local layout edits.
 
-The user accepts the doctor countdown with two local UI adjustments: common
-unit/report buttons use elevation2 and the meeting column is centered. Both
-uploaded files are the latest baseline, including the revised outer scroll
-padding. Admin overview charts/filters are now drafted and supplied separately
-for Mac verification. See ADMIN_CHARTS_PATCH_BN.md and ADMIN_CHARTS_NATIVE_REFERENCE.md.
-The user reports that the dashboard is almost complete; the remaining screenshot
-issues have corrections for X-label positioning and native lakh/crore payment
-grouping, with existing monetary regression cases expanded. Simulator pinch
-instructions are included. Corrected device appearance still needs acceptance.
-The latest Mac log has a clean analyzer, 113 passing tests and one failing
-small-screen/large-text legend-overflow test. The legend wrapping correction
-retains that test; a corrected suite and simulator build are pending. UI approval
-does not prove all lifecycle, API, device and release behavior.
+Flutter3.29.2/Dart3.7.2 analyzer is clean and all187 tests pass on Linux. This
+now executes the previous150 authored cases and37 new cases. It supersedes the
+old113-pass/legend-overflow report and earlier 'SDK unavailable' checkpoints.
 
-After chart acceptance, continue to doctor Appointment schedule/list navigation,
-then its filters and appointment details. Profile/edit and camera/crop remain
-separate modules. Run a focused camera/crop and multipage prescription PDF iOS
-trial before bulk migration of those workflows.
+Run the update installer and Mac verify command in DASHBOARD_UPDATE_BN.md, then
+check native camera, permissions, crop/HEIC and live image persistence on iPhone.
+These native plugin/device checks cannot be established by the Linux suite.
+Use DASHBOARD_COMPLETION_AUDIT.md for exact scope and intentional iOS differences.
+
+The next screen module is Doctor Appointment schedule/list, then its filters
+and appointment details. Profile/doctor photo edit, patient/prescription/payment/
+reports/HR/accounts destination workflows and PDF printing remain separate
+migration modules. No full app/production-release completion is claimed.
 
 ## Deliberate migration decisions to validate
 

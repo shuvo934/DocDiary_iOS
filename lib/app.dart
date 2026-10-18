@@ -8,6 +8,7 @@ import 'features/auth/login_screen.dart';
 import 'features/auth/native_account_gate.dart';
 import 'features/dashboard/dashboard_repository.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'features/dashboard/dashboard_services.dart';
 import 'features/splash/native_splash_screen.dart';
 
 class DocDiaryApp extends StatefulWidget {
@@ -17,11 +18,13 @@ class DocDiaryApp extends StatefulWidget {
     required this.dashboard,
     this.onDispose,
     this.initializeOnStart = true,
+    this.dashboardServices = const DashboardServices(),
   });
   final AuthController auth;
   final DashboardRepository dashboard;
   final VoidCallback? onDispose;
   final bool initializeOnStart;
+  final DashboardServices dashboardServices;
 
   @override
   State<DocDiaryApp> createState() => _DocDiaryAppState();
@@ -78,6 +81,7 @@ class _DocDiaryAppState extends State<DocDiaryApp> {
             ),
             auth: auth,
             repository: widget.dashboard,
+            services: widget.dashboardServices,
           ),
           AuthStage.accountBlocked ||
           AuthStage.accountError => NativeAccountGate(

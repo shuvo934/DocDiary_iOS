@@ -1,9 +1,11 @@
 # DocDashboard access/error audit — 18 October 2026
 
 This audit compares the supplied Android 1.3.9.5(27) source with the implemented
-Flutter dashboard. It is a source-level behavior mapping, not a claim of a
-verified Flutter build or complete app migration. The user's latest overview
-file is the UI baseline; its `_total` and `_card` rendering are byte-identical.
+Flutter dashboard. Its authored access/error cases have now been executed and
+pass as part of the187-test suite (see DASHBOARD_COMPLETION_AUDIT.md). It is a source-level behavior mapping, not a claim of a
+verified Flutter build or complete app migration. The user's overview
+file is the UI baseline; `_total`/`_card` styling is retained, including w600.
+Dart formatting is normalized; accepted UI token sequences are unchanged.
 
 | Native path | Resulting Flutter behavior | Verification status |
 | --- | --- | --- |
@@ -75,12 +77,14 @@ Flutter: https://api.flutter.dev/flutter/services/SystemNavigator/pop.html
 
 | Native feature | Current scope |
 | --- | --- |
-| Profile edit, camera/gallery/crop, updateDocPic/updateAdminPic and their upload Retry/Cancel | Not implemented; photo viewing GETs are implemented |
+| Admin Dashboard camera/gallery/crop/updateAdminPic/Retry/Cancel | Implemented in this update; iPhone/iOS build acceptance pending |
+| Doctor Profile edit/updateDocPic | Remains the separate DocProfile module |
 | Profile, appointments, patients, block time, payments, report manager, HR/accounts/analytics destinations | Native entry/menu visibility retained; destination workflows remain separate migration modules |
-| Google Play in-app review | Android-only call not copied; iOS StoreKit review integration is pending |
+| Google Play in-app review | iOS StoreKit replacement implemented; optional, debug disabled, at most once per dashboard entry after later full success |
 | ProcessPhoenix and Android activity finish/process exit | Not copied into iOS; safe route/session handling and explicit Exit instructions used |
 | Real-device, Keychain, lifecycle, accessibility and App Store release acceptance | Pending on Mac/iPhone; not established by source checks |
 
-The requested access/expiry/error flows now have an implementation and focused
-cases. This does not mark all DocDashboard methods or the full app complete.
-No new Flutter test/analyzer/build pass is claimed in this environment.
+The requested access/expiry/error flows pass their Flutter regression cases.
+The current187-test suite and analyzer pass on Linux. Mac/iPhone acceptance and
+the complete app migration remain pending. Dashboard-owned remaining flows are
+mapped in DASHBOARD_COMPLETION_AUDIT.md.

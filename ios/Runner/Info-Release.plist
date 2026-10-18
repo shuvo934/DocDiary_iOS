@@ -52,5 +52,9 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>DocDiary uses your camera when you choose to take a profile picture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DocDiary lets you choose a profile picture from your photo library.</string>
 </dict>
 </plist>
