@@ -127,8 +127,12 @@ class _DoctorAddressScreenState extends State<DoctorAddressScreen>
 
   void _resolveThana() {
     var selected = _selected;
+    // if (selected == null || selected.name != _thana.text) {
+    //   selected = DoctorThana.named(_thanas, _thana.text);
+    // }
     if (selected == null || selected.name != _thana.text) {
-      selected = DoctorThana.named(_thanas, _thana.text);
+      final matches = _thanas.where((t) => t.name == _thana.text).toList();
+      selected = matches.length == 1 ? matches.first : null;
     }
     setState(() {
       _selected = selected;
@@ -142,15 +146,25 @@ class _DoctorAddressScreenState extends State<DoctorAddressScreen>
     });
   }
 
+  // void _selectThana(DoctorThana item) {
+  //   // The native adapter displays names and resolves the last exact name match.
+  //   final selected = DoctorThana.named(_thanas, item.name) ?? item;
+  //   setState(() {
+  //     _selected = selected;
+  //     _thana.text = selected.name;
+  //     _thana.selection = TextSelection.collapsed(offset: _thana.text.length);
+  //     _district.text = selected.district;
+  //     _thanaHelper = selected.id.isEmpty ? 'Please Select Thana/Upazila' : null;
+  //   });
+  // }
+
   void _selectThana(DoctorThana item) {
-    // The native adapter displays names and resolves the last exact name match.
-    final selected = DoctorThana.named(_thanas, item.name) ?? item;
     setState(() {
-      _selected = selected;
-      _thana.text = selected.name;
+      _selected = item;
+      _thana.text = item.name;
       _thana.selection = TextSelection.collapsed(offset: _thana.text.length);
-      _district.text = selected.district;
-      _thanaHelper = selected.id.isEmpty ? 'Please Select Thana/Upazila' : null;
+      _district.text = item.district;
+      _thanaHelper = item.id.isEmpty ? 'Please Select Thana/Upazila' : null;
     });
   }
 

@@ -6,25 +6,33 @@ import 'doctor_address_repository.dart';
 import 'native_doctor_thana_field.dart';
 
 InputDecoration doctorAddressDecoration(String label, {String? helper}) {
-  OutlineInputBorder border(double width) => OutlineInputBorder(
+  OutlineInputBorder border(double width, Color color) => OutlineInputBorder(
     borderRadius: BorderRadius.circular(10),
-    borderSide: BorderSide(color: DocColors.greenSea, width: width),
+    borderSide: BorderSide(color: color, width: width),
   );
   return InputDecoration(
     labelText: label,
-    labelStyle: const TextStyle(color: Color(0xFFB2BEC3)),
-    floatingLabelStyle: const TextStyle(color: DocColors.greenSea),
+    labelStyle: const TextStyle(fontSize: 15, color: Color(0xFFB2BEC3)),
+    floatingLabelStyle: WidgetStateTextStyle.resolveWith(
+      (states) => TextStyle(
+        fontSize: 15,
+        color:
+            states.contains(WidgetState.focused)
+                ? DocColors.greenSea
+                : const Color(0xFFB2BEC3),
+      ),
+    ),
     filled: true,
     fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-    border: border(1),
-    enabledBorder: border(1),
-    focusedBorder: border(2),
-    helperText: helper == null || helper.isEmpty ? ' ' : helper,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    border: border(1, const Color(0xFF9E9E9E)),
+    enabledBorder: border(1, const Color(0xFF9E9E9E)),
+    focusedBorder: border(2, DocColors.greenSea),
+    helperText: helper == null || helper.isEmpty ? null : helper,
     helperMaxLines: 3,
     helperStyle: const TextStyle(
       fontFamily: 'Roboto',
-      fontSize: 12,
+      fontSize: 11,
       color: Color(0xFFCC0000),
     ),
   );
@@ -69,7 +77,7 @@ class NativeDoctorAddressLayout extends StatelessWidget {
     final sdp = width < 300 ? 1.0 : (width / 30).floor() * 30 / 300;
     const fieldStyle = TextStyle(
       fontFamily: 'OpenSans',
-      fontSize: 16,
+      fontSize: 15,
       color: Colors.black,
       height: 1.5,
     );
@@ -89,6 +97,11 @@ class NativeDoctorAddressLayout extends StatelessWidget {
       cursorColor: DocColors.greenSea,
       textInputAction: TextInputAction.done,
       keyboardType: TextInputType.text,
+      autocorrect: false,
+      enableSuggestions: false,
+      smartDashesType: SmartDashesType.disabled,
+      smartQuotesType: SmartQuotesType.disabled,
+      textCapitalization: TextCapitalization.none,
       onChanged: onChanged,
       onSubmitted: (_) => focus.unfocus(),
     );
@@ -230,7 +243,7 @@ class NativeDoctorAddressLayout extends StatelessWidget {
                                         enabled: false,
                                         style: const TextStyle(
                                           fontFamily: 'OpenSans',
-                                          fontSize: 12,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           color: Colors.black,
                                         ),
@@ -239,30 +252,35 @@ class NativeDoctorAddressLayout extends StatelessWidget {
                                           floatingLabelBehavior:
                                               FloatingLabelBehavior.always,
                                           labelStyle: TextStyle(
-                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xFFB2BEC3),
                                           ),
                                           floatingLabelStyle: TextStyle(
-                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xFFB2BEC3),
                                           ),
                                           filled: true,
-                                          fillColor: Colors.white,
+                                          fillColor: Color(0xFFF5F5F5),
                                           contentPadding: EdgeInsets.fromLTRB(
                                             16,
-                                            18,
+                                            10,
                                             16,
                                             10,
                                           ),
                                           border: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: DocColors.muted,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(5),
                                             ),
+                                            borderSide: BorderSide.none,
                                           ),
                                           disabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: DocColors.muted,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(5),
                                             ),
+                                            borderSide: BorderSide.none,
                                           ),
-                                          helperText: ' ',
                                         ),
                                       ),
                                     ),
@@ -304,7 +322,7 @@ class NativeDoctorAddressLayout extends StatelessWidget {
                                             'UPDATE',
                                             style: TextStyle(
                                               fontFamily: 'Poppins',
-                                              fontSize: 14 * sdp,
+                                              fontSize: 13 * sdp,
                                               fontWeight: FontWeight.w700,
                                               color: Colors.white,
                                             ),

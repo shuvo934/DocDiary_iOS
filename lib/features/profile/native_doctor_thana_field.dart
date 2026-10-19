@@ -164,12 +164,14 @@ class _NativeDoctorThanaFieldState extends State<NativeDoctorThanaField>
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          options[index].name,
+                          options[index].district.isEmpty
+                              ? options[index].name
+                              : '${options[index].name} (${options[index].district})',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontFamily: 'Roboto',
-                            fontSize: 16,
+                            fontSize: 15,
                             color: Colors.black,
                           ),
                         ),
@@ -202,6 +204,11 @@ class _NativeDoctorThanaFieldState extends State<NativeDoctorThanaField>
       style: widget.style,
       cursorColor: DocColors.greenSea,
       textInputAction: TextInputAction.done,
+      keyboardType: TextInputType.text,
+      autocorrect: false,
+      enableSuggestions: false,
+      smartDashesType: SmartDashesType.disabled,
+      smartQuotesType: SmartQuotesType.disabled,
       decoration: widget.decoration.copyWith(
         suffixIcon: IconButton(
           key: const Key('address_thana_dropdown'),
