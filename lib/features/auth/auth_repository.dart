@@ -19,6 +19,7 @@ class AuthRepository {
     final centers = <CenterOption>[];
     var failures = 0;
     var receivedResponse = false;
+    var serverIssue = false;
     var lastMessage = '';
     for (final base in await directory.load()) {
       try {
@@ -28,26 +29,42 @@ class AuthRepository {
             'doc_password': credentials.password,
           }),
         );
-        final center = CenterOption.fromLoginResponse(response);
         receivedResponse = true;
+        final center = CenterOption.fromLoginResponse(response);
         if (center != null) {
           centers.add(center);
         } else {
           final message = nativeText(response['is_online']);
-          if (message.isNotEmpty) lastMessage = message;
+          // Keep the previous useful business message like native prv_message.
+          // A bare Online status is not a reason to show an empty account list.
+          if (message.isNotEmpty && message.trim().toLowerCase() != 'online') {
+            lastMessage = message;
+          }
         }
-      } on AppFailure {
+      } on AppFailure catch (failure) {
         failures++;
+        serverIssue = serverIssue || failure.kind != FailureKind.network;
       }
     }
     if (centers.isEmpty) {
+      if (lastMessage.isNotEmpty) {
+        // A later timeout or malformed reply must not erase a native message.
+        throw AppFailure(lastMessage, kind: FailureKind.denied);
+      }
+      if (receivedResponse && failures == 0) {
+        throw const AppFailure(
+          'Could not find your id.',
+          kind: FailureKind.denied,
+        );
+      }
+      // No account result is conclusive only when every centre was checked.
+      // Keep the native retry messages for incomplete/malformed discovery.
+      final apiIssue = receivedResponse || serverIssue;
       throw AppFailure(
-        lastMessage.isNotEmpty
-            ? lastMessage
-            : receivedResponse
-            ? 'No account was found for this Mobile No and Password.'
+        apiIssue
+            ? 'There is a network issue in the server. Please Try later.'
             : 'Server Problem or Internet Not Connected',
-        kind: receivedResponse ? FailureKind.denied : FailureKind.network,
+        kind: apiIssue ? FailureKind.server : FailureKind.network,
       );
     }
     return DiscoveryResult(

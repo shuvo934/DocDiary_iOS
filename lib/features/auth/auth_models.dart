@@ -112,10 +112,11 @@ class CenterOption {
   final List<AccountOption> accounts;
   final bool requiresAccountChoice;
 
-  /// A null result means the server deliberately rejected this login.
+  /// Native 0/2 responses have no matching account; neither is a connection
+  /// failure. Their is_online message is handled by discovery.
   static CenterOption? fromLoginResponse(JsonMap json) {
     final available = nativeText(json['is_available']);
-    if (available == '0') {
+    if (available == '0' || available == '2') {
       return null;
     }
     if (!const ['1', '3', '4', '5'].contains(available)) {
