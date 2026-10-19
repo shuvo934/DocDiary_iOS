@@ -1,4 +1,4 @@
-# Migration status — 18 October 2026
+# Migration status — 19 October 2026
 
 Baseline: supplied `DocDiary.zip`, Android version 1.3.9.5 (27). Its SHA-256 and the
 reference source checksums are recorded in `native_baseline.json`.
@@ -27,8 +27,8 @@ Status vocabulary:
 | Admin Dashboard photo/camera/crop/upload/retry | Implemented; all relevant automated cases pass; actual iOS plugin build/camera/upload acceptance pending | Drafted |
 | iOS review integration | Optional StoreKit request after later full success; debug disabled and bounded once per entry | Drafted |
 | Doctor Profile main/data/photo/video | Native-derived UI, getDocProfile/updateImage, lifecycle/error/retry and dashboard navigation | Implemented checkpoint — Mac/iPhone acceptance pending |
-| Doctor Profile Update Address | Native form/search/district/validation/confirmation/header POST, manual errors, access/lifecycle guards and Profile refresh;280-case suite passes | Implemented checkpoint — Mac/iPhone acceptance pending |
-| Doctor Profile Change Password | Entry button present; editing/validation/write/session flows next | Pending next checkpoint |
+| Doctor Profile Update Address | User reports Address finished; latest three files preserved exactly, including selected-item ID and ambiguous-name guards | User accepted; retained in current318-case suite |
+| Doctor Profile Change Password | Native form/validation/header POST, Retry/Exit, Remember me and signed-out Keychain completion;38 new tests,318 total pass | Implemented checkpoint — Mac/iPhone acceptance pending |
 | Appointment schedules/unit/all/admin changes | Not implemented | Pending |
 | Patient search/history/health progress | Not implemented | Pending |
 | Old prescription workflows | Not implemented | Pending |
@@ -52,11 +52,21 @@ release acceptance is claimed.
 
 The user selected Doc Profile before Appointment. Main UI/API/photo/video and
 Dashboard entry/return are implemented, with30 new automated cases (250 total).
-Update Address now adds30 automated cases (280 total); the user's latest Profile
-layout is retained byte for byte. Next work: Change Password. See PROFILE_ADDRESS_PATCH_BN.md,
-PROFILE_ADDRESS_NATIVE_AUDIT.md, PROFILE_PATCH_BN.md
-and PROFILE_NATIVE_AUDIT.md. Existing accepted dashboard rendering, startup and
-login implementation remain unchanged.
+Update Address added30 automated cases (280 total); the user's latest three
+Address files and approved Profile layout are retained byte for byte.
+Change Password adds38 cases (318 total), with native UI/validation/API and iOS
+signed-out/Remember me handling. Analyzer clean on Linux. See
+PROFILE_PASSWORD_PATCH_BN.md and PROFILE_PASSWORD_NATIVE_AUDIT.md for current
+scope, intentional adaptations and Mac/iPhone acceptance. Appointment
+schedule/list follows Profile acceptance. Existing dashboard rendering, startup,
+login UI and dependencies/iOS configuration remain unchanged; auth persistence
+is updated for password completion.
+
+Current19 October Mac-source follow-up: `DocDiary_Current_Code.zip` is now the
+source baseline. Its Login/UI edits, version1.0.0+1 and pubspec/lock are retained;
+the reviewed Password installer passes15 fixtures directly against that snapshot.
+Both strict/default-lint analysis and the318-case full suite pass on Linux.
+See PROFILE_PASSWORD_MAC_MERGE_AUDIT.md.
 
 ## Earlier dashboard checkpoint
 
@@ -75,7 +85,7 @@ check native camera, permissions, crop/HEIC and live image persistence on iPhone
 These native plugin/device checks cannot be established by the Linux suite.
 Use DASHBOARD_COMPLETION_AUDIT.md for exact scope and intentional iOS differences.
 
-Doctor Appointment schedule/list and its filters/details follow the Profile module. Profile password, patient/prescription/payment/
+Doctor Appointment schedule/list and its filters/details follow the Profile module. Patient/prescription/payment/
 reports/HR/accounts destination workflows and PDF printing remain separate
 migration modules. No full app/production-release completion is claimed.
 

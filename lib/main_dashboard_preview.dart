@@ -408,7 +408,7 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
   void close() {}
 }
 
-class _DashboardPreviewVault implements SessionVault {
+class _DashboardPreviewVault implements SessionVault, PasswordChangeVault {
   _DashboardPreviewVault(AuthSession session)
     : state = VaultState(session: session);
   VaultState state;
@@ -424,5 +424,10 @@ class _DashboardPreviewVault implements SessionVault {
   @override
   Future<void> clearSession() async {
     state = const VaultState();
+  }
+
+  @override
+  Future<void> savePasswordChange(Credentials? remembered) async {
+    state = VaultState(remembered: remembered);
   }
 }

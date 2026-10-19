@@ -25,8 +25,12 @@ class Credentials {
   final String password;
 
   JsonMap toJson() => {'mobile': mobile, 'password': password};
-  factory Credentials.fromJson(JsonMap json) =>
-      Credentials(nativeText(json['mobile']), nativeText(json['password']));
+  factory Credentials.fromJson(JsonMap json) => Credentials(
+    nativeText(json['mobile']),
+    json['password'] is String
+        ? json['password']! as String
+        : nativeText(json['password']),
+  );
 
   @override
   String toString() => 'Credentials(<redacted>)';
@@ -111,7 +115,9 @@ class CenterOption {
   /// A null result means the server deliberately rejected this login.
   static CenterOption? fromLoginResponse(JsonMap json) {
     final available = nativeText(json['is_available']);
-    if (available == '0') return null;
+    if (available == '0') {
+      return null;
+    }
     if (!const ['1', '3', '4', '5'].contains(available)) {
       throw const AppFailure(
         'The server returned an unsupported login result.',

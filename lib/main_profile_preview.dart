@@ -19,7 +19,7 @@ import 'features/profile/doctor_profile_screen.dart';
 
 /// Offline API/Keychain fixtures. Camera/gallery still use real iOS plugins.
 /// PROFILE_PREVIEW: normal, empty, retry, upload_retry, video, long,
-/// address_retry, address_save_retry, address_empty.
+/// address_retry, address_save_retry, address_empty, password_retry, password_storage_retry.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   const mode = String.fromEnvironment(
@@ -53,7 +53,7 @@ void main() {
             transport,
             describeClient: () async => const ClientDescriptor(),
           ),
-          vault: _PreviewVault(),
+          vault: _PreviewVault(failOnce: mode == 'password_storage_retry'),
         )
         ..session = session
         ..profile = AccountProfile(AccountRole.doctor, transport.doctor)
@@ -70,8 +70,26 @@ class _ProfilePreview extends StatefulWidget {
 }
 
 class _ProfilePreviewState extends State<_ProfilePreview> {
+  final _navigator = GlobalKey<NavigatorState>();
+  @override
+  void initState() {
+    super.initState();
+    widget.auth.addListener(_authChanged);
+  }
+
+  void _authChanged() {
+    if (widget.auth.stage != AuthStage.authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _navigator.currentState?.popUntil((route) => route.isFirst);
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
+    widget.auth.removeListener(_authChanged);
     widget.auth.dispose();
     widget.transport.close();
     super.dispose();
@@ -79,9 +97,29 @@ class _ProfilePreviewState extends State<_ProfilePreview> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    navigatorKey: _navigator,
     debugShowCheckedModeBanner: false,
     theme: docDiaryTheme(),
-    home: _LaunchProfile(auth: widget.auth, transport: widget.transport),
+    home: ListenableBuilder(
+      listenable: widget.auth,
+      builder:
+          (context, _) =>
+              widget.auth.stage == AuthStage.authenticated
+                  ? _LaunchProfile(
+                    auth: widget.auth,
+                    transport: widget.transport,
+                  )
+                  : const Scaffold(
+                    body: SafeArea(
+                      child: Center(
+                        child: Text(
+                          'Preview signed out. Restart the preview to sign in again.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+    ),
   );
 }
 
@@ -133,7 +171,7 @@ class _LaunchProfileState extends State<_LaunchProfile> {
 class _PreviewTransport implements BinaryTransport {
   _PreviewTransport(this.mode);
   final String mode;
-  bool _readFailed = false, _uploadFailed = false;
+  bool _readFailed = false, _uploadFailed = false, _passwordFailed = false;
   bool _addressReadFailed = false, _addressSaveFailed = false;
   JsonMap? _savedAddress;
   Uint8List? picture;
@@ -261,6 +299,16 @@ class _PreviewTransport implements BinaryTransport {
     Uri uri, {
     Map<String, String> headers = const {},
   }) async {
+    if (uri.path.endsWith('/doc_profile/updatePassword')) {
+      if (headers['P_DOC_ID'] != '10' || headers['P_PASS'] == null) {
+        throw StateError('Unexpected offline password headers');
+      }
+      if (mode == 'password_retry' && !_passwordFailed) {
+        _passwordFailed = true;
+        throw const AppFailure('Synthetic password update interruption');
+      }
+      return {'string_out': 'Successfully Created'};
+    }
     if (!uri.path.endsWith('/doc_profile/updateAddress') ||
         headers['P_DOC_ID'] != '10') {
       throw StateError('Unexpected offline preview mutation');
@@ -287,11 +335,25 @@ class _PreviewTransport implements BinaryTransport {
   void close() {}
 }
 
-class _PreviewVault implements SessionVault {
+class _PreviewVault implements SessionVault, PasswordChangeVault {
+  _PreviewVault({this.failOnce = false});
+  bool failOnce;
+  VaultState state = const VaultState();
   @override
-  Future<VaultState> load() async => const VaultState();
+  Future<VaultState> load() async => state;
   @override
   Future<void> saveSession(AuthSession session) async {}
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<void> savePasswordChange(Credentials? remembered) async {
+    if (failOnce) {
+      failOnce = false;
+      throw const AppFailure(
+        'Synthetic Keychain interruption',
+        kind: FailureKind.storage,
+      );
+    }
+    state = VaultState(remembered: remembered);
+  }
 }

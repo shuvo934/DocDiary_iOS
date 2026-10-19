@@ -379,7 +379,7 @@ void main() {
     await _finish(tester, h);
   });
   testWidgets(
-    'empty directory shows native helper and duplicate names retain native last match',
+    'empty directory shows native helper and duplicate names retain the selected identity',
     (tester) async {
       final empty = profileHarness();
       final get = empty.transport.onGet!;
@@ -418,10 +418,12 @@ void main() {
                   : await base(uri);
       await _show(tester, h);
       await _tap(tester, 'address_thana_dropdown');
+      expect(find.text('Sadar (First)'), findsOneWidget);
+      expect(find.text('Sadar (Last)'), findsOneWidget);
       await _tap(tester, 'address_thana_option_1_0');
-      expect(_text(tester, 'address_district'), 'Last');
+      expect(_text(tester, 'address_district'), 'First');
       await _yes(tester);
-      expect(_writes(h).single.headers['P_DD_ID'], '2');
+      expect(_writes(h).single.headers['P_DD_ID'], '1');
       await _finish(tester, h);
     },
   );

@@ -474,19 +474,15 @@ void main() {
     },
   );
   testWidgets(
-    'Address opens its native form while Password remains an explicit next-step entry point',
+    'Address and Password open their native forms without sending a write on entry',
     (tester) async {
       final h = profileHarness();
       await _show(tester, h, _Media());
       final posts = h.posts.length;
       await _tap(tester, 'profile_password');
       expect(find.text('Change Password'), findsOneWidget);
-      expect(
-        find.text('This screen is not available in this development build.'),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Close'));
-      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('password_current')), findsOneWidget);
+      await _tap(tester, 'password_close');
       await _tap(tester, 'profile_edit_address');
       expect(find.text('Update Address'), findsOneWidget);
       expect(h.posts.length, posts);

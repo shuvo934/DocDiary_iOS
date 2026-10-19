@@ -16,6 +16,8 @@ import '../dashboard/native_dashboard_dialogs.dart';
 import '../dashboard/native_photo_dialogs.dart';
 import 'doctor_address_repository.dart';
 import 'doctor_address_screen.dart';
+import 'doctor_password_repository.dart';
+import 'doctor_password_screen.dart';
 import 'doctor_profile_repository.dart';
 import 'native_doctor_profile_layout.dart';
 
@@ -266,29 +268,13 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen>
               ),
               details: _details,
             )
-            : null);
-    if (page == null) {
-      await _dialogs.show<void>(
-        context,
-        AlertDialog(
-          title: Text(
-            destination == DoctorProfileDestination.address
-                ? 'Update Address'
-                : 'Change Password',
-          ),
-          content: const Text(
-            'This screen is not available in this development build.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
+            : DoctorPasswordScreen(
+              auth: widget.auth,
+              repository: DoctorPasswordRepository(
+                widget.repository.transport,
+                now: widget.repository.now,
+              ),
+            ));
     _childAway = true;
     try {
       await _dialogs.push<void>(context, page);

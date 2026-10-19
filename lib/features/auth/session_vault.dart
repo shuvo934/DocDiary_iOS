@@ -18,9 +18,15 @@ abstract interface class SessionVault {
   Future<void> clearSession();
 }
 
+/// Replace the saved sign-in with a signed-out state in one storage write.
+/// Password change must never briefly persist a new auto-login session.
+abstract interface class PasswordChangeVault {
+  Future<void> savePasswordChange(Credentials? remembered);
+}
+
 /// One Keychain item is replaced atomically. Logout retains only credentials
 /// explicitly saved through Remember Me, matching the native behaviour.
-class KeychainSessionVault implements SessionVault {
+class KeychainSessionVault implements SessionVault, PasswordChangeVault {
   KeychainSessionVault({FlutterSecureStorage? storage})
     : _storage = storage ?? const FlutterSecureStorage();
   final FlutterSecureStorage _storage;
@@ -30,7 +36,9 @@ class KeychainSessionVault implements SessionVault {
   Future<VaultState> load() async {
     try {
       final raw = await _storage.read(key: storageKey);
-      if (raw == null) return const VaultState();
+      if (raw == null) {
+        return const VaultState();
+      }
       final json = nativeObject(raw);
       if (json['version'] != 1) {
         throw const FormatException('Unsupported saved sign-in version');
@@ -101,4 +109,8 @@ class KeychainSessionVault implements SessionVault {
     final previous = await load();
     await _write(VaultState(remembered: previous.remembered));
   }
+
+  @override
+  Future<void> savePasswordChange(Credentials? remembered) =>
+      _write(VaultState(remembered: remembered));
 }

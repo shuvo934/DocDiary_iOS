@@ -49,16 +49,20 @@ class AuthController extends ChangeNotifier {
   AccountAccessFailure? accessFailure;
   Future<void> Function()? _retryAccount;
   int _accountGateRevision = 0;
+  Future<void> _persistence = Future<void>.value();
+  _PasswordChange? _passwordChange;
 
   bool get logoutPending => _logoutPending;
   int get accountGateRevision => _accountGateRevision;
 
-  bool get busy => const [
-    AuthStage.booting,
-    AuthStage.discovering,
-    AuthStage.signingIn,
-    AuthStage.signingOut,
-  ].contains(stage);
+  bool get busy =>
+      _passwordChange != null ||
+      const [
+        AuthStage.booting,
+        AuthStage.discovering,
+        AuthStage.signingIn,
+        AuthStage.signingOut,
+      ].contains(stage);
   bool get canSwitch =>
       stage == AuthStage.authenticated &&
       session != null &&
@@ -74,8 +78,19 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  /// Queue storage operations so a late write cannot replace a later logout
+  /// or another account's sign-in.
+  Future<T> _persist<T>(Future<T> Function() action) {
+    final result = _persistence.then<T>((_) => action());
+    _persistence = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace __) {},
+    );
+    return result;
+  }
+
   Future<void> initialize() async {
-    if (_disposed) {
+    if (_disposed || _passwordChange != null) {
       return;
     }
     if (_logoutPending) {
@@ -90,7 +105,12 @@ class AuthController extends ChangeNotifier {
     error = null;
     _changed();
     try {
-      final saved = await vault.load();
+      final saved = await _persist(() async {
+        if (!_current(operation)) {
+          throw const ObsoleteRequest();
+        }
+        return await vault.load();
+      });
       if (!_current(operation)) {
         return;
       }
@@ -164,6 +184,7 @@ class AuthController extends ChangeNotifier {
       return;
     }
     ++_operation;
+    _passwordChange = null;
     profile = null;
     accessFailure = failure;
     error = null;
@@ -324,7 +345,12 @@ class AuthController extends ChangeNotifier {
         return;
       }
       ProfileRepository.checkAccess(loadedProfile, profiles.now());
-      await vault.saveSession(candidate);
+      await _persist(() async {
+        if (!_current(operation)) {
+          throw const ObsoleteRequest();
+        }
+        await vault.saveSession(candidate);
+      });
       if (!_current(operation)) {
         return;
       }
@@ -427,7 +453,12 @@ class AuthController extends ChangeNotifier {
     _draft = null;
     _changed();
     try {
-      await vault.clearSession();
+      await _persist(() async {
+        if (!_current(operation)) {
+          throw const ObsoleteRequest();
+        }
+        await vault.clearSession();
+      });
       if (!_current(operation)) {
         return;
       }
@@ -451,6 +482,97 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  /// Called only after the password endpoint acknowledged success. Retrying
+  /// this step retries local storage only, never the remote password change.
+  Future<void> persistPasswordChange(
+    AuthSession expected,
+    String password, {
+    required bool Function() isCurrent,
+  }) async {
+    void guard() {
+      if (_disposed ||
+          stage != AuthStage.authenticated ||
+          session != expected ||
+          !isCurrent()) {
+        throw const ObsoleteRequest();
+      }
+    }
+
+    guard();
+    if (password.isEmpty) {
+      throw const AppFailure(
+        'The new password is missing.',
+        kind: FailureKind.invalidData,
+      );
+    }
+    final PasswordChangeVault storage = switch (vault) {
+      PasswordChangeVault value => value,
+      _ =>
+        throw const AppFailure(
+          'Saved sign-in could not be updated in this build.',
+          kind: FailureKind.storage,
+        ),
+    };
+    final pending =
+        _passwordChange ??= _PasswordChange(
+          expected,
+          Credentials(expected.credentials.mobile, password),
+        );
+    if (pending.session != expected ||
+        pending.credentials.password != password) {
+      throw const AppFailure(
+        'A password change is already being completed.',
+        kind: FailureKind.storage,
+      );
+    }
+    if (!pending.stored) {
+      await _persist(() async {
+        guard();
+        if (_passwordChange != pending) {
+          throw const ObsoleteRequest();
+        }
+        final keep = expected.remember ? pending.credentials : null;
+        await storage.savePasswordChange(keep);
+        pending.stored = true;
+        if (!_disposed && session == expected) {
+          remembered = keep;
+        }
+      });
+    }
+    guard();
+  }
+
+  /// Native clears LOGIN_TF then restarts. On iOS the acknowledged success
+  /// returns to Login with the already-persisted signed-out Keychain state.
+  bool finishPasswordChange(AuthSession expected) {
+    final pending = _passwordChange;
+    if (_disposed ||
+        stage != AuthStage.authenticated ||
+        session != expected ||
+        pending == null ||
+        pending.session != expected ||
+        !pending.stored) {
+      return false;
+    }
+    ++_operation;
+    remembered = expected.remember ? pending.credentials : null;
+    _passwordChange = null;
+    session = null;
+    profile = null;
+    centers = const [];
+    selectedCenter = null;
+    _pending = null;
+    _draft = null;
+    _retryAccount = null;
+    _switching = false;
+    _logoutPending = false;
+    accessFailure = null;
+    error = null;
+    stage = AuthStage.signedOut;
+    _changed();
+    return true;
+  }
+
   String _message(Object failure) =>
       failure is AppFailure
           ? failure.message
@@ -463,6 +585,14 @@ class AuthController extends ChangeNotifier {
     _pending = null;
     _draft = null;
     _retryAccount = null;
+    _passwordChange = null;
     super.dispose();
   }
+}
+
+class _PasswordChange {
+  _PasswordChange(this.session, this.credentials);
+  final AuthSession session;
+  final Credentials credentials;
+  bool stored = false;
 }

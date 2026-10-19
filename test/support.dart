@@ -89,10 +89,13 @@ class FakeTransport implements Transport, BinaryTransport {
   void close() {}
 }
 
-class MemoryVault implements SessionVault {
+class MemoryVault implements SessionVault, PasswordChangeVault {
   VaultState state = const VaultState();
   bool failSave = false;
   bool failClear = false;
+  bool failPasswordChange = false;
+  int passwordChanges = 0;
+  Future<void> Function()? onPasswordChange;
   int saves = 0;
   int clears = 0;
 
@@ -124,6 +127,21 @@ class MemoryVault implements SessionVault {
     }
     clears++;
     state = VaultState(remembered: state.remembered);
+  }
+
+  @override
+  Future<void> savePasswordChange(Credentials? remembered) async {
+    passwordChanges++;
+    if (onPasswordChange != null) {
+      await onPasswordChange!();
+    }
+    if (failPasswordChange) {
+      throw const AppFailure(
+        'Secure storage unavailable.',
+        kind: FailureKind.storage,
+      );
+    }
+    state = VaultState(remembered: remembered);
   }
 }
 
