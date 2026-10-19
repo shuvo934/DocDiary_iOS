@@ -146,7 +146,7 @@ void main() {
       await _show(t, h);
       expect(find.byType(DoctorBlockTimeScreen), findsOneWidget);
       expect(find.text('Block Time (Schedule)'), findsOneWidget);
-      expect(find.text('October  2026'), findsOneWidget);
+      expect(find.text('OCTOBER  2026'), findsOneWidget);
       expect(_reads(h).length, 1);
       final semantics = t.ensureSemantics();
       expect(
@@ -237,17 +237,17 @@ void main() {
       final h = blockTimeHarness();
       await _show(t, h);
       await _tap(t, 'block_time_previous');
-      expect(find.text('October  2026'), findsOneWidget);
+      expect(find.text('OCTOBER  2026'), findsOneWidget);
       await _tap(t, 'block_time_next');
-      expect(find.text('November  2026'), findsOneWidget);
+      expect(find.text('NOVEMBER  2026'), findsOneWidget);
       await t.drag(
         find.byKey(const Key('block_time_pages')),
         const Offset(-350, 0),
       );
       await t.pumpAndSettle();
-      expect(find.text('December  2026'), findsOneWidget);
+      expect(find.text('DECEMBER  2026'), findsOneWidget);
       await _tap(t, 'block_time_next');
-      expect(find.text('December  2026'), findsOneWidget);
+      expect(find.text('DECEMBER  2026'), findsOneWidget);
       await _tap(t, _cell('2026-12-31', month: '2026-12-01'));
       expect(find.text('31 December, 2026'), findsOneWidget);
       await _closeSheet(t);
@@ -256,7 +256,7 @@ void main() {
         const Offset(350, 0),
       );
       await t.pumpAndSettle();
-      expect(find.text('November  2026'), findsOneWidget);
+      expect(find.text('NOVEMBER  2026'), findsOneWidget);
       expect(_reads(h).length, 1);
       await _finish(t);
     },
@@ -285,7 +285,7 @@ void main() {
     await _tap(t, _cell('2026-10-21'));
     expect(find.byKey(const Key('block_time_sheet')), findsNothing);
     await _tap(t, 'block_time_next');
-    expect(find.text('November  2026'), findsOneWidget);
+    expect(find.text('NOVEMBER  2026'), findsOneWidget);
     await _finish(t);
   });
   testWidgets(
@@ -499,14 +499,14 @@ void main() {
       h.now = DateTime(2026, 11, 1);
       _resume(t);
       await t.pumpAndSettle();
-      expect(find.text('November  2026'), findsOneWidget);
+      expect(find.text('NOVEMBER  2026'), findsOneWidget);
       expect(_reads(h).last.uri.queryParameters, {
         'doc_id': '10',
         'FIRST_MONTH': 'NOV-26',
         'LAST_MONTH': 'JAN-27',
       });
       await _tap(t, 'block_time_previous');
-      expect(find.text('November  2026'), findsOneWidget);
+      expect(find.text('NOVEMBER  2026'), findsOneWidget);
       await _finish(t);
     },
   );
