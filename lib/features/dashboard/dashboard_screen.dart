@@ -22,6 +22,8 @@ import 'native_photo_dialogs.dart';
 import 'dashboard_navigation.dart';
 import '../profile/doctor_profile_repository.dart';
 import '../profile/doctor_profile_screen.dart';
+import '../block_time/doctor_block_time_repository.dart';
+import '../block_time/doctor_block_time_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
@@ -664,6 +666,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                 now: widget.repository.now,
               ),
               media: widget.services.media,
+            )
+            : route.module == DashboardModule.doctorBlockTime
+            ? DoctorBlockTimeScreen(
+              auth: widget.auth,
+              repository: DoctorBlockTimeRepository(
+                widget.repository.transport,
+                now: widget.repository.now,
+              ),
             )
             : null);
     if (page != null) {
