@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../management/management_access.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
@@ -41,28 +42,21 @@ List<DashboardMenuItem> nativeDashboardMenu(AccountProfile profile) {
       DashboardMenuItem(DashboardDestination.patients, 'Patient'),
     ];
   }
-  final access = profile.value('all_access_flag');
+  final managementAccess = ManagementAccess(profile);
+  final access = managementAccess.role;
   final payment =
-      access == '2'
+      access == 2
           ? profile.value('hr_payment_active') == '1'
-          : access == '3'
+          : access == 3
           ? profile.value('acc_payment_active') == '1'
           : true;
   final appointment =
-      access == '2'
+      access == 2
           ? profile.value('hr_appointment_active') == '1'
-          : access == '3'
+          : access == 3
           ? profile.value('acc_appointment_active') == '1'
           : true;
-  var management = 'Reports';
-  if (profile.value('hr_acc_active_flag') == '1') {
-    management = switch (access) {
-      '1' => 'Management Portal',
-      '2' => 'HR & Reports',
-      '3' => 'Accounts & Reports',
-      _ => 'Reports',
-    };
-  }
+  final management = managementAccess.title;
   return [
     if (payment)
       const DashboardMenuItem(DashboardDestination.payment, 'Payment'),

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../auth/profile_repository.dart';
+import '../management/management_access.dart';
 import 'native_dashboard_layout.dart';
 
 /// Destination module identities preserve DocDashboard's Intent branching.
@@ -18,6 +19,10 @@ enum DashboardModule {
   reports,
   unitAppointments,
   allAppointments,
+  humanResources,
+  accounts,
+  analytics,
+  reportParameters,
 }
 
 class DashboardRoute {
@@ -75,8 +80,7 @@ DashboardRoute? nativeDashboardRoute(
       DashboardModule.adminPayments,
     ),
     DashboardDestination.management => DashboardRoute(
-      profile.value('hr_acc_active_flag') == '1' &&
-              (int.tryParse(profile.value('all_access_flag')) ?? 0) > 0
+      ManagementAccess(profile).usesPortal
           ? DashboardModule.hrAccounts
           : DashboardModule.reports,
     ),

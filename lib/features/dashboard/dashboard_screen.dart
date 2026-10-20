@@ -24,6 +24,7 @@ import '../profile/doctor_profile_repository.dart';
 import '../profile/doctor_profile_screen.dart';
 import '../block_time/doctor_block_time_repository.dart';
 import '../block_time/doctor_block_time_screen.dart';
+import '../management/management_menu_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
@@ -674,6 +675,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                 widget.repository.transport,
                 now: widget.repository.now,
               ),
+            )
+            : route.module == DashboardModule.hrAccounts ||
+                route.module == DashboardModule.reports
+            ? ManagementMenuScreen(
+              auth: widget.auth,
+              entry:
+                  route.module == DashboardModule.hrAccounts
+                      ? ManagementEntry.portal
+                      : ManagementEntry.reports,
+              destinationBuilder: widget.services.destinationBuilder,
             )
             : null);
     if (page != null) {

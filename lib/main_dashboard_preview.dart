@@ -243,7 +243,22 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
                       : role == 'accounts'
                       ? '3'
                       : '1',
-              'hr_acc_active_flag': '1',
+              'hr_acc_active_flag':
+                  const bool.fromEnvironment('DASHBOARD_PREVIEW_REPORTS_ONLY')
+                      ? '0'
+                      : '1',
+              'hr_dashboard': const String.fromEnvironment(
+                'DASHBOARD_PREVIEW_HR_DASHBOARD',
+                defaultValue: '1',
+              ),
+              'acc_dashboard': const String.fromEnvironment(
+                'DASHBOARD_PREVIEW_ACC_DASHBOARD',
+                defaultValue: '1',
+              ),
+              'usr_mob_app_analytic_access': const String.fromEnvironment(
+                'DASHBOARD_PREVIEW_ANALYTICS_DASHBOARD',
+                defaultValue: '1',
+              ),
               'hr_payment_active': '0',
               'hr_appointment_active': '1',
               'acc_payment_active': '1',
