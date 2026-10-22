@@ -8,6 +8,8 @@ import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
 import '../dashboard/dashboard_navigation.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
+import '../hr/hr_dashboard_repository.dart';
+import '../hr/hr_dashboard_screen.dart';
 import '../reports/native_report_manager_layout.dart';
 import '../reports/report_manager_menu.dart';
 import 'management_access.dart';
@@ -210,7 +212,16 @@ class _ManagementMenuScreenState extends State<ManagementMenuScreen>
     };
     final page =
         widget.destinationBuilder?.call(context, DashboardRoute(module)) ??
-        (destination == ManagementDestination.reports
+        (destination == ManagementDestination.humanResources
+            ? HrDashboardScreen(
+              auth: widget.auth,
+              repository: HrDashboardRepository(
+                widget.auth.profiles.transport,
+                now: widget.auth.profiles.now,
+              ),
+              destinationBuilder: widget.destinationBuilder,
+            )
+            : destination == ManagementDestination.reports
             ? ManagementMenuScreen(
               auth: widget.auth,
               entry: ManagementEntry.reports,

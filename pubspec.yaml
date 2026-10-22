@@ -69,6 +69,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/fonts/Lato-OFL.txt
+    - assets/fonts/NotoSansBengali-OFL.txt
     - assets/images/
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -142,3 +143,6 @@ flutter:
           weight: 400
         - asset: assets/fonts/Roboto-Bold.ttf
           weight: 700
+    - family: DocDiaryBengali
+      fonts:
+        - asset: assets/fonts/NotoSansBengali.ttf

@@ -23,6 +23,12 @@ enum DashboardModule {
   accounts,
   analytics,
   reportParameters,
+  hrDailyAttendance,
+  hrEmployeeAttendance,
+  hrAttendanceUpdateApproval,
+  hrLeaveRecord,
+  hrLeaveBalance,
+  hrLeaveApproval,
 }
 
 class DashboardRoute {

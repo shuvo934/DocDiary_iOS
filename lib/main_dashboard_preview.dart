@@ -15,6 +15,7 @@ import 'features/auth/auth_repository.dart';
 import 'features/auth/profile_repository.dart';
 import 'features/auth/session_vault.dart';
 import 'features/dashboard/dashboard_repository.dart';
+import 'features/hr/hr_dashboard_preview_data.dart';
 
 /// Fully offline fixtures. main.dart remains the live API/Keychain entry point.
 /// --dart-define=DASHBOARD_PREVIEW_ROLE=admin (or doctor, unit, hr, accounts).
@@ -165,6 +166,8 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
 
   @override
   Future<JsonMap> get(Uri uri) async {
+    final hrPreview = hrDashboardPreviewResponse(uri);
+    if (hrPreview != null) return hrPreview;
     final route = uri.path.split('/').last;
     if (access == 'retry' &&
         !_failedOnce &&
