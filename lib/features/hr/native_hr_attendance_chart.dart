@@ -103,6 +103,25 @@ class _NativeHrAttendanceChartState extends State<NativeHrAttendanceChart> {
                   ),
             ),
           );
+          if (data.isEmpty) {
+            return InkWell(
+              key: const Key('hr_attendance_chart'),
+              onTap: widget.onOpenAttendance,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      pie(math.min(220.0, box.maxWidth * .55)),
+                      const SizedBox(height: 8),
+                      IntrinsicWidth(child: legend()),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
           return InkWell(
             key: const Key('hr_attendance_chart'),
             onTap: widget.onOpenAttendance,
