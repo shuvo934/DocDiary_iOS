@@ -10,12 +10,15 @@ import 'package:docdiary_ios/features/dashboard/dashboard_repository.dart';
 import 'package:docdiary_ios/features/dashboard/dashboard_services.dart';
 import 'package:docdiary_ios/features/hr/daily_attendance/daily_attendance_screen.dart';
 import 'package:docdiary_ios/features/hr/hr_dashboard_screen.dart';
+import 'package:docdiary_ios/features/hr/employee_attendance/employee_attendance_screen.dart';
+import 'package:docdiary_ios/features/hr/employee_attendance/native_employee_attendance_layout.dart';
 import 'package:docdiary_ios/features/hr/daily_attendance/native_daily_attendance_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'daily_attendance_test_support.dart';
+import 'employee_attendance_test_support.dart';
 
 void _case(String label, Future<void> Function(WidgetTester) body) {
   testWidgets(label, (tester) async {
@@ -418,18 +421,26 @@ void main() {
     expect(h.dailyRequests.length, count + 5);
     await _finish(t);
   });
-  _case('employee details availability dialog is scoped to this screen', (
-    t,
-  ) async {
-    final h = AttendanceHarness();
-    await _show(t, h);
-    await _tap(t, 'daily_row_0');
-    expect(find.byKey(const Key('daily_employee_unavailable')), findsOneWidget);
-    await t.tap(find.text('Close'));
-    await t.pumpAndSettle();
-    expect(find.byType(DailyAttendanceScreen), findsOneWidget);
-    await _finish(t);
-  });
+  _case(
+    'employee row opens the built-in seeded Emp Wise Attendance and returns to Daily Attendance',
+    (t) async {
+      final h = EmployeeAttendanceHarness();
+      await _show(t, h);
+      await _tap(t, 'daily_row_0');
+      expect(find.byType(EmployeeAttendanceScreen), findsOneWidget);
+      final employee = t.widget<NativeEmployeeAttendanceLayout>(
+        find.byType(NativeEmployeeAttendanceLayout),
+      );
+      expect(employee.catalog!.employee!.id, '11');
+      expect(employee.catalog!.division!.id, '1');
+      expect(employee.catalog!.department!.id, '10');
+      expect(employee.catalog!.designation!.id, '7');
+      expect(employee.report!.rows.length, 4);
+      await _tap(t, 'employee_attendance_back');
+      expect(find.byType(DailyAttendanceScreen), findsOneWidget);
+      await _finish(t);
+    },
+  );
   _case(
     'live Dashboard Portal HR pie opens default Daily Attendance and Back refreshes HR',
     (t) async {

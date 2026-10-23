@@ -9,6 +9,8 @@ import '../dashboard/dashboard_navigation.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
 import 'daily_attendance/daily_attendance_repository.dart';
 import 'daily_attendance/daily_attendance_screen.dart';
+import 'employee_attendance/employee_attendance_repository.dart';
+import 'employee_attendance/employee_attendance_screen.dart';
 import 'hr_dashboard_models.dart';
 import 'hr_dashboard_navigation.dart';
 import 'hr_dashboard_repository.dart';
@@ -362,6 +364,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen>
                   now: widget.repository.now,
                 ),
                 destinationBuilder: widget.destinationBuilder,
+              )
+              : destination == HrDestination.employeeAttendance
+              ? EmployeeAttendanceScreen(
+                auth: widget.auth,
+                repository: EmployeeAttendanceRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
               )
               : null);
       if (page == null) {

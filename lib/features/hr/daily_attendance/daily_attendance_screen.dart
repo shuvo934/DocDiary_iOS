@@ -8,6 +8,9 @@ import '../../auth/auth_models.dart';
 import '../../auth/profile_repository.dart';
 import '../../dashboard/dashboard_navigation.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
+import '../employee_attendance/employee_attendance_models.dart';
+import '../employee_attendance/employee_attendance_repository.dart';
+import '../employee_attendance/employee_attendance_screen.dart';
 import 'daily_attendance_models.dart';
 import 'daily_attendance_repository.dart';
 import '../hr_dashboard_repository.dart';
@@ -287,25 +290,17 @@ class _DailyAttendanceScreenState extends State<DailyAttendanceScreen>
       await _profile(operation);
       if (!mounted || !_alive(operation)) return;
       setState(() => _busy = false);
-      final page = widget.destinationBuilder?.call(context, row.route(_branch));
-      if (page == null) {
-        await _dialogs.show<void>(
-          context,
-          AlertDialog(
-            key: const Key('daily_employee_unavailable'),
-            title: const Text('Emp Wise Attendance'),
-            content: const Text('This feature is currently unavailable.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-            ],
-          ),
-          dismissible: true,
-        );
-        return;
-      }
+      final route = row.route(_branch);
+      final page =
+          widget.destinationBuilder?.call(context, route) ??
+          EmployeeAttendanceScreen(
+            auth: widget.auth,
+            repository: EmployeeAttendanceRepository(
+              widget.repository.transport,
+              now: widget.repository.now,
+            ),
+            seed: EmployeeAttendanceSeed.fromExtras(route.extras),
+          );
       _childAway = true;
       try {
         await _dialogs.push<void>(context, page);

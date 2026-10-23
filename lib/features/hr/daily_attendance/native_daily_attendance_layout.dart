@@ -270,7 +270,11 @@ class NativeDailyAttendanceLayout extends StatelessWidget {
                                   height: 48,
                                   child: Text(
                                     item.name,
-                                    style: _text(12, family: 'Archivo'),
+                                    style: _text(
+                                      12,
+                                      family: 'OpenSans',
+                                      weight: FontWeight.w400,
+                                    ),
                                   ),
                                 ),
                             ],

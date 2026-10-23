@@ -189,25 +189,28 @@ class _NativeHrPayrollMonthDialogState
                     ],
                   ),
                 const SizedBox(height: 12),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 8,
-                  children: [
-                    TextButton(
-                      key: const Key('hr_month_cancel'),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('CANCEL'),
-                    ),
-                    TextButton(
-                      key: const Key('hr_month_ok'),
-                      onPressed:
-                          () => Navigator.pop(
-                            context,
-                            HrPayrollMonth(DateTime(_year, _month)),
-                          ),
-                      child: const Text('OK'),
-                    ),
-                  ],
+                SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8,
+                    children: [
+                      TextButton(
+                        key: const Key('hr_month_cancel'),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('CANCEL'),
+                      ),
+                      TextButton(
+                        key: const Key('hr_month_ok'),
+                        onPressed:
+                            () => Navigator.pop(
+                              context,
+                              HrPayrollMonth(DateTime(_year, _month)),
+                            ),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
