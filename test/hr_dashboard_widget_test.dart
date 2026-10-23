@@ -363,12 +363,27 @@ void main() {
     'pie tap dispatches Daily Attendance and pie drag rotates without dispatch',
     (t) async {
       final h = HrHarness();
-      await _show(t, h);
+      await _show(
+        t,
+        h,
+        builder:
+            (context, route) =>
+                route.module == DashboardModule.hrDailyAttendance
+                    ? const Scaffold(
+                      body: Center(
+                        child: Text(
+                          'Daily Attendance',
+                          key: Key('hr_dispatched_daily'),
+                        ),
+                      ),
+                    )
+                    : null,
+      );
       await t.drag(find.byKey(const Key('hr_pie')), const Offset(30, 25));
       await t.pumpAndSettle();
       expect(find.byKey(const Key('hr_unavailable')), findsNothing);
       await _tap(t, 'hr_pie');
-      expect(find.byKey(const Key('hr_unavailable')), findsOneWidget);
+      expect(find.byKey(const Key('hr_dispatched_daily')), findsOneWidget);
       expect(find.text('Daily Attendance'), findsOneWidget);
       await _finish(t);
     },

@@ -7,6 +7,8 @@ import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
 import '../dashboard/dashboard_navigation.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
+import 'daily_attendance/daily_attendance_repository.dart';
+import 'daily_attendance/daily_attendance_screen.dart';
 import 'hr_dashboard_models.dart';
 import 'hr_dashboard_navigation.dart';
 import 'hr_dashboard_repository.dart';
@@ -350,7 +352,18 @@ class _HrDashboardScreenState extends State<HrDashboardScreen>
       await _profile(operation);
       if (!mounted || !_alive(operation)) return;
       setState(() => _busy = null);
-      final page = widget.destinationBuilder?.call(context, destination.route);
+      final page =
+          widget.destinationBuilder?.call(context, destination.route) ??
+          (destination == HrDestination.dailyAttendance
+              ? DailyAttendanceScreen(
+                auth: widget.auth,
+                repository: DailyAttendanceRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+                destinationBuilder: widget.destinationBuilder,
+              )
+              : null);
       if (page == null) {
         await _dialogs.show<void>(
           context,
