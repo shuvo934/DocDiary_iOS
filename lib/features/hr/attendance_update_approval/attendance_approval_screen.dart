@@ -187,6 +187,7 @@ class _AttendanceApprovalScreenState extends State<AttendanceApprovalScreen>
           if (!picker.value.waiting) unawaited(load());
         },
       ),
+      barrierColor: const Color(0xcc000000),
     );
     unawaited(load());
     final selected = await future;

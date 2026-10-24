@@ -46,6 +46,7 @@ class NativeDashboardDialogOwner {
     BuildContext context,
     Widget child, {
     bool dismissible = false,
+    Color barrierColor = Colors.black54,
   }) async {
     if (_disposed || isOpen || !context.mounted) {
       return null;
@@ -55,6 +56,7 @@ class NativeDashboardDialogOwner {
     final route = DialogRoute<T>(
       context: context,
       barrierDismissible: dismissible,
+      barrierColor: barrierColor,
       builder: (_) => PopScope(canPop: dismissible, child: child),
     );
     _routes.add(route);
