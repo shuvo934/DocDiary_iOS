@@ -174,6 +174,15 @@ void main() {
     expect(_layout(t).filter.employeeCount(_layout(t).data!), 3);
     expect(_layout(t).selectedDate, DateTime(2026, 10, 20));
     expect(h.dailyRequests.length, 5);
+    final department = t.widget<InputDecorator>(
+      find.descendant(
+        of: find.byKey(const Key('daily_department')),
+        matching: find.byType(InputDecorator),
+      ),
+    );
+    expect(department.decoration.enabled, isFalse);
+    expect(department.decoration.fillColor, const Color(0xfff5f5f5));
+    expect(department.decoration.labelStyle!.fontSize, 13);
     await _capture(t, 'daily_attendance');
     await _finish(t);
   });

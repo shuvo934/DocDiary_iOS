@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/app_theme.dart';
+import '../native_attendance_filter_style.dart';
 import 'employee_attendance_models.dart';
 import 'native_employee_attendance_chart.dart';
 
@@ -282,6 +283,7 @@ class NativeEmployeeAttendanceLayout extends StatelessWidget {
                                 ),
                                 SliverToBoxAdapter(
                                   child: Card(
+                                    key: const Key('employee_chart_card'),
                                     margin: EdgeInsets.fromLTRB(
                                       3,
                                       10 * sdp,
@@ -297,52 +299,43 @@ class NativeEmployeeAttendanceLayout extends StatelessWidget {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.all(4),
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(
-                                          minHeight: 230 * sdp,
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Align(
-                                              alignment: Alignment.centerRight,
-                                              child: TextButton(
-                                                key: const Key(
-                                                  'employee_month',
-                                                ),
-                                                onPressed:
-                                                    active ? onMonth : null,
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Flexible(
-                                                      child: Text(
-                                                        month.label,
-                                                        style: _text(
-                                                          10 * sdp,
-                                                          weight:
-                                                              FontWeight.w600,
-                                                          color:
-                                                              DocColors.primary,
-                                                        ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: TextButton(
+                                              key: const Key('employee_month'),
+                                              onPressed:
+                                                  active ? onMonth : null,
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      month.label,
+                                                      style: _text(
+                                                        10 * sdp,
+                                                        weight: FontWeight.w600,
+                                                        color:
+                                                            DocColors.primary,
                                                       ),
                                                     ),
-                                                    Icon(
-                                                      Icons.arrow_drop_down,
-                                                      size: 16 * sdp,
-                                                      color: DocColors.primary,
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                  Icon(
+                                                    Icons.arrow_drop_down,
+                                                    size: 16 * sdp,
+                                                    color: DocColors.primary,
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            NativeEmployeeAttendanceChart(
-                                              attendance: report!.chart,
-                                              sdp: sdp,
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                          NativeEmployeeAttendanceChart(
+                                            attendance: report!.chart,
+                                            sdp: sdp,
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -450,30 +443,10 @@ class _EmployeeField extends StatelessWidget {
       changed: changed,
       child: InputDecorator(
         isEmpty: selected.isEmpty,
-        decoration: InputDecoration(
-          labelText: name,
+        decoration: nativeAttendanceFilterDecoration(
+          label: name,
           enabled: enabled,
-          labelStyle: _text(
-            9 * sdp,
-            family: 'OpenSans',
-            weight: FontWeight.w400,
-            color: enabled ? const Color(0xff6c6e6f) : DocColors.muted,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 10,
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          suffixIcon: const Icon(Icons.arrow_drop_down),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: DocColors.primary),
-          ),
-          disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: DocColors.primary),
-          ),
+          sdp: sdp,
         ),
         child: Text(
           selected,

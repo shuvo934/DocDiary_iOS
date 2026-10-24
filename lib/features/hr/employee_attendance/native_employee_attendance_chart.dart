@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import '../hr_dashboard_models.dart';
 import '../native_hr_attendance_chart.dart' show hrPieColors;
 
+const _legendStyle = TextStyle(
+  fontFamily: 'Roboto',
+  fontSize: 12,
+  color: Colors.black,
+);
+
 /// MPAndroidChart's native Float -> floor(count) value formatter.
 String employeeAttendanceChartCount(double value) =>
     Float32List.fromList([value]).single.floor().toString();
@@ -129,48 +135,65 @@ class _NativeEmployeeAttendanceChartState
               ),
             ),
           );
-          if (data.isEmpty) {
+          final labels =
+              data.isEmpty
+                  ? ['No Data']
+                  : data.slices.map((s) => s.label).toList();
+          var textWidth = 0.0;
+          for (final label in labels) {
+            final painter = TextPainter(
+              text: TextSpan(text: label, style: _legendStyle),
+              textScaler: scale,
+              textDirection: Directionality.of(context),
+            )..layout();
+            textWidth = math.max(textWidth, painter.width);
+            painter.dispose();
+          }
+          const gap = 12.0;
+          final legendWidth = math.min(textWidth + 14, box.maxWidth * .45);
+          final diameter = math.min(
+            190 * widget.sdp,
+            box.maxWidth - legendWidth - gap,
+          );
+          if (diameter < 140 || scale.scale(12) > 17) {
             return Center(
               child: Column(
+                key: const Key('employee_chart_group'),
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  pie(math.min(195 * widget.sdp, box.maxWidth * .6)),
-                  const SizedBox(height: 6),
-                  IntrinsicWidth(child: legend()),
+                  pie(
+                    math.min(190 * widget.sdp, math.max(0, box.maxWidth - 16)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: SizedBox(
+                      key: const Key('employee_chart_legend'),
+                      width: math.min(
+                        textWidth + 14,
+                        math.max(0, box.maxWidth - 16),
+                      ),
+                      child: legend(),
+                    ),
+                  ),
                 ],
               ),
             );
           }
-          if (box.maxWidth < 330 || scale.scale(12) > 17) {
-            return Column(
+          return Center(
+            child: Row(
+              key: const Key('employee_chart_group'),
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                pie(math.min(220 * widget.sdp, box.maxWidth - 16)),
-                Padding(padding: const EdgeInsets.all(8), child: legend()),
-              ],
-            );
-          }
-          return Row(
-            children: [
-              Expanded(
-                child: LayoutBuilder(
-                  builder:
-                      (_, b) => Center(
-                        child: pie(math.min(220 * widget.sdp, b.maxWidth)),
-                      ),
-                ),
-              ),
-              SizedBox(
-                width: box.maxWidth * .47,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 12,
-                  ),
+                pie(diameter),
+                const SizedBox(width: gap),
+                SizedBox(
+                  key: const Key('employee_chart_legend'),
+                  width: legendWidth,
                   child: legend(),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -187,16 +210,7 @@ class _NativeEmployeeAttendanceChartState
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 5),
-        Flexible(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 12,
-              color: Colors.black,
-            ),
-          ),
-        ),
+        Flexible(child: Text(label, style: _legendStyle)),
       ],
     ),
   );

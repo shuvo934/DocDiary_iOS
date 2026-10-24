@@ -185,6 +185,15 @@ void main() {
             .enabled,
         isFalse,
       );
+      final department = t.widget<InputDecorator>(
+        find.descendant(
+          of: find.byKey(const Key('employee_department')),
+          matching: find.byType(InputDecorator),
+        ),
+      );
+      expect(department.decoration.enabled, isFalse);
+      expect(department.decoration.fillColor, const Color(0xfff5f5f5));
+      expect(department.decoration.labelStyle!.fontSize, 13);
       await _capture(t, 'employee_attendance_filters');
       await _finish(t);
     },
@@ -249,6 +258,24 @@ void main() {
       );
       expect(find.text('Present\n(Late)'), findsNothing);
       expect(find.text('Out Miss\n(Late)'), findsOneWidget);
+      final pie = t.getRect(find.byKey(const Key('employee_pie')));
+      final legend = t.getRect(find.byKey(const Key('employee_chart_legend')));
+      final card = t.getRect(
+        find
+            .descendant(
+              of: find.byKey(const Key('employee_chart_card')),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(legend.left, greaterThan(pie.right));
+      expect(legend.center.dy, closeTo(pie.center.dy, 1));
+      expect(
+        t.getCenter(find.byKey(const Key('employee_chart_group'))).dx,
+        closeTo(card.center.dx, 1),
+      );
+      expect(pie.width, greaterThan(200));
+      expect(card.height - pie.height, lessThan(70));
       await _capture(t, 'employee_attendance');
       await t.drag(
         find.byKey(const Key('employee_attendance_scroll')),
@@ -256,6 +283,45 @@ void main() {
       );
       await t.pumpAndSettle();
       await _capture(t, 'employee_attendance_report');
+      await _finish(t);
+    },
+  );
+  _case(
+    'three attendance slices enlarge the pie with the right legend centered in a fitted card',
+    (t) async {
+      final h =
+          EmployeeAttendanceHarness()
+            ..counts = [
+              {
+                'present': '12',
+                'absent': '1',
+                'leave': '0',
+                'holiday_weekend': '6',
+                'late_count': '0',
+                'early_count': '0',
+                'both_late_early_count': '0',
+              },
+            ];
+      await _show(t, h, seed: employeeSeed);
+      final pie = t.getRect(find.byKey(const Key('employee_pie'))),
+          legend = t.getRect(find.byKey(const Key('employee_chart_legend'))),
+          card = t.getRect(
+            find
+                .descendant(
+                  of: find.byKey(const Key('employee_chart_card')),
+                  matching: find.byType(Material),
+                )
+                .first,
+          );
+      expect(pie.width, greaterThan(210));
+      expect(legend.left, greaterThan(pie.right));
+      expect(legend.center.dy, closeTo(pie.center.dy, 1));
+      expect(
+        t.getCenter(find.byKey(const Key('employee_chart_group'))).dx,
+        closeTo(card.center.dx, 1),
+      );
+      expect(card.height - pie.height, lessThan(70));
+      await _capture(t, 'employee_attendance_three_slices_ui');
       await _finish(t);
     },
   );
@@ -299,8 +365,17 @@ void main() {
       expect(find.text('No Data Found'), findsOneWidget);
       expect(find.byKey(const Key('employee_report_table')), findsNothing);
       expect(find.byKey(const Key('employee_summary')), findsOneWidget);
-      final pieCenter = t.getCenter(find.byKey(const Key('employee_pie')));
-      expect(pieCenter.dx, closeTo(393 / 2, 1));
+      final pie = t.getRect(find.byKey(const Key('employee_pie')));
+      final legend = t.getRect(find.byKey(const Key('employee_chart_legend')));
+      final groupCenter = t.getCenter(
+        find.byKey(const Key('employee_chart_group')),
+      );
+      final cardCenter = t.getCenter(
+        find.byKey(const Key('employee_chart_card')),
+      );
+      expect(groupCenter.dx, closeTo(cardCenter.dx, 1));
+      expect(legend.left, greaterThan(pie.right));
+      expect(legend.center.dy, closeTo(pie.center.dy, 1));
       await _capture(t, 'employee_attendance_empty');
       await _finish(t);
     },

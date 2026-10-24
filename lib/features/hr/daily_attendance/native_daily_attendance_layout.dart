@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/app_theme.dart';
+import '../native_attendance_filter_style.dart';
 import 'daily_attendance_models.dart';
 
 TextStyle _text(
@@ -431,30 +432,10 @@ class _AttendanceField extends StatelessWidget {
           ],
       child: InputDecorator(
         isEmpty: selected.isEmpty,
-        decoration: InputDecoration(
-          labelText: name,
+        decoration: nativeAttendanceFilterDecoration(
+          label: name,
           enabled: enabled,
-          labelStyle: _text(
-            10 * sdp,
-            family: 'OpenSans',
-            weight: FontWeight.w400,
-            color: enabled ? const Color(0xff6c6e6f) : DocColors.muted,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 10,
-          ),
-          filled: true,
-          fillColor: enabled ? Colors.white : const Color(0xfff5f5f5),
-          suffixIcon: const Icon(Icons.arrow_drop_down),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: DocColors.primary),
-          ),
-          disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: DocColors.primary),
-          ),
+          sdp: sdp,
         ),
         child: Text(
           selected,
