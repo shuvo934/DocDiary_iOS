@@ -206,7 +206,7 @@ class _NativeChartDateDialogState extends State<NativeChartDateDialog> {
                       style: chartRoboto(
                         20,
                         color: Colors.black,
-                        weight: FontWeight.w500,
+                        weight: FontWeight.w600,
                       ),
                     ),
                   ),

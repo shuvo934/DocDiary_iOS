@@ -36,25 +36,31 @@ class LeaveRecordRepository {
     );
     guard(session, profile, current);
     final count = int.tryParse(nativeText(result['count']).trim());
-    if (count == null || count < 0) throw leaveRecordInvalid;
+    if (count == null || count < 0) {
+      throw leaveRecordInvalid('$endpoint: missing or invalid "count".');
+    }
     if (count == 0) return [];
-    final rows = nativeItems(result);
-    if (rows.isEmpty) throw leaveRecordInvalid;
+    final List<JsonMap> rows;
+    try {
+      rows = nativeItems(result);
+    } on AppFailure catch (failure) {
+      throw AppFailure('$endpoint: ${failure.message}', kind: failure.kind);
+    }
+    if (rows.isEmpty) {
+      throw leaveRecordInvalid(
+        '$endpoint: positive "count" with empty "items".',
+      );
+    }
     return rows;
   }
 
   List<LeaveRecordChoice> _choices(List<JsonMap> rows, String kind) {
-    final choices =
-        rows.map((row) => LeaveRecordChoice.fromJson(row, kind)).toList();
-    final ids =
-        kind == 'employee'
-            ? choices
-                .map((c) => (c.id, c.division, c.department))
-                .toSet()
-                .length
-            : choices.map((c) => c.id).toSet().length;
-    if (ids != choices.length) throw leaveRecordInvalid;
-    return choices;
+    // Native keeps every returned row; repeated IDs are not a parse failure.
+    try {
+      return rows.map((row) => LeaveRecordChoice.fromJson(row, kind)).toList();
+    } on AppFailure catch (failure) {
+      throw AppFailure('$kind list: ${failure.message}', kind: failure.kind);
+    }
   }
 
   Future<List<LeaveRecordRow>> records(
@@ -72,18 +78,13 @@ class LeaveRecordRepository {
       );
     }
     final id = branch == '30' ? '' : branch;
-    final rows =
-        (await _rows(
-          session,
-          profile,
-          id.isEmpty ? 'getLeaveRecord' : 'getLeaveRecordWithCoa',
-          {...month.query, if (id.isNotEmpty) 'p_coa_id': id},
-          isCurrent,
-        )).map(LeaveRecordRow.new).toList();
-    if (rows.map((r) => r.id).toSet().length != rows.length) {
-      throw leaveRecordInvalid;
-    }
-    return rows;
+    return (await _rows(
+      session,
+      profile,
+      id.isEmpty ? 'getLeaveRecord' : 'getLeaveRecordWithCoa',
+      {...month.query, if (id.isNotEmpty) 'p_coa_id': id},
+      isCurrent,
+    )).map(LeaveRecordRow.new).toList();
   }
 
   Future<LeaveRecordData> load(
@@ -112,7 +113,7 @@ class LeaveRecordRepository {
       available = [if (choices.isNotEmpty) LeaveRecordChoice.none, ...choices];
     }
     if (id.isNotEmpty && !available.any((c) => c.id == id)) {
-      throw leaveRecordInvalid;
+      throw leaveRecordInvalid('The selected branch is no longer available.');
     }
     final query = {if (id.isNotEmpty) 'p_coa_id': id};
     final divisions = _choices(

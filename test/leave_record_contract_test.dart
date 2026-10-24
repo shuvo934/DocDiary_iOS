@@ -404,12 +404,88 @@ void main() {
     },
   );
   test(
-    'duplicate leave IDs are rejected before an ambiguous row can be tapped',
+    'repeated leave IDs retain the native response order and application counts',
     () async {
       h.records.add(leaveRecordRow());
-      await expectLater(load(), throwsA(isA<AppFailure>()));
+      final data = await load();
+      expect(data.rows.map((r) => r.id), ['41', '42', '43', '44', '41']);
+      expect(LeaveRecordCounts(data.rows).total, 5);
+      expect(LeaveRecordCounts(data.rows).pending, 2);
     },
   );
+  test(
+    'native catalogues accept repeated IDs without losing any row',
+    () async {
+      h.branches.add(Map<String, Object?>.of(h.branches.first));
+      h.divisions.add(Map<String, Object?>.of(h.divisions.first));
+      h.departments.add(Map<String, Object?>.of(h.departments.first));
+      h.employees.add(Map<String, Object?>.of(h.employees.first));
+      final data = await load();
+      expect(data.branches.where((r) => r.id == '1').length, 2);
+      expect(data.divisions.where((r) => r.id == '10').length, 2);
+      expect(data.departments.where((r) => r.id == '100').length, 2);
+      expect(data.employees.where((r) => r.id == '11').length, 2);
+      expect(data.rows.length, 4);
+    },
+  );
+  test('native day/month separators do not reject valid leave dates', () {
+    for (final date in ['24-OCT', '24 OCT', '24/OCT', '24.OCT', '24OCT']) {
+      final row = LeaveRecordRow(leaveRecordRow(from: date, to: date));
+      expect(row.dateLabel, '24th OCT', reason: date);
+    }
+    expect(
+      LeaveRecordRow(leaveRecordRow(from: '21 OCT', to: '23 OCT')).dateLabel,
+      '21st to 23rd (OCT)',
+    );
+  });
+  test('missing employee field reports the catalogue and field name', () async {
+    h.employees.first.remove('emp_code');
+    await expectLater(
+      load(),
+      throwsA(
+        isA<AppFailure>().having(
+          (f) => f.message,
+          'message',
+          allOf(contains('employee list'), contains('emp_code')),
+        ),
+      ),
+    );
+  });
+  test(
+    'invalid count reports the endpoint without exposing response values',
+    () async {
+      h.transport.onGet = (uri) async => {'count': 'private-invalid-value'};
+      await expectLater(
+        load(),
+        throwsA(
+          isA<AppFailure>().having(
+            (f) => f.message,
+            'message',
+            allOf(
+              contains('getBranches'),
+              contains('count'),
+              isNot(contains('private-invalid-value')),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  test('invalid date identifies its field without exposing the raw date', () {
+    expect(
+      () => LeaveRecordRow(leaveRecordRow(from: 'private-invalid-value')),
+      throwsA(
+        isA<AppFailure>().having(
+          (f) => f.message,
+          'message',
+          allOf(
+            contains('la_from_date'),
+            isNot(contains('private-invalid-value')),
+          ),
+        ),
+      ),
+    );
+  });
   test(
     'month bounds preserve native Calendar rollover, inclusive months and leap years',
     () {

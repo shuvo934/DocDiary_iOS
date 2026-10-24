@@ -3,17 +3,17 @@ import '../../../core/native_dates.dart';
 import '../../../core/native_json.dart';
 import '../../dashboard/dashboard_navigation.dart';
 
-const leaveRecordInvalid = AppFailure(
-  'The server returned incomplete leave record data.',
+AppFailure leaveRecordInvalid(String detail) => AppFailure(
+  'Invalid Leave Record data: $detail',
   kind: FailureKind.invalidData,
 );
 
 String leaveRecordField(JsonMap row, String key) {
-  if (!row.containsKey(key) ||
-      row[key] is Map ||
-      row[key] is List ||
-      row[key] is bool) {
-    throw leaveRecordInvalid;
+  if (!row.containsKey(key)) {
+    throw leaveRecordInvalid('Missing field "$key".');
+  }
+  if (row[key] is Map || row[key] is List || row[key] is bool) {
+    throw leaveRecordInvalid('Field "$key" must be text or a number.');
   }
   return nativeText(row[key]);
 }
@@ -36,7 +36,9 @@ class LeaveRecordChoice {
       _ => ['emp_id', 'emp_name'],
     };
     final id = leaveRecordField(row, keys[0]);
-    if (id.isEmpty) throw leaveRecordInvalid;
+    if (id.isEmpty) {
+      throw leaveRecordInvalid('Empty field "${keys[0]}".');
+    }
     if (kind == 'employee') {
       for (final key in ['emp_code', 'jsm_desig_id', 'job_calling_title']) {
         leaveRecordField(row, key);
@@ -94,11 +96,15 @@ class LeaveRecordRow {
     : values = Map.unmodifiable({
         for (final key in keys) key: leaveRecordField(row, key),
       }) {
-    if (value('la_id').isEmpty || value('emp_id').isEmpty) {
-      throw leaveRecordInvalid;
+    for (final key in ['la_id', 'emp_id']) {
+      if (value(key).isEmpty) {
+        throw leaveRecordInvalid('Empty field "$key".');
+      }
     }
     for (final key in ['la_from_date', 'la_to_date']) {
-      if (value(key).isNotEmpty) _LeaveDay.parse(value(key));
+      if (value(key).isNotEmpty) {
+        _LeaveDay.parse(value(key), field: key);
+      }
     }
   }
   static const keys = [
@@ -190,15 +196,17 @@ class _LeaveDay {
   ];
   final int day;
   final String month;
-  factory _LeaveDay.parse(String text) {
+  factory _LeaveDay.parse(String text, {String field = 'leave date'}) {
     final match = RegExp(
-      r'^(\d{1,2})-([A-Za-z]{3})(?:-(\d{2}|\d{4}))?$',
+      r'^(\d{1,2})[\s./-]*([A-Za-z]{3})(?:[\s./-]*(\d{2}|\d{4}))?$',
     ).firstMatch(text.trim());
-    if (match == null) throw leaveRecordInvalid;
+    if (match == null) {
+      throw leaveRecordInvalid('Invalid date format in "$field".');
+    }
     final day = int.parse(match[1]!),
         month = months.indexOf(match[2]!.toUpperCase()) + 1;
     if (month == 0 || day < 1 || day > DateTime(2000, month + 1, 0).day) {
-      throw leaveRecordInvalid;
+      throw leaveRecordInvalid('Invalid day or month in "$field".');
     }
     return _LeaveDay(day, months[month - 1]);
   }

@@ -182,7 +182,7 @@ class NativeLeaveRecordLayout extends StatelessWidget {
       child: Text(
         'No Leave Record Found',
         textAlign: TextAlign.center,
-        style: _text(12 * sdp),
+        style: _text(12 * sdp, color: Colors.black54),
       ),
     );
     Widget row(int i) => _RecordCard(
@@ -394,7 +394,7 @@ class _RecordHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     margin: EdgeInsets.fromLTRB(2 * sdp, 8 * sdp, 2 * sdp, 5 * sdp),
-    elevation: 3,
+    elevation: 2,
     color: const Color(0xff596275),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8 * sdp)),
     child: Container(
@@ -409,7 +409,7 @@ class _RecordHeading extends StatelessWidget {
           children: [
             for (var i = 0; i < 4; i++)
               Expanded(
-                flex: const [27, 17, 19, 16][i],
+                flex: const [27, 18, 19, 16][i],
                 child: InkWell(
                   key: i == 3 ? const Key('leave_record_status') : null,
                   onTap: i == 3 ? onSummary : null,
@@ -418,7 +418,9 @@ class _RecordHeading extends StatelessWidget {
                       horizontal: 4 * sdp,
                       vertical: 2 * sdp,
                     ),
-                    child: Center(
+                    child: Align(
+                      alignment:
+                          i == 0 ? Alignment.centerLeft : Alignment.center,
                       child: Text(
                         const [
                           'EMP  NAME',
@@ -455,7 +457,7 @@ class _RecordCard extends StatelessWidget {
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.fromLTRB(2 * sdp, 5 * sdp, 2 * sdp, 4 * sdp),
+    margin: EdgeInsets.fromLTRB(2 * sdp, 0, 2 * sdp, 4 * sdp),
     elevation: 3,
     color: Colors.white,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8 * sdp)),
@@ -502,7 +504,7 @@ class _RecordCard extends StatelessWidget {
                 ),
               ),
               Expanded(
-                flex: 17,
+                flex: 18,
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: 4 * sdp,

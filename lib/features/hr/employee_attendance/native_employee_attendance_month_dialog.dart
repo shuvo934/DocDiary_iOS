@@ -137,7 +137,7 @@ class _NativeEmployeeAttendanceMonthDialogState
                     'Select Month',
                     style: TextStyle(
                       fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       fontSize: 20,
                     ),
                   ),
