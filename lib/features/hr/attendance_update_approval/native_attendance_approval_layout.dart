@@ -480,11 +480,11 @@ class _Details extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * sdp),
-              borderSide: const BorderSide(color: Color(0xff0984e3), width: 2),
+              borderSide: const BorderSide(color: Colors.black),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * sdp),
-              borderSide: const BorderSide(color: Color(0xff0984e3)),
+              borderSide: const BorderSide(color: DocColors.primary),
             ),
           ),
         ),

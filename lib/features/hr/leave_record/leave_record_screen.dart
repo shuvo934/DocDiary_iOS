@@ -11,6 +11,9 @@ import '../hr_dashboard_repository.dart';
 import '../leave_balance/leave_balance_models.dart';
 import '../leave_balance/leave_balance_repository.dart';
 import '../leave_balance/leave_balance_screen.dart';
+import '../leave_approval/leave_approval_models.dart';
+import '../leave_approval/leave_approval_repository.dart';
+import '../leave_approval/leave_approval_screen.dart';
 import 'leave_record_models.dart';
 import 'leave_record_repository.dart';
 import 'native_leave_record_layout.dart';
@@ -373,6 +376,15 @@ class _LeaveRecordScreenState extends State<LeaveRecordScreen>
                   now: widget.repository.now,
                 ),
                 seed: LeaveBalanceSeed.fromExtras(route.extras),
+              )
+              : route.module == DashboardModule.hrLeaveApproval
+              ? LeaveApprovalScreen(
+                auth: widget.auth,
+                repository: LeaveApprovalRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+                seed: LeaveApprovalSeed.fromExtras(route.extras),
               )
               : null);
       if (page == null) {

@@ -1,3 +1,4 @@
+import 'leave_approval_test_support.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -399,21 +400,19 @@ void main() {
       },
     );
   }
-  _case(
-    'future Leave Approval destination shows unavailable until its module is added',
-    (t) async {
-      final h = LeaveRecordHarness();
-      await _show(t, h);
-      await _tap(t, 'leave_record_row_41');
-      expect(
-        find.byKey(const Key('leave_record_destination_unavailable')),
-        findsOneWidget,
-      );
-      expect(find.text('Leave Approval'), findsOneWidget);
-      expect(h.posts, isEmpty);
-      await _finish(t);
-    },
-  );
+  _case('pending row opens Leave Approval with native seed identifiers', (
+    t,
+  ) async {
+    final h = LeaveApprovalHarness();
+    await _show(t, h);
+    await _tap(t, 'leave_record_row_41');
+    expect(find.byKey(const Key('leave_approval_select')), findsOneWidget);
+    expect(find.byKey(const Key('leave_request_picker')), findsNothing);
+    expect(h.hrRequests.last.uri.queryParameters['p_la_id'], '41');
+    expect(find.text('LR-2026-41'), findsOneWidget);
+    expect(h.posts, isEmpty);
+    await _finish(t);
+  });
   _case(
     'load error Retry restarts the right chain and Cancel leaves the screen',
     (t) async {

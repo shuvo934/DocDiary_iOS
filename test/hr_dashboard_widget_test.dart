@@ -1,3 +1,4 @@
+import 'leave_approval_test_support.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -348,15 +349,15 @@ void main() {
   );
 
   _case(
-    'future drawer destination uses explicit availability and returns to usable HR',
+    'Leave Approval drawer opens native selector and returns to usable HR',
     (t) async {
-      final h = HrHarness();
+      final h = LeaveApprovalHarness();
       await _show(t, h);
       await _tap(t, 'hr_menu');
       await _tap(t, 'hr_menu_leaveApproval');
-      expect(find.byKey(const Key('hr_unavailable')), findsOneWidget);
-      await t.tap(find.text('Close'));
-      await t.pumpAndSettle();
+      expect(find.byKey(const Key('leave_request_picker')), findsOneWidget);
+      await _tap(t, 'leave_picker_cancel');
+      await _tap(t, 'leave_approval_back');
       await _tap(t, 'hr_att_1');
       expect(
         t
