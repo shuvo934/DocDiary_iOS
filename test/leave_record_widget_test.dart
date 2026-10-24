@@ -400,7 +400,7 @@ void main() {
     );
   }
   _case(
-    'future Leave Balance/Approval destinations show the existing unavailable state until those modules are added',
+    'future Leave Approval destination shows unavailable until its module is added',
     (t) async {
       final h = LeaveRecordHarness();
       await _show(t, h);
@@ -644,12 +644,22 @@ void main() {
               days: '3',
             ),
         ];
-        await _show(t, h, size: spec.$1, textScale: spec.$2);
+        await _show(
+          t,
+          h,
+          size: spec.$1,
+          textScale: spec.$2,
+          destinationBuilder:
+              (context, route) => const Scaffold(
+                key: Key('leave_record_scroll_test_child'),
+                body: Center(child: Text('Selected record')),
+              ),
+        );
         await _tap(t, 'leave_record_status');
         await _tap(t, 'leave_record_summary_close');
         await _tap(t, 'leave_record_row_17');
         expect(
-          find.byKey(const Key('leave_record_destination_unavailable')),
+          find.byKey(const Key('leave_record_scroll_test_child')),
           findsOneWidget,
         );
         expect(t.takeException(), isNull);

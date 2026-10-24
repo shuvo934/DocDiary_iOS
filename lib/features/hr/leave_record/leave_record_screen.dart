@@ -8,6 +8,9 @@ import '../../auth/profile_repository.dart';
 import '../../dashboard/dashboard_navigation.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
 import '../hr_dashboard_repository.dart';
+import '../leave_balance/leave_balance_models.dart';
+import '../leave_balance/leave_balance_repository.dart';
+import '../leave_balance/leave_balance_screen.dart';
 import 'leave_record_models.dart';
 import 'leave_record_repository.dart';
 import 'native_leave_record_layout.dart';
@@ -360,7 +363,18 @@ class _LeaveRecordScreenState extends State<LeaveRecordScreen>
       if (!mounted || !_alive(operation)) return;
       setState(() => _busy = false);
       final route = row.route(_month);
-      final page = widget.destinationBuilder?.call(context, route);
+      final page =
+          widget.destinationBuilder?.call(context, route) ??
+          (route.module == DashboardModule.hrLeaveBalance
+              ? LeaveBalanceScreen(
+                auth: widget.auth,
+                repository: LeaveBalanceRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+                seed: LeaveBalanceSeed.fromExtras(route.extras),
+              )
+              : null);
       if (page == null) {
         await _dialogs.show<void>(
           context,

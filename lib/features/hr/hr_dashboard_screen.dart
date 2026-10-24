@@ -15,6 +15,8 @@ import 'attendance_update_approval/attendance_approval_repository.dart';
 import 'attendance_update_approval/attendance_approval_screen.dart';
 import 'leave_record/leave_record_repository.dart';
 import 'leave_record/leave_record_screen.dart';
+import 'leave_balance/leave_balance_repository.dart';
+import 'leave_balance/leave_balance_screen.dart';
 import 'hr_dashboard_models.dart';
 import 'hr_dashboard_navigation.dart';
 import 'hr_dashboard_repository.dart';
@@ -393,6 +395,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen>
                   now: widget.repository.now,
                 ),
                 destinationBuilder: widget.destinationBuilder,
+              )
+              : destination == HrDestination.leaveBalance
+              ? LeaveBalanceScreen(
+                auth: widget.auth,
+                repository: LeaveBalanceRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
               )
               : null);
       if (page == null) {

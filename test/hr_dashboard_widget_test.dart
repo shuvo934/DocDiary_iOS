@@ -353,7 +353,7 @@ void main() {
       final h = HrHarness();
       await _show(t, h);
       await _tap(t, 'hr_menu');
-      await _tap(t, 'hr_menu_leaveBalance');
+      await _tap(t, 'hr_menu_leaveApproval');
       expect(find.byKey(const Key('hr_unavailable')), findsOneWidget);
       await t.tap(find.text('Close'));
       await t.pumpAndSettle();
