@@ -115,170 +115,181 @@ class _NativeAttendanceRequestDialogState
                   )
                 else
                   Flexible(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // ───── Fixed: Search field ─────
-                        Padding(
-                          padding: EdgeInsets.only(
-                            top: 6 * sdp,
-                            left: 4 * sdp,
-                            right: 4 * sdp,
-                            bottom: 2 * sdp,
-                          ),
-                          child: Material(
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(8 * sdp),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8 * sdp),
-                                border: Border.all(color: DocColors.primary),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(1),
-                                child: ClipRRect(
+                    child: _AdaptivePinnedRequestBody(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // ───── Fixed: Search field ─────
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: 6 * sdp,
+                              left: 4 * sdp,
+                              right: 4 * sdp,
+                              bottom: 2 * sdp,
+                            ),
+                            child: Material(
+                              elevation: 1,
+                              borderRadius: BorderRadius.circular(8 * sdp),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(8 * sdp),
-                                  child: TextField(
-                                    key: const Key('attendance_picker_search'),
-                                    controller: _search,
-                                    textInputAction: TextInputAction.done,
-                                    onChanged: (_) => setState(() {}),
-                                    onSubmitted:
-                                        (_) => FocusScope.of(context).unfocus(),
-                                    style: attendanceApprovalText(
-                                      10 * sdp,
-                                      color: const Color(0xff6c6e6f),
+                                  border: Border.all(color: DocColors.primary),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(1),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      8 * sdp,
                                     ),
-                                    autocorrect: false,
-                                    enableSuggestions: false,
-                                    smartDashesType: SmartDashesType.disabled,
-                                    smartQuotesType: SmartQuotesType.disabled,
-                                    textCapitalization: TextCapitalization.none,
-                                    decoration: InputDecoration(
-                                      labelText:
-                                          'Search by Request Code or Emp Name',
-                                      labelStyle: attendanceApprovalText(
+                                    child: TextField(
+                                      key: const Key(
+                                        'attendance_picker_search',
+                                      ),
+                                      controller: _search,
+                                      textInputAction: TextInputAction.done,
+                                      onChanged: (_) => setState(() {}),
+                                      onSubmitted:
+                                          (_) =>
+                                              FocusScope.of(context).unfocus(),
+                                      style: attendanceApprovalText(
                                         10 * sdp,
-                                        color: const Color(0xffb0bec5),
+                                        color: const Color(0xff6c6e6f),
                                       ),
-                                      floatingLabelStyle:
-                                          attendanceApprovalText(
-                                            8 * sdp,
-                                            color: DocColors.primary,
-                                          ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 11 * sdp,
+                                      autocorrect: false,
+                                      enableSuggestions: false,
+                                      smartDashesType: SmartDashesType.disabled,
+                                      smartQuotesType: SmartQuotesType.disabled,
+                                      textCapitalization:
+                                          TextCapitalization.none,
+                                      decoration: InputDecoration(
+                                        labelText:
+                                            'Search by Request Code or Emp Name',
+                                        labelStyle: attendanceApprovalText(
+                                          10 * sdp,
+                                          color: const Color(0xffb0bec5),
+                                        ),
+                                        floatingLabelStyle:
+                                            attendanceApprovalText(
+                                              8 * sdp,
+                                              color: DocColors.primary,
+                                            ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 11 * sdp,
+                                        ),
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
                                       ),
-                                      border: InputBorder.none,
-                                      enabledBorder: InputBorder.none,
-                                      focusedBorder: InputBorder.none,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
 
-                        // ───── Fixed: Table header ─────
-                        Padding(
-                          key: const Key('attendance_picker_table'),
-                          padding: const EdgeInsets.fromLTRB(5, 8, 5, 0),
-                          child: Material(
-                            color: Colors.white,
-                            elevation: 2,
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(10 * sdp),
-                            ),
-                            child: ClipRRect(
+                          // ───── Fixed: Table header ─────
+                          Padding(
+                            key: const Key('attendance_picker_table'),
+                            padding: const EdgeInsets.fromLTRB(5, 8, 5, 0),
+                            child: Material(
+                              color: Colors.white,
+                              elevation: 2,
                               borderRadius: BorderRadius.vertical(
                                 top: Radius.circular(10 * sdp),
                               ),
-                              child: _RequestCells(
-                                values: const [
-                                  'Request Code',
-                                  'Emp Name',
-                                  'Emp Code',
-                                  'Application Date',
-                                  'Update Date',
-                                ],
-                                heading: true,
-                                sdp: sdp,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(10 * sdp),
+                                ),
+                                child: _RequestCells(
+                                  values: const [
+                                    'Request Code',
+                                    'Emp Name',
+                                    'Emp Code',
+                                    'Application Date',
+                                    'Update Date',
+                                  ],
+                                  heading: true,
+                                  sdp: sdp,
+                                ),
                               ),
                             ),
                           ),
-                        ),
 
-                        // ───── Scrollable: শুধু rows ─────
-                        if (rows.isEmpty)
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 4 * sdp,
-                              vertical: 8 * sdp,
-                            ),
-                            child: Text(
-                              'No Attendance Update Request Found',
-                              textAlign: TextAlign.center,
-                              style: attendanceApprovalText(
-                                11 * sdp,
-                                weight: FontWeight.w600,
-                                color: Colors.black87,
+                          // ───── Scrollable: শুধু rows ─────
+                          if (rows.isEmpty)
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 4 * sdp,
+                                vertical: 8 * sdp,
                               ),
-                            ),
-                          )
-                        else
-                          Flexible(
-                            child: ListView.separated(
-                              key: const Key('attendance_picker_rows'),
-                              shrinkWrap: true,
-                              padding: const EdgeInsets.fromLTRB(5, 0, 5, 7),
-                              keyboardDismissBehavior:
-                                  ScrollViewKeyboardDismissBehavior.onDrag,
-                              itemCount: rows.length,
-                              separatorBuilder:
-                                  (_, __) => const Divider(
-                                    height: 1,
-                                    color: Colors.black26,
-                                  ),
-                              itemBuilder: (context, i) {
-                                final row = rows[i];
-                                final radius =
-                                    i == rows.length - 1
-                                        ? BorderRadius.vertical(
-                                          bottom: Radius.circular(10 * sdp),
-                                        )
-                                        : BorderRadius.zero;
-                                return Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 2 * sdp,
-                                  ),
-                                  child: Material(
-                                    color: Colors.white,
-                                    elevation: 2,
-                                    borderRadius: radius,
-                                    child: InkWell(
-                                      key: Key('attendance_request_${row.id}'),
-                                      onTap: () => Navigator.pop(context, row),
-                                      child: ClipRRect(
-                                        borderRadius: radius,
-                                        child: _RequestCells(
-                                          values: row.cells,
-                                          sdp: sdp,
+                              child: Text(
+                                'No Attendance Update Request Found',
+                                textAlign: TextAlign.center,
+                                style: attendanceApprovalText(
+                                  11 * sdp,
+                                  weight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            )
+                          else
+                            Flexible(
+                              child: ListView.separated(
+                                key: const Key('attendance_picker_rows'),
+                                shrinkWrap: true,
+                                padding: const EdgeInsets.fromLTRB(5, 0, 5, 7),
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                itemCount: rows.length,
+                                separatorBuilder:
+                                    (_, __) => const Divider(
+                                      height: 1,
+                                      color: Colors.black26,
+                                    ),
+                                itemBuilder: (context, i) {
+                                  final row = rows[i];
+                                  final radius =
+                                      i == rows.length - 1
+                                          ? BorderRadius.vertical(
+                                            bottom: Radius.circular(10 * sdp),
+                                          )
+                                          : BorderRadius.zero;
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 2 * sdp,
+                                    ),
+                                    child: Material(
+                                      color: Colors.white,
+                                      elevation: 2,
+                                      borderRadius: radius,
+                                      child: InkWell(
+                                        key: Key(
+                                          'attendance_request_${row.id}',
+                                        ),
+                                        onTap:
+                                            () => Navigator.pop(context, row),
+                                        child: ClipRRect(
+                                          borderRadius: radius,
+                                          child: _RequestCells(
+                                            values: row.cells,
+                                            sdp: sdp,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 Padding(
@@ -349,5 +360,24 @@ class _RequestCells extends StatelessWidget {
           ),
       ],
     ),
+  );
+}
+
+/// Preserve fixed search/headings and row-only scrolling on regular screens.
+/// A short viewport still exposes every row without shrinking the user's fonts.
+class _AdaptivePinnedRequestBody extends StatelessWidget {
+  const _AdaptivePinnedRequestBody({required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, bounds) {
+      final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
+      final minimum = 170 * attendanceApprovalScale(context) * scale;
+      if (bounds.maxHeight >= minimum) return child;
+      return SingleChildScrollView(
+        key: const Key('attendance_picker_compact_scroll'),
+        child: SizedBox(height: minimum, child: child),
+      );
+    },
   );
 }

@@ -246,12 +246,23 @@ void main() {
     h.attendanceRow = {for (final k in HrAttendance.keys) k: '0'};
     h.dateRows = [];
     h.employeeRows = [];
-    await _show(t, h);
+    DashboardRoute? opened;
+    await _show(
+      t,
+      h,
+      builder: (context, route) {
+        if (route.module == DashboardModule.hrLeaveRecord) {
+          opened = route;
+          return const Scaffold(body: Text('Leave Record child'));
+        }
+        return null;
+      },
+    );
     expect(find.text('No Data'), findsOneWidget);
     expect(find.byKey(const Key('hr_no_leave')), findsOneWidget);
     await _tap(t, 'hr_leave_more');
-    expect(find.byKey(const Key('hr_unavailable')), findsOneWidget);
-    expect(find.text('Leave Record'), findsWidgets);
+    expect(opened!.module, DashboardModule.hrLeaveRecord);
+    expect(find.text('Leave Record child'), findsOneWidget);
     await _finish(t);
   });
 
