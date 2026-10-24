@@ -11,6 +11,8 @@ import 'daily_attendance/daily_attendance_repository.dart';
 import 'daily_attendance/daily_attendance_screen.dart';
 import 'employee_attendance/employee_attendance_repository.dart';
 import 'employee_attendance/employee_attendance_screen.dart';
+import 'attendance_update_approval/attendance_approval_repository.dart';
+import 'attendance_update_approval/attendance_approval_screen.dart';
 import 'hr_dashboard_models.dart';
 import 'hr_dashboard_navigation.dart';
 import 'hr_dashboard_repository.dart';
@@ -369,6 +371,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen>
               ? EmployeeAttendanceScreen(
                 auth: widget.auth,
                 repository: EmployeeAttendanceRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+              )
+              : destination == HrDestination.attendanceApproval
+              ? AttendanceApprovalScreen(
+                auth: widget.auth,
+                repository: AttendanceApprovalRepository(
                   widget.repository.transport,
                   now: widget.repository.now,
                 ),

@@ -68,6 +68,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
+    - assets/fonts/RussoOne-OFL.txt
     - assets/fonts/Lato-OFL.txt
     - assets/fonts/NotoSansBengali-OFL.txt
     - assets/images/
@@ -103,6 +104,10 @@ flutter:
   # see https://flutter.dev/to/font-from-package
   # BEGIN LOCAL NATIVE FONTS
   fonts:
+    - family: RussoOne
+      fonts:
+        - asset: assets/fonts/RussoOne-Regular.ttf
+          weight: 400
     - family: Lato
       fonts:
         - asset: assets/fonts/Lato-Bold.ttf
