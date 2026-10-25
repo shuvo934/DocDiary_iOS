@@ -13,6 +13,9 @@ import 'avail/native_appointment_avail_dialog.dart';
 import 'history/doctor_appointment_history_models.dart';
 import 'history/doctor_appointment_history_repository.dart';
 import 'history/doctor_appointment_history_screen.dart';
+import 'progress/doctor_progress_models.dart';
+import 'progress/doctor_progress_repository.dart';
+import 'progress/doctor_progress_screen.dart';
 import 'doctor_appointment_models.dart';
 import 'doctor_appointment_navigation.dart';
 import 'doctor_appointment_repository.dart';
@@ -309,6 +312,15 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
                   id: row!.value('patient_data'),
                   name: row.value('pat_name'),
                   code: row.value('pat_code'),
+                ),
+              )
+              : action == DoctorAppointmentAction.progress
+              ? DoctorProgressScreen(
+                auth: widget.auth,
+                repository: DoctorProgressRepository(widget.repository),
+                seed: DoctorProgressSeed.fromAppointment(
+                  row!,
+                  ownerDoctorId: profile.doctorId,
                 ),
               )
               : null);

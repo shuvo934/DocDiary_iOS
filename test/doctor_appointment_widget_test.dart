@@ -399,10 +399,7 @@ void main() {
     expect(h.posts, isEmpty);
     await _finish(t);
   });
-  for (final action in [
-    DoctorAppointmentAction.progress,
-    DoctorAppointmentAction.dynamicPrescription,
-  ]) {
+  for (final action in [DoctorAppointmentAction.dynamicPrescription]) {
     _case(
       '${action.name} keeps native visibility but unfinished destination performs no POST',
       (t) async {
