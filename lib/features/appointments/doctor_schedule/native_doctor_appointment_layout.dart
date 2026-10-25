@@ -38,7 +38,7 @@ class NativeDoctorAppointmentLayout extends StatelessWidget {
     final active = enabled && !waiting && message == null, flags = features;
     Widget month(int delta, IconData icon) => SizedBox(
       width: 48,
-      height: 32,
+      height: 25,
       child: Material(
         color:
             window.canMove(selected, delta)
@@ -64,16 +64,17 @@ class NativeDoctorAppointmentLayout extends StatelessWidget {
       child: Column(
         children: [
           Padding(
+            // Native rounded MaterialCardView adds 8.8dp corner insets.
             padding: EdgeInsets.symmetric(
-              horizontal: 10 * sdp,
-              vertical: 5 * sdp,
+              horizontal: 10 * sdp + 8.8,
+              vertical: 5 * sdp + 8.8,
             ),
             child: Row(
               children: [
                 month(-1, Icons.chevron_left),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 5 * sdp),
+                    padding: EdgeInsets.all(5 * sdp),
                     child: Text(
                       DoctorAppointmentWindow.label(selected),
                       key: const Key('doctor_appointment_month'),
@@ -97,6 +98,13 @@ class NativeDoctorAppointmentLayout extends StatelessWidget {
             onSelected: onSelected,
           ),
         ],
+      ),
+    );
+    final header = ColoredBox(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: controls,
       ),
     );
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -159,6 +167,7 @@ class NativeDoctorAppointmentLayout extends StatelessWidget {
                           label: 'Walk-in Rx',
                           allCaps: false,
                           fontSize: 9,
+                          layoutHeight: 28,
                           sdp: sdp,
                           enabled: active,
                           onPressed:
@@ -190,12 +199,10 @@ class NativeDoctorAppointmentLayout extends StatelessWidget {
                             if (media.size.height - media.padding.vertical >
                                     450 &&
                                 media.textScaler.scale(12) <= 18)
-                              PinnedHeaderSliver(child: controls)
+                              PinnedHeaderSliver(child: header)
                             else
-                              SliverToBoxAdapter(child: controls),
-                            const SliverToBoxAdapter(
-                              child: SizedBox(height: 10),
-                            ),
+                              SliverToBoxAdapter(child: header),
+
                             if (message != null)
                               SliverToBoxAdapter(
                                 child: Padding(

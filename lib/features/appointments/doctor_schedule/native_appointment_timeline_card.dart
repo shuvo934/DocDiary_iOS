@@ -71,6 +71,7 @@ class NativeAppointmentTimelineCard extends StatelessWidget {
       label: label,
       sdp: sdp,
       full: full,
+      minWidth: value == DoctorAppointmentAction.avail ? 50 * sdp : 0,
       enabled: enabled,
       onPressed: () => onAction(value),
     );
@@ -208,14 +209,19 @@ class NativeAppointmentTimelineCard extends StatelessWidget {
                                             ),
                                           ),
                                           Expanded(
-                                            child: LinearProgressIndicator(
-                                              key: Key(
-                                                'doctor_appointment_hp_$index',
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(8),
                                               ),
-                                              value: row.progressFraction,
-                                              minHeight: 4 * sdp,
-                                              color: DocColors.greenSea,
-                                              backgroundColor: Colors.white,
+                                              child: LinearProgressIndicator(
+                                                key: Key(
+                                                  'doctor_appointment_hp_$index',
+                                                ),
+                                                value: row.progressFraction,
+                                                minHeight: 4 * sdp,
+                                                color: DocColors.greenSea,
+                                                backgroundColor: Colors.white,
+                                              ),
                                             ),
                                           ),
                                           SizedBox(width: 4 * sdp),
@@ -330,31 +336,53 @@ class AppointmentOutlineButton extends StatelessWidget {
     this.full = false,
     this.fontSize = 7,
     this.allCaps = true,
+    this.minWidth = 0,
+    this.layoutHeight = 25,
   });
   final String label;
-  final double sdp, fontSize;
+  final double sdp, fontSize, minWidth, layoutHeight;
   final VoidCallback onPressed;
   final bool enabled, full, allCaps;
   @override
   Widget build(BuildContext context) {
-    final child = OutlinedButton(
-      onPressed: enabled ? onPressed : null,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: DocColors.greenSea,
-        disabledForegroundColor: DocColors.greenSea,
-        padding: const EdgeInsets.fromLTRB(8, 3, 8, 1),
-        minimumSize: Size(0, 25 * sdp),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        side: const BorderSide(color: DocColors.greenSea),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8 * sdp),
+    // Android's 25sdp MaterialButton includes a 6dp top/bottom inset.
+    // Match its visible outline while keeping that spacing between rows.
+    final child = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTap: enabled ? onPressed : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: OutlinedButton(
+          onPressed: enabled ? onPressed : null,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: DocColors.greenSea,
+            disabledForegroundColor: DocColors.greenSea,
+            padding: const EdgeInsets.fromLTRB(16, 3, 16, 1),
+            minimumSize: Size(
+              minWidth,
+              (layoutHeight * sdp - 12).clamp(0, double.infinity),
+            ),
+            visualDensity: VisualDensity.standard,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            side: const BorderSide(color: DocColors.greenSea),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8 * sdp),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 1.0),
+            child: Text(
+              allCaps ? label.toUpperCase() : label,
+              textAlign: TextAlign.center,
+              style: appointmentText(
+                fontSize * sdp,
+                color: DocColors.greenSea,
+              ).copyWith(letterSpacing: fontSize * sdp * .089),
+            ),
+          ),
         ),
-      ),
-      child: Text(
-        allCaps ? label.toUpperCase() : label,
-        textAlign: TextAlign.center,
-        style: appointmentText(fontSize * sdp, color: DocColors.greenSea),
       ),
     );
     return full ? SizedBox(width: double.infinity, child: child) : child;
