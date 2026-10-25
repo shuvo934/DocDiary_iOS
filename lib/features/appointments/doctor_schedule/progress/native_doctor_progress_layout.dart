@@ -89,6 +89,7 @@ class NativeDoctorProgressLayout extends StatelessWidget {
           textAlign: TextAlign.center,
           style: appointmentText(10 * sdp),
         ),
+        SizedBox(height: 6 * sdp),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 4 * sdp, vertical: 4 * sdp),
           child: LayoutBuilder(
@@ -398,31 +399,37 @@ class NativeDoctorProgressLayout extends StatelessWidget {
   }
 
   Widget _form(BuildContext context, double sdp) {
-    Widget readOnly(String label, String value) => InputDecorator(
-      decoration: InputDecoration(
-        labelText: label,
-        enabled: false,
-        filled: true,
-        fillColor: const Color(0xFFF5F5F5),
-        labelStyle: appointmentText(
-          12,
-          family: 'OpenSans',
-          color: Colors.black54,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
-        ),
-        border: InputBorder.none,
-        disabledBorder: InputBorder.none,
+    Widget readOnly(String label, String value, String field) => DecoratedBox(
+      key: Key('doctor_progress_readonly_$field'),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(5),
       ),
-      child: Text(
-        value,
-        style: appointmentText(
-          12,
-          family: 'OpenSans',
-          weight: FontWeight.w700,
-          color: Colors.black,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              label,
+              style: appointmentText(
+                12,
+                family: 'OpenSans',
+                color: const Color(0xff999999),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: appointmentText(
+                12,
+                family: 'OpenSans',
+                weight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -431,15 +438,17 @@ class NativeDoctorProgressLayout extends StatelessWidget {
       String value,
       String otherLabel,
       String otherValue,
+      String field,
+      String otherField,
     ) => Padding(
       padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(child: readOnly(label, value)),
+            Expanded(child: readOnly(label, value, field)),
             const SizedBox(width: 5),
-            Expanded(child: readOnly(otherLabel, otherValue)),
+            Expanded(child: readOnly(otherLabel, otherValue, otherField)),
           ],
         ),
       ),
@@ -454,12 +463,16 @@ class NativeDoctorProgressLayout extends StatelessWidget {
           row?.value('adm_date') ?? '',
           'Service Name:',
           row?.value('pfn_fee_name') ?? '',
+          'date',
+          'service',
         ),
         pair(
           'Doctor Name:',
           doctorName,
           'Unit Name:',
           row?.value('depts_name') ?? '',
+          'doctor',
+          'unit',
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(4 * sdp, 8 * sdp, 4 * sdp, 4 * sdp),
@@ -729,86 +742,113 @@ class _ProgressTable extends StatelessWidget {
           ],
         ),
       );
+  Widget _card(Widget child) => Card(
+    key: const Key('doctor_progress_history_card'),
+    margin: EdgeInsets.zero,
+    color: Colors.white,
+    surfaceTintColor: Colors.transparent,
+    elevation: 1.5,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10 * sdp),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: child,
+  );
+
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(5, 12, 5, 7),
-    child: Column(
-      children: [
-        Flexible(
-          child: SingleChildScrollView(
-            key: const Key('doctor_progress_horizontal'),
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: widths.fold<double>(0, (a, b) => a + b) * sdp + 24,
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(10 * sdp),
-                    ),
-                    child: _row(
-                      [
-                        'SL',
-                        'Date',
-                        'Service Name',
-                        'Unit',
-                        'Doctor/Therapist',
-                        'Progress',
-                        'Progress Notes',
-                      ],
-                      header: true,
-                      rowKey: const Key('doctor_progress_table_header'),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.separated(
-                      key: const Key('doctor_progress_table_rows'),
-                      itemCount: failed ? 0 : rows.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final row = rows[index];
-                        final radius =
-                            index == rows.length - 1
-                                ? BorderRadius.vertical(
-                                  bottom: Radius.circular(10 * sdp),
-                                )
-                                : BorderRadius.zero;
-                        return ClipRRect(
-                          borderRadius: radius,
-                          child: _row(
-                            [
-                              (rows.length - index).toString(),
-                              row.value('pph_date'),
-                              row.value('pfn_name'),
-                              row.value('detps_name'),
-                              row.value('doc_name'),
-                              row.value('pph_progress'),
-                              row.value('pph_notes'),
-                            ],
-                            header: false,
-                            rowKey: Key('doctor_progress_row_$index'),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+  Widget build(BuildContext context) {
+    final width = widths.fold<double>(0, (a, b) => a + b) * sdp + 24;
+    final header = _row(
+      [
+        'SL',
+        'Date',
+        'Service Name',
+        'Unit',
+        'Doctor/Therapist',
+        'Progress',
+        'Progress Notes',
+      ],
+      header: true,
+      rowKey: const Key('doctor_progress_table_header'),
+    );
+    if (rows.isEmpty || failed) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(5, 12, 5, 7),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _card(
+                SingleChildScrollView(
+                  key: const Key('doctor_progress_horizontal'),
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(width: width, child: header),
+                ),
               ),
-            ),
+              if (!failed)
+                Padding(
+                  padding: EdgeInsets.all(8 * sdp),
+                  child: Text(
+                    'No Information Found',
+                    key: const Key('doctor_progress_empty'),
+                    textAlign: TextAlign.center,
+                    style: appointmentText(14, weight: FontWeight.w500),
+                  ),
+                ),
+            ],
           ),
         ),
-        if (!failed && rows.isEmpty)
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(5, 12, 5, 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           Flexible(
-            child: Padding(
-              padding: EdgeInsets.all(8 * sdp),
-              child: Text(
-                'No Information Found',
-                key: const Key('doctor_progress_empty'),
-                style: appointmentText(14, weight: FontWeight.w500),
+            child: _card(
+              SingleChildScrollView(
+                key: const Key('doctor_progress_horizontal'),
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      header,
+                      Flexible(
+                        child: ListView.separated(
+                          key: const Key('doctor_progress_table_rows'),
+                          primary: false,
+                          shrinkWrap: true,
+                          itemCount: rows.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final row = rows[index];
+                            return _row(
+                              [
+                                (rows.length - index).toString(),
+                                row.value('pph_date'),
+                                row.value('pfn_name'),
+                                row.value('detps_name'),
+                                row.value('doc_name'),
+                                row.value('pph_progress'),
+                                row.value('pph_notes'),
+                              ],
+                              header: false,
+                              rowKey: Key('doctor_progress_row_$index'),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

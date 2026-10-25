@@ -113,6 +113,13 @@ Future<void> _show(
   }
   if (settle) {
     await t.pumpAndSettle();
+    await t.runAsync(
+      () => precacheImage(
+        const AssetImage('assets/images/check_progress.png'),
+        t.element(find.byKey(const Key('appointment_capture'))),
+      ),
+    );
+    await t.pump();
   } else {
     await t.pump();
     await t.pump(const Duration(milliseconds: 400));
@@ -287,6 +294,30 @@ void main() {
         .7,
       );
       expect(find.text('Availed'), findsOneWidget);
+      final progressBadge = t.widget<Image>(
+        find.byKey(const Key('doctor_appointment_progress_check_0')),
+      );
+      expect(
+        (progressBadge.image as AssetImage).assetName,
+        'assets/images/check_progress.png',
+      );
+      expect(
+        t
+            .renderObject<RenderImage>(
+              find.descendant(
+                of: find.byKey(
+                  const Key('doctor_appointment_progress_check_0'),
+                ),
+                matching: find.byType(RawImage),
+              ),
+            )
+            .image,
+        isNotNull,
+      );
+      expect(
+        find.byKey(const Key('doctor_appointment_progress_check_1')),
+        findsNothing,
+      );
       expect(
         t
             .widget<Card>(find.byKey(const Key('doctor_appointment_card_1')))

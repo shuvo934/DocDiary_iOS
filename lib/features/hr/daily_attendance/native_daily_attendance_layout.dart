@@ -223,6 +223,7 @@ class NativeDailyAttendanceLayout extends StatelessWidget {
       child: Scaffold(
         backgroundColor: DocColors.clouds,
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Padding(
@@ -313,74 +314,79 @@ class NativeDailyAttendanceLayout extends StatelessWidget {
               Expanded(
                 child: ColoredBox(
                   color: Colors.white,
-                  child: Stack(
-                    children: [
-                      CustomScrollView(
-                        key: const Key('daily_attendance_scroll'),
-                        slivers: [
-                          if (pinned)
-                            PinnedHeaderSliver(child: controls)
-                          else
-                            SliverToBoxAdapter(child: controls),
-                          if (message != null)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Text(
-                                  message!,
-                                  textAlign: TextAlign.center,
-                                  style: _text(14, weight: FontWeight.w500),
-                                ),
-                              ),
-                            )
-                          else ...[
-                            if (!waiting && current != null && rows.isEmpty)
+                  child: SafeArea(
+                    top: false,
+                    child: Stack(
+                      children: [
+                        CustomScrollView(
+                          key: const Key('daily_attendance_scroll'),
+                          slivers: [
+                            if (pinned)
+                              PinnedHeaderSliver(child: controls)
+                            else
+                              SliverToBoxAdapter(child: controls),
+                            if (message != null)
                               SliverToBoxAdapter(
                                 child: Padding(
-                                  padding: EdgeInsets.all(8 * sdp),
+                                  padding: const EdgeInsets.all(20),
                                   child: Text(
-                                    'Attendance Data Not Found',
-                                    key: const Key('daily_no_data'),
+                                    message!,
                                     textAlign: TextAlign.center,
-                                    style: _text(
-                                      12 * sdp,
-                                      color: Colors.black54,
-                                    ),
+                                    style: _text(14, weight: FontWeight.w500),
                                   ),
                                 ),
                               )
-                            else
-                              SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) => _AttendanceTableCard(
-                                    key: ValueKey('daily_row_$index'),
-                                    sdp: sdp,
-                                    row: rows[index],
-                                    onTap:
-                                        active
-                                            ? () => onRow(rows[index])
-                                            : null,
+                            else ...[
+                              if (!waiting && current != null && rows.isEmpty)
+                                SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8 * sdp),
+                                    child: Text(
+                                      'Attendance Data Not Found',
+                                      key: const Key('daily_no_data'),
+                                      textAlign: TextAlign.center,
+                                      style: _text(
+                                        12 * sdp,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
                                   ),
-                                  childCount: rows.length,
+                                )
+                              else
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) => _AttendanceTableCard(
+                                      key: ValueKey('daily_row_$index'),
+                                      sdp: sdp,
+                                      row: rows[index],
+                                      onTap:
+                                          active
+                                              ? () => onRow(rows[index])
+                                              : null,
+                                    ),
+                                    childCount: rows.length,
+                                  ),
                                 ),
-                              ),
+                            ],
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: 8),
+                            ),
                           ],
-                          const SliverToBoxAdapter(child: SizedBox(height: 8)),
-                        ],
-                      ),
-                      if (waiting)
-                        Positioned.fill(
-                          child: ColoredBox(
-                            color: Colors.white,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                key: const Key('daily_loading'),
-                                color: DocColors.primary,
+                        ),
+                        if (waiting)
+                          Positioned.fill(
+                            child: ColoredBox(
+                              color: Colors.white,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  key: const Key('daily_loading'),
+                                  color: DocColors.primary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

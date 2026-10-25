@@ -230,6 +230,15 @@ void main() {
       );
       expect(h.progressReads.length, 4);
       expect(h.progressWrites, isEmpty);
+      final card = t.getRect(
+        find.byKey(const Key('doctor_progress_history_card')),
+      );
+      final lastRow = t.getRect(find.byKey(const Key('doctor_progress_row_2')));
+      expect(card.bottom, closeTo(lastRow.bottom, 1));
+      expect(
+        card.top,
+        t.getTopLeft(find.byKey(const Key('doctor_progress_table_header'))).dy,
+      );
       await _capture(t, 'doctor_progress_history');
       h.transport.requests.clear();
       await _tap(t, 'doctor_progress_back');
@@ -333,10 +342,33 @@ void main() {
     t,
   ) async {
     final h = DoctorProgressHarness();
+    h.customRows = [
+      {
+        ...h.customRows!.single,
+        'pfn_fee_name': 'Physiotherapy Service Charge',
+        'depts_name': 'Example Communication Group',
+      },
+    ];
     await _show(t, h);
     await _fill(t);
     expect(find.text('24-OCT-26'), findsOneWidget);
-    expect(find.text('Physiotherapy Service'), findsOneWidget);
+    expect(find.text('Physiotherapy Service Charge'), findsOneWidget);
+    final date = t.getRect(
+      find.byKey(const Key('doctor_progress_readonly_date')),
+    );
+    final service = t.getRect(
+      find.byKey(const Key('doctor_progress_readonly_service')),
+    );
+    final doctor = t.getRect(
+      find.byKey(const Key('doctor_progress_readonly_doctor')),
+    );
+    final unit = t.getRect(
+      find.byKey(const Key('doctor_progress_readonly_unit')),
+    );
+    expect(date.height, service.height);
+    expect(doctor.height, unit.height);
+    await t.tap(find.byKey(const Key('doctor_progress_readonly_service')));
+    await t.pump();
     expect(_layout(t).score, 7);
     expect(_layout(t).notes.text, 'ভালো হচ্ছে');
     expect(h.progressWrites, isEmpty);
@@ -799,6 +831,13 @@ void main() {
         await t.pumpAndSettle();
         await _confirm(t, yes: false);
         expect(h.progressWrites, isEmpty);
+        await _tap(t, 'doctor_progress_history_tab');
+        h.progressRows = [];
+        t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        await t.pump();
+        t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        await t.pumpAndSettle();
+        expect(find.byKey(const Key('doctor_progress_empty')), findsOneWidget);
         expect(t.takeException(), isNull);
         await _finish(t);
       },

@@ -241,13 +241,15 @@ class NativeAppointmentTimelineCard extends StatelessWidget {
                             if (view.progressChecked)
                               Padding(
                                 padding: EdgeInsets.only(right: 4 * sdp),
-                                child: Icon(
-                                  Icons.check_circle,
+                                child: Image.asset(
+                                  'assets/images/check_progress.png',
                                   key: Key(
                                     'doctor_appointment_progress_check_$index',
                                   ),
-                                  size: 11 * sdp,
-                                  color: DocColors.greenSea,
+                                  width: 11 * sdp,
+                                  height: 11 * sdp,
+                                  fit: BoxFit.contain,
+                                  semanticLabel: 'Progress added',
                                 ),
                               ),
                             if (view.showProgress)

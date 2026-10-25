@@ -178,6 +178,7 @@ class NativeDoctorProfileLayout extends StatelessWidget {
                   ),
                 )
                 : SafeArea(
+                  bottom: false,
                   child: LayoutBuilder(
                     builder:
                         (context, constraints) => Column(
@@ -227,219 +228,227 @@ class NativeDoctorProfileLayout extends StatelessWidget {
                                 ),
                                 child: ColoredBox(
                                   color: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 2.0,
-                                      left: 6.0,
-                                      right: 6.0,
-                                      bottom: 6.0,
-                                    ),
-                                    child: SingleChildScrollView(
-                                      key: const Key('profile_scroll'),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                              top: 15 * sdp,
-                                              bottom: 10 * sdp,
-                                            ),
-                                            child: Center(
-                                              child: SizedBox.square(
-                                                dimension: 104 * sdp,
-                                                child: Stack(
-                                                  clipBehavior: Clip.none,
-                                                  children: [
-                                                    Center(
-                                                      child: Material(
-                                                        elevation: 3,
-                                                        shape:
-                                                            const CircleBorder(),
-                                                        color: Colors.white,
-                                                        child: Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                2 * sdp,
+                                  child: SafeArea(
+                                    top: false,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 2.0,
+                                        left: 6.0,
+                                        right: 6.0,
+                                        bottom: 6.0,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        key: const Key('profile_scroll'),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                top: 15 * sdp,
+                                                bottom: 10 * sdp,
+                                              ),
+                                              child: Center(
+                                                child: SizedBox.square(
+                                                  dimension: 104 * sdp,
+                                                  child: Stack(
+                                                    clipBehavior: Clip.none,
+                                                    children: [
+                                                      Center(
+                                                        child: Material(
+                                                          elevation: 3,
+                                                          shape:
+                                                              const CircleBorder(),
+                                                          color: Colors.white,
+                                                          child: Padding(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                  2 * sdp,
+                                                                ),
+                                                            child: Container(
+                                                              width: 100 * sdp,
+                                                              height: 100 * sdp,
+                                                              decoration: BoxDecoration(
+                                                                shape:
+                                                                    BoxShape
+                                                                        .circle,
+                                                                border: Border.all(
+                                                                  color:
+                                                                      DocColors
+                                                                          .greenSea,
+                                                                ),
                                                               ),
-                                                          child: Container(
-                                                            width: 100 * sdp,
-                                                            height: 100 * sdp,
-                                                            decoration: BoxDecoration(
-                                                              shape:
-                                                                  BoxShape
-                                                                      .circle,
-                                                              border: Border.all(
+                                                              child: ClipOval(
+                                                                child:
+                                                                    photo ==
+                                                                            null
+                                                                        ? fallback()
+                                                                        : Image.memory(
+                                                                          photo,
+                                                                          key: const Key(
+                                                                            'profile_picture',
+                                                                          ),
+                                                                          fit:
+                                                                              BoxFit.cover,
+                                                                          errorBuilder:
+                                                                              (
+                                                                                _,
+                                                                                __,
+                                                                                ___,
+                                                                              ) =>
+                                                                                  fallback(),
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        top: -2,
+                                                        right: -2,
+                                                        child: SizedBox.square(
+                                                          dimension: 18 * sdp,
+                                                          child: OverflowBox(
+                                                            maxWidth: 44,
+                                                            maxHeight: 44,
+                                                            child: IconButton(
+                                                              key: const Key(
+                                                                'profile_change_photo',
+                                                              ),
+                                                              tooltip:
+                                                                  'Change picture',
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                              onPressed:
+                                                                  onPhoto,
+                                                              icon: NativeDashboardIcon(
+                                                                NativeDashboardGlyph
+                                                                    .camera,
+                                                                size: 20 * sdp,
                                                                 color:
                                                                     DocColors
-                                                                        .greenSea,
+                                                                        .primary,
                                                               ),
                                                             ),
-                                                            child: ClipOval(
-                                                              child:
-                                                                  photo == null
-                                                                      ? fallback()
-                                                                      : Image.memory(
-                                                                        photo,
-                                                                        key: const Key(
-                                                                          'profile_picture',
-                                                                        ),
-                                                                        fit:
-                                                                            BoxFit.cover,
-                                                                        errorBuilder:
-                                                                            (
-                                                                              _,
-                                                                              __,
-                                                                              ___,
-                                                                            ) =>
-                                                                                fallback(),
-                                                                      ),
-                                                            ),
                                                           ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    Positioned(
-                                                      top: -2,
-                                                      right: -2,
-                                                      child: SizedBox.square(
-                                                        dimension: 18 * sdp,
-                                                        child: OverflowBox(
-                                                          maxWidth: 44,
-                                                          maxHeight: 44,
-                                                          child: IconButton(
-                                                            key: const Key(
-                                                              'profile_change_photo',
-                                                            ),
-                                                            tooltip:
-                                                                'Change picture',
-                                                            padding:
-                                                                EdgeInsets.zero,
-                                                            onPressed: onPhoto,
-                                                            icon: NativeDashboardIcon(
-                                                              NativeDashboardGlyph
-                                                                  .camera,
-                                                              size: 20 * sdp,
-                                                              color:
-                                                                  DocColors
-                                                                      .primary,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          SizedBox(height: 2),
-                                          identity(
-                                            'profile_name',
-                                            profile.value('doc_name'),
-                                            15,
-                                            bold: true,
-                                          ),
-                                          SizedBox(height: 2),
-                                          identity(
-                                            'profile_code',
-                                            '(${profile.value('doc_code')})',
-                                            11,
-                                          ),
-                                          SizedBox(height: 2),
-                                          identity(
-                                            'profile_designation',
-                                            profile.value('desig_name'),
-                                            11,
-                                          ),
-                                          SizedBox(height: 2),
-                                          identity(
-                                            'profile_department',
-                                            profile.value('deptd_name'),
-                                            11,
-                                          ),
-                                          SizedBox(height: 2),
-                                          identity(
-                                            'profile_unit',
-                                            profile.value('depts_name'),
-                                            11,
-                                          ),
-                                          if (profile
-                                              .value('doc_center_name')
-                                              .isNotEmpty) ...[
                                             SizedBox(height: 2),
                                             identity(
-                                              'profile_center',
-                                              profile.value('doc_center_name'),
-                                              11,
+                                              'profile_name',
+                                              profile.value('doc_name'),
+                                              15,
                                               bold: true,
                                             ),
-                                          ],
-
-                                          if (profile.value(
-                                                'doc_video_link_enable_flag',
-                                              ) ==
-                                              '1') ...[
                                             SizedBox(height: 2),
-                                            Center(
-                                              child: button(
-                                                'profile_video',
-                                                'VIDEO CALL',
-                                                onVideo,
-                                                video: true,
+                                            identity(
+                                              'profile_code',
+                                              '(${profile.value('doc_code')})',
+                                              11,
+                                            ),
+                                            SizedBox(height: 2),
+                                            identity(
+                                              'profile_designation',
+                                              profile.value('desig_name'),
+                                              11,
+                                            ),
+                                            SizedBox(height: 2),
+                                            identity(
+                                              'profile_department',
+                                              profile.value('deptd_name'),
+                                              11,
+                                            ),
+                                            SizedBox(height: 2),
+                                            identity(
+                                              'profile_unit',
+                                              profile.value('depts_name'),
+                                              11,
+                                            ),
+                                            if (profile
+                                                .value('doc_center_name')
+                                                .isNotEmpty) ...[
+                                              SizedBox(height: 2),
+                                              identity(
+                                                'profile_center',
+                                                profile.value(
+                                                  'doc_center_name',
+                                                ),
+                                                11,
+                                                bold: true,
                                               ),
+                                            ],
+
+                                            if (profile.value(
+                                                  'doc_video_link_enable_flag',
+                                                ) ==
+                                                '1') ...[
+                                              SizedBox(height: 2),
+                                              Center(
+                                                child: button(
+                                                  'profile_video',
+                                                  'VIDEO CALL',
+                                                  onVideo,
+                                                  video: true,
+                                                ),
+                                              ),
+                                            ],
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                top: 10 * sdp,
+                                              ),
+                                              child: Center(
+                                                child: button(
+                                                  'profile_password',
+                                                  'CHANGE PASSWORD',
+                                                  onPassword,
+                                                ),
+                                              ),
+                                            ),
+                                            section('Address:', edit: true),
+                                            field(
+                                              'profile_street',
+                                              'Street Address:',
+                                              'doc_village',
+                                            ),
+                                            field(
+                                              'profile_post_office',
+                                              'Post Office:',
+                                              'doc_poffice',
+                                            ),
+                                            field(
+                                              'profile_thana',
+                                              'Thana/Upazila:',
+                                              'dd_thana_name',
+                                            ),
+                                            field(
+                                              'profile_district',
+                                              'District:',
+                                              'dist_name',
+                                            ),
+                                            section('Contact Information:'),
+                                            field(
+                                              'profile_mobile',
+                                              'Mobile:',
+                                              'doc_cell',
+                                            ),
+                                            field(
+                                              'profile_phone',
+                                              'Phone (Home):',
+                                              'doc_phone',
+                                            ),
+                                            field(
+                                              'profile_email',
+                                              'Email:',
+                                              'doc_email',
                                             ),
                                           ],
-                                          Padding(
-                                            padding: EdgeInsets.only(
-                                              top: 10 * sdp,
-                                            ),
-                                            child: Center(
-                                              child: button(
-                                                'profile_password',
-                                                'CHANGE PASSWORD',
-                                                onPassword,
-                                              ),
-                                            ),
-                                          ),
-                                          section('Address:', edit: true),
-                                          field(
-                                            'profile_street',
-                                            'Street Address:',
-                                            'doc_village',
-                                          ),
-                                          field(
-                                            'profile_post_office',
-                                            'Post Office:',
-                                            'doc_poffice',
-                                          ),
-                                          field(
-                                            'profile_thana',
-                                            'Thana/Upazila:',
-                                            'dd_thana_name',
-                                          ),
-                                          field(
-                                            'profile_district',
-                                            'District:',
-                                            'dist_name',
-                                          ),
-                                          section('Contact Information:'),
-                                          field(
-                                            'profile_mobile',
-                                            'Mobile:',
-                                            'doc_cell',
-                                          ),
-                                          field(
-                                            'profile_phone',
-                                            'Phone (Home):',
-                                            'doc_phone',
-                                          ),
-                                          field(
-                                            'profile_email',
-                                            'Email:',
-                                            'doc_email',
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
