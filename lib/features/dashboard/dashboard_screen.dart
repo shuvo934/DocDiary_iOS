@@ -24,6 +24,8 @@ import '../profile/doctor_profile_repository.dart';
 import '../profile/doctor_profile_screen.dart';
 import '../block_time/doctor_block_time_repository.dart';
 import '../block_time/doctor_block_time_screen.dart';
+import '../appointments/doctor_schedule/doctor_appointment_repository.dart';
+import '../appointments/doctor_schedule/doctor_appointment_screen.dart';
 import '../management/management_menu_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -667,6 +669,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                 now: widget.repository.now,
               ),
               media: widget.services.media,
+            )
+            : route.module == DashboardModule.doctorAppointments
+            ? DoctorAppointmentScreen(
+              auth: widget.auth,
+              repository: DoctorAppointmentRepository(
+                widget.repository.transport,
+                now: widget.repository.now,
+              ),
+              destinationBuilder: widget.services.destinationBuilder,
             )
             : route.module == DashboardModule.doctorBlockTime
             ? DoctorBlockTimeScreen(

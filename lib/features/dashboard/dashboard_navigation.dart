@@ -29,6 +29,13 @@ enum DashboardModule {
   hrLeaveRecord,
   hrLeaveBalance,
   hrLeaveApproval,
+  doctorAppointmentAvail,
+  doctorAppointmentHistory,
+  doctorHealthProgress,
+  doctorLegacyPrescription,
+  doctorPrescriptionBuilder,
+  doctorPrescriptionPreview,
+  doctorVideoCall,
 }
 
 class DashboardRoute {

@@ -39,6 +39,11 @@ void main() {
       final h = Harness();
       h.doctorData['doc_manager_flag'] = '1';
       h.doctorData['doc_deptd_head_flag'] = '1';
+      h.transport.onGet =
+          (uri) async =>
+              uri.path.contains('/appointment_schedule/')
+                  ? {'count': 0, 'items': <Object?>[]}
+                  : await h.defaultGet(uri);
       await h.signIn();
       await _show(tester, h);
       expect(find.text('Dashboard'), findsOneWidget);
@@ -58,11 +63,8 @@ void main() {
       final before = h.posts.length;
       await tester.tap(find.byKey(const Key('dashboard_nav_appointment')));
       await tester.pumpAndSettle();
-      expect(
-        find.text('This screen is not available in this development build.'),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Close'));
+      expect(find.text('No Schedule Found'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('doctor_appointment_back')));
       await tester.pumpAndSettle();
       expect(h.posts.length, before);
     },
