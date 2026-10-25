@@ -8,6 +8,8 @@ import '../../auth/auth_models.dart';
 import '../../auth/profile_repository.dart';
 import '../../dashboard/dashboard_navigation.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
+import 'avail/doctor_appointment_avail_repository.dart';
+import 'avail/native_appointment_avail_dialog.dart';
 import 'doctor_appointment_models.dart';
 import 'doctor_appointment_navigation.dart';
 import 'doctor_appointment_repository.dart';
@@ -40,6 +42,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
   bool _invalid = false,
       _foreground = true,
       _busy = true,
+      _writingAvail = false,
       _failedLoad = false,
       _childAway = false;
   int _operation = 0;
@@ -54,6 +57,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
       _current &&
       _foreground &&
       !_busy &&
+      !_writingAvail &&
       !_failedLoad &&
       !_childAway &&
       !_dialogs.isOpen &&
@@ -141,6 +145,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
   Future<void> _load({bool force = false}) async {
     if (!_current ||
         !_foreground ||
+        _writingAvail ||
         _childAway ||
         _dialogs.isOpen ||
         (_busy && !force)) {
@@ -290,6 +295,10 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
       }
       final route = doctorAppointmentRoute(action, row);
       final page = widget.destinationBuilder?.call(context, route);
+      if (page == null && action == DoctorAppointmentAction.avail) {
+        await _avail(row!, operation);
+        return;
+      }
       if (page == null) {
         await _dialogs.show<void>(
           context,
@@ -335,8 +344,65 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
     }
   }
 
+  Future<void> _avail(DoctorAppointmentRow row, int operation) async {
+    final result = await _dialogs.show<DoctorAppointmentAvailResult>(
+      context,
+      NativeAppointmentAvailDialog(
+        onSubmit: (notes, dialogCurrent) async {
+          if (!_alive(operation) || _writingAvail || !dialogCurrent()) {
+            throw const ObsoleteRequest();
+          }
+          setState(() => _writingAvail = true);
+          try {
+            final profile = await _profile(operation);
+            if (!dialogCurrent()) throw const ObsoleteRequest();
+            return await DoctorAppointmentAvailRepository(
+              widget.repository,
+            ).submit(
+              _session,
+              profile,
+              row,
+              notes,
+              isCurrent: () => _alive(operation) && dialogCurrent(),
+            );
+          } catch (failure) {
+            if (_alive(operation) && _deny(failure)) {
+              throw const ObsoleteRequest();
+            }
+            rethrow;
+          } finally {
+            _writingAvail = false;
+            if (mounted) setState(() {});
+            // If iOS suspended the dialog, wait for an in-flight write to
+            // finish before fetching status. Resuming never repeats the POST.
+            if (!_alive(operation) && _current && _foreground) {
+              await _resume();
+            }
+          }
+        },
+      ),
+    );
+    if (!_alive(operation) || result == null) return;
+    _messages.currentState?.showSnackBar(
+      SnackBar(
+        content: Text(switch (result) {
+          DoctorAppointmentAvailResult.created => 'Successfully Availed',
+          DoctorAppointmentAvailResult.alreadyAvailed =>
+            'This schedule is already availed.',
+          DoctorAppointmentAvailResult.unavailable =>
+            'This schedule is no longer available to avail.',
+        }),
+      ),
+    );
+    await _load(force: true);
+  }
+
   Future<void> _back() async {
-    if (mounted && !_busy && !_dialogs.isOpen && !_childAway) {
+    if (mounted &&
+        !_busy &&
+        !_writingAvail &&
+        !_dialogs.isOpen &&
+        !_childAway) {
       await Navigator.maybePop(context);
     }
   }
@@ -345,15 +411,21 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
   Widget build(BuildContext context) => ScaffoldMessenger(
     key: _messages,
     child: PopScope(
-      canPop: !_busy,
+      canPop: !_busy && !_writingAvail,
       child: NativeDoctorAppointmentLayout(
         window: _window,
         selected: _selected,
         now: _evaluatedAt,
         features: _features,
         rows: _foreground ? _rows : const [],
-        waiting: !_invalid && (!_current || !_foreground || _busy),
-        enabled: _current && _foreground && !_childAway && !_failedLoad,
+        waiting:
+            !_invalid && (!_current || !_foreground || _busy || _writingAvail),
+        enabled:
+            _current &&
+            _foreground &&
+            !_childAway &&
+            !_failedLoad &&
+            !_writingAvail,
         message:
             _invalid
                 ? 'Doctor appointments are not available for this account.'

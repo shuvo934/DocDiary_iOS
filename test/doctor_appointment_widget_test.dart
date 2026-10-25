@@ -400,7 +400,6 @@ void main() {
     await _finish(t);
   });
   for (final action in [
-    DoctorAppointmentAction.avail,
     DoctorAppointmentAction.history,
     DoctorAppointmentAction.progress,
     DoctorAppointmentAction.dynamicPrescription,
@@ -410,8 +409,7 @@ void main() {
       (t) async {
         final h = DoctorAppointmentHarness();
         await _show(t, h);
-        final row = action == DoctorAppointmentAction.avail ? 1 : 0;
-        await _tap(t, 'doctor_appointment_${row}_${action.name}');
+        await _tap(t, 'doctor_appointment_0_${action.name}');
         expect(
           find.byKey(const Key('doctor_appointment_unavailable')),
           findsOneWidget,
@@ -550,26 +548,29 @@ void main() {
     expect(_layout(t).rows.single.value('pat_name'), 'Fresh Patient');
     await _finish(t);
   });
-  _case(
-    'background closes unfinished-action dialog and resumes with fresh access check',
-    (t) async {
-      final h = DoctorAppointmentHarness();
-      await _show(t, h);
-      await _tap(t, 'doctor_appointment_1_avail');
-      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      await t.pump();
-      await t.pump(const Duration(milliseconds: 300));
-      expect(
-        find.byKey(const Key('doctor_appointment_unavailable')),
-        findsNothing,
-      );
-      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await t.pumpAndSettle();
-      expect(_layout(t).rows.length, 6);
-      expect(h.posts, isEmpty);
-      await _finish(t);
-    },
-  );
+  _case('background closes AVAIL dialog and resumes with fresh access check', (
+    t,
+  ) async {
+    final h = DoctorAppointmentHarness();
+    await _show(t, h);
+    await _tap(t, 'doctor_appointment_1_avail');
+    expect(
+      find.byKey(const Key('doctor_appointment_avail_dialog')),
+      findsOneWidget,
+    );
+    t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 300));
+    expect(
+      find.byKey(const Key('doctor_appointment_avail_dialog')),
+      findsNothing,
+    );
+    t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await t.pumpAndSettle();
+    expect(_layout(t).rows.length, 6);
+    expect(h.posts, isEmpty);
+    await _finish(t);
+  });
   for (final field in ['fl_flag', 'access_flag', 'exp_date']) {
     _case(
       '$field is checked before changing date and no schedule is read after revocation',

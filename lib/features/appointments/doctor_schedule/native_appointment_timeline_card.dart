@@ -82,7 +82,7 @@ class NativeAppointmentTimelineCard extends StatelessWidget {
       runSpacing: 4,
       children: [
         if (view.showAvail) action(DoctorAppointmentAction.avail, 'AVAIL'),
-        if (view.availMessage != null)
+        if (view.availMessage != null) ...[
           Text(
             view.availMessage!,
             style: appointmentText(
@@ -91,6 +91,8 @@ class NativeAppointmentTimelineCard extends StatelessWidget {
               color: color,
             ),
           ),
+          SizedBox(width: 2),
+        ],
         if (view.showPrescription)
           action(view.prescriptionAction, view.prescriptionLabel),
       ],
