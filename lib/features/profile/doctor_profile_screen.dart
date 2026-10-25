@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+
+import '../../core/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_theme.dart';
@@ -50,6 +52,7 @@ class DoctorProfileScreen extends StatefulWidget {
 
 class _DoctorProfileScreenState extends State<DoctorProfileScreen>
     with WidgetsBindingObserver {
+  final _toasts = AppToastOwner();
   late final AuthSession _session;
   late AccountProfile _profile;
   DoctorProfileDetails? _details;
@@ -93,6 +96,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen>
 
   void _authChanged() {
     if (!_current) {
+      _toasts.clear();
       ++_operation;
       _wake();
       _dialogs.close();
@@ -239,9 +243,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen>
 
   void _notice(String message) {
     if (_current && _foreground) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-      );
+      _toasts.show(context, message);
     }
   }
 
@@ -471,6 +473,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen>
 
   @override
   void dispose() {
+    _toasts.dispose();
     ++_operation;
     _wake();
     _dialogs.dispose();

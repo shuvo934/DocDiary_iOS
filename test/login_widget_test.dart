@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,10 @@ import 'package:docdiary_ios/features/dashboard/dashboard_repository.dart';
 import 'support.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
   Future<Harness> showLogin(WidgetTester tester, {Harness? harness}) async {
     final h = harness ?? Harness();
     await h.auth.initialize();
@@ -50,7 +55,7 @@ void main() {
     await tester.ensureVisible(find.byKey(const Key('login_button')));
     await tester.tap(find.byKey(const Key('login_button')));
     await tester.pumpAndSettle();
-    expect(find.text('Please Give Mobile No and Password'), findsOneWidget);
+    expect(toasts.messages, contains('Please Give Mobile No and Password'));
     expect(h.transport.requests, isEmpty);
   });
 

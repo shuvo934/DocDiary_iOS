@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/app_toast.dart';
+
 import '../../core/app_theme.dart';
 import '../../core/failure.dart';
 import '../auth/account_access.dart';
@@ -25,6 +27,7 @@ class DoctorPasswordScreen extends StatefulWidget {
 
 class _DoctorPasswordScreenState extends State<DoctorPasswordScreen>
     with WidgetsBindingObserver {
+  final _toasts = AppToastOwner();
   late final AuthSession _session;
   final _currentPassword = TextEditingController(),
       _newPassword = TextEditingController(),
@@ -89,6 +92,7 @@ class _DoctorPasswordScreenState extends State<DoctorPasswordScreen>
 
   void _authChanged() {
     if (!_current) {
+      _toasts.clear();
       ++_operation;
       _wake();
       _dialogs.close();
@@ -219,23 +223,7 @@ class _DoctorPasswordScreenState extends State<DoctorPasswordScreen>
 
   void _notice(String text) {
     if (_current && _foreground) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(text),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(
-            16,
-            0,
-            16,
-            (MediaQuery.sizeOf(context).height -
-                    MediaQuery.viewInsetsOf(context).bottom -
-                    120)
-                .clamp(0.0, 88.0)
-                .toDouble(),
-          ),
-        ),
-      );
+      _toasts.show(context, text);
     }
   }
 
@@ -370,6 +358,7 @@ class _DoctorPasswordScreenState extends State<DoctorPasswordScreen>
 
   @override
   void dispose() {
+    _toasts.dispose();
     ++_operation;
     _wake();
     _dialogs.dispose();

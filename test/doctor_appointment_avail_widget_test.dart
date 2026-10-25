@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -106,6 +107,10 @@ void _case(String name, Future<void> Function(WidgetTester) run) {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
+  TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     for (final entry
         in <String, List<String>>{
@@ -169,7 +174,7 @@ void main() {
         await _tap(t, 'doctor_appointment_avail_submit');
         expect(h.posts.length, 1);
         expect(find.byType(NativeAppointmentAvailDialog), findsNothing);
-        expect(find.text('Successfully Availed'), findsOneWidget);
+        expect(toasts.messages, contains('Successfully Availed'));
         expect(find.text('Availed'), findsOneWidget);
         expect(
           find.byKey(const Key('doctor_appointment_0_avail')),
@@ -308,7 +313,7 @@ void main() {
     expect(h.posts.length, 1);
     await _tap(t, 'doctor_appointment_avail_retry');
     expect(h.posts.length, 1);
-    expect(find.text('This schedule is already availed.'), findsOneWidget);
+    expect(toasts.messages, contains('This schedule is already availed.'));
     expect(find.text('Availed'), findsOneWidget);
     await _finish(t);
   });
@@ -381,8 +386,8 @@ void main() {
       expect(find.byType(NativeAppointmentAvailDialog), findsNothing);
       expect(find.text('Replacement Patient'), findsOneWidget);
       expect(
-        find.text('This schedule is no longer available to avail.'),
-        findsOneWidget,
+        toasts.messages,
+        contains('This schedule is no longer available to avail.'),
       );
       await _finish(t);
     },
@@ -486,7 +491,7 @@ void main() {
     gate.complete({'string_out': 'Successfully Created'});
     await t.pumpAndSettle();
     expect(find.byType(NativeAppointmentAvailDialog), findsNothing);
-    expect(find.text('Successfully Availed'), findsNothing);
+    expect(toasts.messages, isNot(contains('Successfully Availed')));
     expect(h.posts.length, 1);
     await _finish(t);
   });

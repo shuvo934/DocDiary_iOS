@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -180,6 +181,10 @@ void _case(String name, Future<void> Function(WidgetTester) run) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     for (final entry
@@ -421,7 +426,7 @@ void main() {
     };
     await _confirm(t);
     expect(h.progressWrites.length, 1);
-    expect(find.text('New Progress Added'), findsOneWidget);
+    expect(toasts.messages, contains('New Progress Added'));
     expect(_layout(t).canAdd, isFalse);
     expect(_layout(t).adding, isFalse);
     expect(_layout(t).rows.first.value('pph_notes'), 'ভালো হচ্ছে');
@@ -527,8 +532,8 @@ void main() {
       expect(h.progressWrites.length, 1);
       expect(_layout(t).canAdd, isFalse);
       expect(
-        find.text('Progress has already been added for this schedule.'),
-        findsOneWidget,
+        toasts.messages,
+        contains('Progress has already been added for this schedule.'),
       );
       await _finish(t);
     },
@@ -756,7 +761,7 @@ void main() {
       expect(find.byType(DoctorProgressScreen), findsNothing);
       gate.complete({'string_out': 'Successfully Created'});
       await t.pumpAndSettle();
-      expect(find.text('New Progress Added'), findsNothing);
+      expect(toasts.messages, isNot(contains('New Progress Added')));
       expect(h.progressWrites.length, 1);
       await _finish(t);
     },

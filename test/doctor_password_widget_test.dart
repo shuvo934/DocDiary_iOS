@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 
 import 'package:docdiary_ios/app.dart';
@@ -100,6 +101,10 @@ Future<void> _finish(WidgetTester tester) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
+  TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     for (final entry
         in {
@@ -151,6 +156,7 @@ void main() {
       await _show(tester, h);
       await _tap(tester, 'password_update');
       expect(find.text('Please Provide Current Password'), findsWidgets);
+      expect(toasts.messages, contains('Please Provide Current Password'));
       await _enter(tester, 'password_current', 'wrong');
       await _tap(tester, 'password_update');
       expect(find.text('Current Password is Wrong'), findsWidgets);

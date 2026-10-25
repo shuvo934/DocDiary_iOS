@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -172,6 +173,10 @@ Future<void> _capture(WidgetTester t, String name) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
+  TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     for (final entry
         in <String, List<String>>{
@@ -308,7 +313,7 @@ void main() {
       await _show(t, h);
       await _select(t);
       await _tap(t, 'leave_approval_reject');
-      expect(find.text('Please mention reason for reject'), findsOneWidget);
+      expect(toasts.messages, contains('Please mention reason for reject'));
       expect(find.byKey(const Key('leave_approval_confirm')), findsNothing);
       await _tap(t, 'leave_approval_approve');
       await _tap(t, 'leave_approval_yes');
@@ -327,7 +332,7 @@ void main() {
         await _comment(t, 'Review');
         await _tap(t, 'leave_approval_${action.name}');
         await _tap(t, 'leave_approval_yes');
-        expect(find.text('Already handled'), findsOneWidget);
+        expect(toasts.messages, contains('Already handled'));
         expect(find.text(action.successMessage), findsNothing);
         expect(find.byType(LeaveApprovalScreen), findsOneWidget);
         expect(_layout(t).comments.text, 'Review');

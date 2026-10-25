@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -100,6 +101,10 @@ Future<void> _finish(WidgetTester tester) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
   testWidgets(
     'native photo chooser is admin-only and Close performs no media or upload work',
     (tester) async {
@@ -168,7 +173,7 @@ void main() {
             .picture,
         media.bytes,
       );
-      expect(find.text('Picture Uploaded'), findsOneWidget);
+      expect(toasts.messages, contains('Picture Uploaded'));
       expect(h.posts.length, writes);
       expect(
         h.transport.requests
@@ -213,7 +218,7 @@ void main() {
         h.transport.binaryRequests[0].body,
         h.transport.binaryRequests[1].body,
       );
-      expect(find.text('Picture Uploaded'), findsOneWidget);
+      expect(toasts.messages, contains('Picture Uploaded'));
       await _finish(tester);
     },
   );
@@ -234,7 +239,7 @@ void main() {
             .picture,
         isNull,
       );
-      expect(find.text('Picture Uploaded'), findsNothing);
+      expect(toasts.messages, isNot(contains('Picture Uploaded')));
       await _finish(tester);
     },
   );
@@ -296,7 +301,7 @@ void main() {
             .length,
         charts,
       );
-      expect(find.text('Picture Uploaded'), findsOneWidget);
+      expect(toasts.messages, contains('Picture Uploaded'));
       await _finish(tester);
     },
   );
@@ -314,11 +319,11 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       pending.complete({'string_out': 'Successfully Created'});
       await tester.pump();
-      expect(find.text('Picture Uploaded'), findsNothing);
+      expect(toasts.messages, isNot(contains('Picture Uploaded')));
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
       expect(h.transport.binaryRequests, hasLength(1));
-      expect(find.text('Picture Uploaded'), findsOneWidget);
+      expect(toasts.messages, contains('Picture Uploaded'));
       await _finish(tester);
     },
   );
@@ -338,7 +343,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(h.transport.binaryRequests, isEmpty);
-      expect(find.text('Picture Uploaded'), findsNothing);
+      expect(toasts.messages, isNot(contains('Picture Uploaded')));
       await _finish(tester);
     },
   );

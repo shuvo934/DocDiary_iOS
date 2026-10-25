@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'core/app_theme.dart';
+import 'core/app_toast.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/native_account_gate.dart';
@@ -35,6 +36,7 @@ class DocDiaryApp extends StatefulWidget {
 }
 
 class _DocDiaryAppState extends State<DocDiaryApp> with WidgetsBindingObserver {
+  final _toastNavigation = AppToastNavigationObserver();
   Timer? _splashTimer;
   late bool _showStartupSplash;
   bool _restoringStarted = false;
@@ -99,6 +101,7 @@ class _DocDiaryAppState extends State<DocDiaryApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'DocDiary',
+    navigatorObservers: [_toastNavigation],
     debugShowCheckedModeBanner: false,
     theme: docDiaryTheme(),
     home: ListenableBuilder(

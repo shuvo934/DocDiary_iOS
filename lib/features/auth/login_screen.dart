@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../core/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'auth_controller.dart';
@@ -18,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _toasts = AppToastOwner();
   final _mobile = TextEditingController();
   final _password = TextEditingController();
   bool _remember = false;
@@ -44,6 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _toasts.dispose();
     _mobile.dispose();
     _password.dispose();
     super.dispose();
@@ -70,13 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showError(String message) async {
     if (message == 'Please Give Mobile No and Password') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message, textAlign: TextAlign.center),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      _toasts.show(context, message);
       return;
     }
     final retry =
@@ -150,15 +148,11 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!opened && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('There is no email app found.')),
-        );
+        _toasts.show(context, 'There is no email app found.');
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('There is no email app found.')),
-        );
+        _toasts.show(context, 'There is no email app found.');
       }
     }
   }

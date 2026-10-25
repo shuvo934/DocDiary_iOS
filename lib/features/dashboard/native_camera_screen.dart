@@ -5,6 +5,8 @@ import 'dart:math' as math;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../../core/app_toast.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -21,6 +23,7 @@ class NativeCameraScreen extends StatefulWidget {
 
 class _NativeCameraScreenState extends State<NativeCameraScreen>
     with WidgetsBindingObserver {
+  final _toasts = AppToastOwner();
   CameraController? _camera;
   List<CameraDescription>? _cameras;
   bool _front = false;
@@ -162,9 +165,7 @@ class _NativeCameraScreenState extends State<NativeCameraScreen>
 
   void _notice(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-      );
+      _toasts.show(context, message);
     }
   }
 
@@ -259,6 +260,7 @@ class _NativeCameraScreenState extends State<NativeCameraScreen>
 
   @override
   void dispose() {
+    _toasts.dispose();
     ++_generation;
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_release(_camera));

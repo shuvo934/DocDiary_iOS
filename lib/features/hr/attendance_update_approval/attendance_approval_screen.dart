@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
+import '../../../core/app_toast.dart';
 import '../../../core/failure.dart';
 import '../../auth/account_access.dart';
 import '../../auth/auth_controller.dart';
@@ -29,7 +31,7 @@ class _AttendanceApprovalScreenState extends State<AttendanceApprovalScreen>
     with WidgetsBindingObserver {
   late final AuthSession _session;
   final _dialogs = NativeDashboardDialogOwner();
-  final _messages = GlobalKey<ScaffoldMessengerState>();
+  final _toasts = AppToastOwner();
   final _comments = TextEditingController();
   AttendanceApprovalRequest? _selected;
   AttendanceApprovalDetail? _detail;
@@ -87,7 +89,7 @@ class _AttendanceApprovalScreenState extends State<AttendanceApprovalScreen>
     if (!_current) {
       ++_operation;
       _dialogs.close();
-      _messages.currentState?.clearSnackBars();
+      _toasts.clear();
       _comments.clear();
       if (mounted) {
         setState(() {
@@ -105,7 +107,7 @@ class _AttendanceApprovalScreenState extends State<AttendanceApprovalScreen>
       _foreground = false;
       ++_operation;
       _dialogs.close();
-      _messages.currentState?.clearSnackBars();
+      _toasts.clear();
       if (mounted) setState(() {});
     } else if (!_foreground) {
       _foreground = true;
@@ -387,18 +389,7 @@ class _AttendanceApprovalScreenState extends State<AttendanceApprovalScreen>
   }
 
   void _toast(String message) {
-    _messages.currentState?.showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.fromLTRB(
-          12,
-          0,
-          12,
-          80 * attendanceApprovalScale(context),
-        ),
-        content: Text(message),
-      ),
-    );
+    _toasts.show(context, message);
   }
 
   Future<void> _success(AttendanceApprovalAction action) async {
@@ -458,28 +449,26 @@ class _AttendanceApprovalScreenState extends State<AttendanceApprovalScreen>
   }
 
   @override
-  Widget build(BuildContext context) => ScaffoldMessenger(
-    key: _messages,
-    child: PopScope(
-      canPop: !_busy && !_writing,
-      child: NativeAttendanceApprovalLayout(
-        request: _selected,
-        detail: _detail,
-        comments: _comments,
-        waiting: !_invalid && (!_current || !_foreground || _busy),
-        enabled: _current && _foreground && !_denied && _completed == null,
-        message:
-            _denied
-                ? 'Attendance Update Approval access is not available for this account.'
-                : null,
-        onBack: () => unawaited(_back()),
-        onSelect: () => unawaited(_openPicker()),
-        onAction: (action) => unawaited(_act(action)),
-      ),
+  Widget build(BuildContext context) => PopScope(
+    canPop: !_busy && !_writing,
+    child: NativeAttendanceApprovalLayout(
+      request: _selected,
+      detail: _detail,
+      comments: _comments,
+      waiting: !_invalid && (!_current || !_foreground || _busy),
+      enabled: _current && _foreground && !_denied && _completed == null,
+      message:
+          _denied
+              ? 'Attendance Update Approval access is not available for this account.'
+              : null,
+      onBack: () => unawaited(_back()),
+      onSelect: () => unawaited(_openPicker()),
+      onAction: (action) => unawaited(_act(action)),
     ),
   );
   @override
   void dispose() {
+    _toasts.dispose();
     ++_operation;
     if (!_invalid) {
       widget.auth.removeListener(_authChanged);

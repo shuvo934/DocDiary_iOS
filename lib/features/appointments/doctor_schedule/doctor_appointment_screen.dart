@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
+import '../../../core/app_toast.dart';
 import '../../../core/failure.dart';
 import '../../../core/native_dates.dart';
 import '../../auth/account_access.dart';
@@ -42,7 +44,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
   late final DoctorAppointmentWindow _window;
   late DateTime _selected, _evaluatedAt;
   final _dialogs = NativeDashboardDialogOwner();
-  final _messages = GlobalKey<ScaffoldMessengerState>();
+  final _toasts = AppToastOwner();
   List<DoctorAppointmentRow> _rows = const [];
   DoctorAppointmentFeatures? _features;
   bool _invalid = false,
@@ -96,7 +98,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
     if (!_current) {
       ++_operation;
       _dialogs.close();
-      _messages.currentState?.clearSnackBars();
+      _toasts.clear();
       if (mounted) {
         setState(() {
           _rows = const [];
@@ -113,7 +115,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
       _foreground = false;
       ++_operation;
       if (!_childAway) _dialogs.close();
-      _messages.currentState?.clearSnackBars();
+      _toasts.clear();
       if (mounted) setState(() {});
     } else if (!_foreground) {
       _foreground = true;
@@ -294,9 +296,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
       }
       if (action == DoctorAppointmentAction.video &&
           row!.value('doc_video_link').isEmpty) {
-        _messages.currentState?.showSnackBar(
-          const SnackBar(content: Text('Video call is not available yet')),
-        );
+        _toasts.show(context, 'Video call is not available yet');
         return;
       }
       final route = doctorAppointmentRoute(action, row);
@@ -411,18 +411,14 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
         },
       ),
     );
-    if (!_alive(operation) || result == null) return;
-    _messages.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(switch (result) {
-          DoctorAppointmentAvailResult.created => 'Successfully Availed',
-          DoctorAppointmentAvailResult.alreadyAvailed =>
-            'This schedule is already availed.',
-          DoctorAppointmentAvailResult.unavailable =>
-            'This schedule is no longer available to avail.',
-        }),
-      ),
-    );
+    if (!mounted || !_alive(operation) || result == null) return;
+    _toasts.show(context, switch (result) {
+      DoctorAppointmentAvailResult.created => 'Successfully Availed',
+      DoctorAppointmentAvailResult.alreadyAvailed =>
+        'This schedule is already availed.',
+      DoctorAppointmentAvailResult.unavailable =>
+        'This schedule is no longer available to avail.',
+    });
     await _load(force: true);
   }
 
@@ -437,39 +433,37 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
   }
 
   @override
-  Widget build(BuildContext context) => ScaffoldMessenger(
-    key: _messages,
-    child: PopScope(
-      canPop: !_busy && !_writingAvail,
-      child: NativeDoctorAppointmentLayout(
-        window: _window,
-        selected: _selected,
-        now: _evaluatedAt,
-        features: _features,
-        rows: _foreground ? _rows : const [],
-        waiting:
-            !_invalid && (!_current || !_foreground || _busy || _writingAvail),
-        enabled:
-            _current &&
-            _foreground &&
-            !_childAway &&
-            !_failedLoad &&
-            !_writingAvail,
-        message:
-            _invalid
-                ? 'Doctor appointments are not available for this account.'
-                : _failedLoad
-                ? ''
-                : null,
-        onBack: () => unawaited(_back()),
-        onSelected: _select,
-        onMonth: _month,
-        onAction: (action, row) => unawaited(_action(action, row)),
-      ),
+  Widget build(BuildContext context) => PopScope(
+    canPop: !_busy && !_writingAvail,
+    child: NativeDoctorAppointmentLayout(
+      window: _window,
+      selected: _selected,
+      now: _evaluatedAt,
+      features: _features,
+      rows: _foreground ? _rows : const [],
+      waiting:
+          !_invalid && (!_current || !_foreground || _busy || _writingAvail),
+      enabled:
+          _current &&
+          _foreground &&
+          !_childAway &&
+          !_failedLoad &&
+          !_writingAvail,
+      message:
+          _invalid
+              ? 'Doctor appointments are not available for this account.'
+              : _failedLoad
+              ? ''
+              : null,
+      onBack: () => unawaited(_back()),
+      onSelected: _select,
+      onMonth: _month,
+      onAction: (action, row) => unawaited(_action(action, row)),
     ),
   );
   @override
   void dispose() {
+    _toasts.dispose();
     ++_operation;
     if (!_invalid) {
       widget.auth.removeListener(_authChanged);

@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -93,6 +94,10 @@ Future<void> _finish(WidgetTester tester) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     for (final entry
@@ -284,7 +289,7 @@ void main() {
             .picture,
         media.bytes,
       );
-      expect(find.text('Picture Uploaded'), findsOneWidget);
+      expect(toasts.messages, contains('Picture Uploaded'));
       expect(h.posts.length, posts);
       await _finish(tester);
     },
@@ -311,7 +316,7 @@ void main() {
       h.transport.binaryRequests[0].body,
       h.transport.binaryRequests[1].body,
     );
-    expect(find.text('Picture Uploaded'), findsOneWidget);
+    expect(toasts.messages, contains('Picture Uploaded'));
     await _finish(tester);
   });
   testWidgets(
@@ -413,7 +418,7 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
       expect(h.transport.binaryRequests, hasLength(1));
-      expect(find.text('Picture Uploaded'), findsOneWidget);
+      expect(toasts.messages, contains('Picture Uploaded'));
       await _finish(tester);
     },
   );
@@ -433,7 +438,7 @@ void main() {
         },
       );
       await _tap(tester, 'profile_video');
-      expect(find.text('Video call is not available yet'), findsOneWidget);
+      expect(toasts.messages, contains('Video call is not available yet'));
       expect(urls, isEmpty);
       await _finish(tester);
       final valid = profileHarness();
@@ -469,7 +474,12 @@ void main() {
       );
       await _tap(tester, 'profile_video');
       expect(urls, hasLength(1));
-      expect(find.textContaining('Video call link is invalid'), findsOneWidget);
+      expect(
+        toasts.messages.any(
+          (message) => message.contains('Video call link is invalid'),
+        ),
+        isTrue,
+      );
       await _finish(tester);
     },
   );

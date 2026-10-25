@@ -1,3 +1,4 @@
+import 'toast_test_support.dart';
 import 'dart:async';
 
 import 'package:docdiary_ios/app.dart';
@@ -93,6 +94,10 @@ Iterable<RequestRecord> _writes(Harness h) =>
     h.posts.where((r) => r.uri.path.endsWith('updateAddress'));
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final toasts = ToastRecorder();
+  setUp(toasts.install);
+  tearDown(toasts.uninstall);
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     for (final entry
@@ -202,6 +207,10 @@ void main() {
       await _enter(tester, 'address_street', '');
       await _tap(tester, 'address_update');
       expect(find.text('Please Provide Street Address/Village'), findsWidgets);
+      expect(
+        toasts.messages,
+        contains('Please Provide Street Address/Village'),
+      );
       await _enter(tester, 'address_street', 'New Road');
       await _enter(tester, 'address_post_office', '');
       await _tap(tester, 'address_update');

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/app_toast.dart';
+
 import '../../core/app_theme.dart';
 import '../../core/failure.dart';
 import '../auth/account_access.dart';
@@ -28,6 +30,7 @@ class DoctorAddressScreen extends StatefulWidget {
 
 class _DoctorAddressScreenState extends State<DoctorAddressScreen>
     with WidgetsBindingObserver {
+  final _toasts = AppToastOwner();
   late final AuthSession _session;
   final _street = TextEditingController();
   final _postOffice = TextEditingController();
@@ -185,6 +188,7 @@ class _DoctorAddressScreenState extends State<DoctorAddressScreen>
 
   void _authChanged() {
     if (!_current) {
+      _toasts.clear();
       ++_operation;
       _wake();
       _dialogs.close();
@@ -317,23 +321,7 @@ class _DoctorAddressScreenState extends State<DoctorAddressScreen>
 
   void _notice(String message) {
     if (_current && _foreground) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(
-            16,
-            0,
-            16,
-            (MediaQuery.sizeOf(context).height -
-                    MediaQuery.viewInsetsOf(context).bottom -
-                    120)
-                .clamp(0.0, 88.0)
-                .toDouble(),
-          ),
-        ),
-      );
+      _toasts.show(context, message);
     }
   }
 
@@ -475,6 +463,7 @@ class _DoctorAddressScreenState extends State<DoctorAddressScreen>
 
   @override
   void dispose() {
+    _toasts.dispose();
     ++_operation;
     _wake();
     _dialogs.dispose();

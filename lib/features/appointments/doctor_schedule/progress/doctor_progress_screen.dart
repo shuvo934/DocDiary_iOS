@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
+import '../../../../core/app_toast.dart';
 import '../../../../core/failure.dart';
 import '../../../auth/account_access.dart';
 import '../../../auth/auth_controller.dart';
@@ -30,7 +32,7 @@ class _DoctorProgressScreenState extends State<DoctorProgressScreen>
     with WidgetsBindingObserver {
   late final AuthSession _session;
   final _dialogs = NativeDashboardDialogOwner();
-  final _messages = GlobalKey<ScaffoldMessengerState>();
+  final _toasts = AppToastOwner();
   final _notes = TextEditingController();
   DoctorProgressSnapshot? _snapshot;
   final _selected = <AppointmentHistoryFilter, AppointmentHistoryChoice>{};
@@ -91,7 +93,7 @@ class _DoctorProgressScreenState extends State<DoctorProgressScreen>
     if (!_current) {
       ++_operation;
       _dialogs.close();
-      _messages.currentState?.clearSnackBars();
+      _toasts.clear();
       _notes.clear();
       if (mounted) {
         setState(() {
@@ -110,7 +112,7 @@ class _DoctorProgressScreenState extends State<DoctorProgressScreen>
       _foreground = false;
       ++_operation;
       _dialogs.close();
-      _messages.currentState?.clearSnackBars();
+      _toasts.clear();
       if (mounted) setState(() {});
     } else if (!_foreground) {
       _foreground = true;
@@ -258,7 +260,7 @@ class _DoctorProgressScreenState extends State<DoctorProgressScreen>
   }
 
   void _notice(String message) {
-    _messages.currentState?.showSnackBar(SnackBar(content: Text(message)));
+    _toasts.show(context, message);
   }
 
   void _tab(bool add) {
@@ -439,52 +441,50 @@ class _DoctorProgressScreenState extends State<DoctorProgressScreen>
   }
 
   @override
-  Widget build(BuildContext context) => ScaffoldMessenger(
-    key: _messages,
-    child: PopScope(
-      canPop: !_busy && !_writing,
-      child: NativeDoctorProgressLayout(
-        seed: widget.seed,
-        rows:
-            _foreground
-                ? filterDoctorProgress(_snapshot?.rows ?? const [], _selected)
-                : const [],
-        choices: _snapshot?.choices ?? const {},
-        selected: Map.unmodifiable(_selected),
-        notes: _notes,
-        doctorName: _doctorName,
-        score: _score,
-        adding: _adding && _canAdd,
-        canAdd: _canAdd,
-        showFilters: _showFilters,
-        waiting: !_invalid && (!_current || !_foreground || _busy || _writing),
-        enabled: _ready,
-        failed: _failed,
-        scoreMissing: _scoreMissing,
-        notesMissing: _notesMissing,
-        message:
-            _invalid
-                ? 'Health progress is not available for this account.'
-                : null,
-        onBack: () => unawaited(_back()),
-        onHistory: () => _tab(false),
-        onAdd: () => _tab(true),
-        onToggleFilters: () {
-          if (_ready) setState(() => _showFilters = !_showFilters);
-        },
-        onFilter: (kind, anchor) => unawaited(_filter(kind, anchor)),
-        onScore: (anchor) => unawaited(_chooseScore(anchor)),
-        onSubmit: () => unawaited(_confirm()),
-        onNotesChanged: (value) {
-          if (_ready && _notesMissing && value.trim().isNotEmpty) {
-            setState(() => _notesMissing = false);
-          }
-        },
-      ),
+  Widget build(BuildContext context) => PopScope(
+    canPop: !_busy && !_writing,
+    child: NativeDoctorProgressLayout(
+      seed: widget.seed,
+      rows:
+          _foreground
+              ? filterDoctorProgress(_snapshot?.rows ?? const [], _selected)
+              : const [],
+      choices: _snapshot?.choices ?? const {},
+      selected: Map.unmodifiable(_selected),
+      notes: _notes,
+      doctorName: _doctorName,
+      score: _score,
+      adding: _adding && _canAdd,
+      canAdd: _canAdd,
+      showFilters: _showFilters,
+      waiting: !_invalid && (!_current || !_foreground || _busy || _writing),
+      enabled: _ready,
+      failed: _failed,
+      scoreMissing: _scoreMissing,
+      notesMissing: _notesMissing,
+      message:
+          _invalid
+              ? 'Health progress is not available for this account.'
+              : null,
+      onBack: () => unawaited(_back()),
+      onHistory: () => _tab(false),
+      onAdd: () => _tab(true),
+      onToggleFilters: () {
+        if (_ready) setState(() => _showFilters = !_showFilters);
+      },
+      onFilter: (kind, anchor) => unawaited(_filter(kind, anchor)),
+      onScore: (anchor) => unawaited(_chooseScore(anchor)),
+      onSubmit: () => unawaited(_confirm()),
+      onNotesChanged: (value) {
+        if (_ready && _notesMissing && value.trim().isNotEmpty) {
+          setState(() => _notesMissing = false);
+        }
+      },
     ),
   );
   @override
   void dispose() {
+    _toasts.dispose();
     ++_operation;
     if (!_invalid) {
       widget.auth.removeListener(_authChanged);

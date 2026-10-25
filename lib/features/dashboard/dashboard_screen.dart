@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../core/app_toast.dart';
+
 import '../../core/failure.dart';
 import '../../core/native_dates.dart';
 import '../auth/auth_controller.dart';
@@ -45,6 +47,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with WidgetsBindingObserver {
+  final _toasts = AppToastOwner();
   late AccountProfile _profile;
   late final AuthSession _session;
   DashboardSummary? _summary;
@@ -153,6 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _authChanged() {
     if (!_current) {
+      _toasts.clear();
       ++_photoOperation;
       _wakePhoto();
       ++_request;
@@ -902,12 +906,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           if (!mounted) {
             return;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Picture Uploaded'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          _toasts.show(context, 'Picture Uploaded');
           return;
         } catch (failure) {
           if (!current()) {
@@ -976,6 +975,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   void dispose() {
+    _toasts.dispose();
     ++_request;
     ++_photoOperation;
     _wakePhoto();
