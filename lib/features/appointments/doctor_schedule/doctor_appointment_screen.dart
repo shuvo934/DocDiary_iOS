@@ -10,6 +10,9 @@ import '../../dashboard/dashboard_navigation.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
 import 'avail/doctor_appointment_avail_repository.dart';
 import 'avail/native_appointment_avail_dialog.dart';
+import 'history/doctor_appointment_history_models.dart';
+import 'history/doctor_appointment_history_repository.dart';
+import 'history/doctor_appointment_history_screen.dart';
 import 'doctor_appointment_models.dart';
 import 'doctor_appointment_navigation.dart';
 import 'doctor_appointment_repository.dart';
@@ -294,7 +297,21 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
         return;
       }
       final route = doctorAppointmentRoute(action, row);
-      final page = widget.destinationBuilder?.call(context, route);
+      final page =
+          widget.destinationBuilder?.call(context, route) ??
+          (action == DoctorAppointmentAction.history
+              ? DoctorAppointmentHistoryScreen(
+                auth: widget.auth,
+                repository: DoctorAppointmentHistoryRepository(
+                  widget.repository,
+                ),
+                patient: AppointmentHistoryPatient(
+                  id: row!.value('patient_data'),
+                  name: row.value('pat_name'),
+                  code: row.value('pat_code'),
+                ),
+              )
+              : null);
       if (page == null && action == DoctorAppointmentAction.avail) {
         await _avail(row!, operation);
         return;

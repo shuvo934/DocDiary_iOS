@@ -50,6 +50,9 @@ class DoctorAppointmentHarness extends Harness {
   DoctorAppointmentRepository get appointments =>
       DoctorAppointmentRepository(transport, now: () => now);
   Future<JsonMap> respondAppointments(Uri uri) async {
+    if (uri.path.endsWith('/getPatAppointHistory')) {
+      return {'count': 0, 'items': <Object?>[]};
+    }
     if (uri.path.contains('/appointment_schedule/')) {
       final day = uri.queryParameters['pdate']!;
       final rows =

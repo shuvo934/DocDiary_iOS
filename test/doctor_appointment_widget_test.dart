@@ -400,7 +400,6 @@ void main() {
     await _finish(t);
   });
   for (final action in [
-    DoctorAppointmentAction.history,
     DoctorAppointmentAction.progress,
     DoctorAppointmentAction.dynamicPrescription,
   ]) {
@@ -618,8 +617,7 @@ void main() {
         ];
         await _show(t, h, direct: true, size: spec.$1, textScale: spec.$2);
         await _tap(t, 'doctor_appointment_0_history');
-        await t.tap(find.text('Close'));
-        await t.pumpAndSettle();
+        await _tap(t, 'doctor_history_back');
         expect(t.takeException(), isNull);
         await _finish(t);
       },
