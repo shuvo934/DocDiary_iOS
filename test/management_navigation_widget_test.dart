@@ -121,6 +121,46 @@ Future<void> _capture(WidgetTester t, String name) async {
   });
 }
 
+Future<void> _expectVisibleLoading(WidgetTester t, String name) async {
+  final spinner = find.byKey(const Key('management_loading'));
+  expect(spinner, findsOneWidget);
+  final boundaryFinder = find.byKey(const Key('management_loading_capture'));
+  final boundary = t.renderObject<RenderRepaintBoundary>(boundaryFinder);
+  final center = t.getCenter(spinner) - t.getTopLeft(boundaryFinder);
+  await t.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      for (final x in [
+        8,
+        image.width ~/ 4,
+        image.width ~/ 2,
+        image.width * 3 ~/ 4,
+        image.width - 9,
+      ]) {
+        for (final y in [(center.dy - 45).round(), (center.dy + 45).round()]) {
+          final offset = (y * image.width + x) * 4;
+          expect(
+            bytes!.buffer.asUint8List(offset, 4),
+            orderedEquals([255, 255, 255, 255]),
+            reason: '$name: loader background at ($x, $y) must stay white',
+          );
+        }
+      }
+      final dir = Platform.environment['DOC_MANAGEMENT_LOADING_CAPTURE_DIR'];
+      if (dir != null) {
+        final png = await image.toByteData(format: ui.ImageByteFormat.png);
+        final file = File('$dir/$name.png');
+        await file.parent.create(recursive: true);
+        await file.writeAsBytes(png!.buffer.asUint8List());
+      }
+    } finally {
+      image.dispose();
+    }
+  });
+  expect(t.takeException(), isNull);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
@@ -129,6 +169,79 @@ void main() {
     await (FontLoader('MaterialIcons')
       ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
   });
+
+  for (final entry in ManagementEntry.values) {
+    for (final size in [
+      const Size(393, 852),
+      const Size(280, 568),
+      const Size(852, 393),
+    ]) {
+      _case(
+        '${entry.name} loading stays visible during a slow request at $size',
+        (t) async {
+          final h = _admin();
+          addTearDown(h.auth.dispose);
+          t.view.physicalSize = size;
+          t.view.devicePixelRatio = 1;
+          addTearDown(t.view.resetPhysicalSize);
+          addTearDown(t.view.resetDevicePixelRatio);
+          t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+          await h.signIn();
+          final pending = Completer<JsonMap>();
+          h.transport.onGet =
+              (uri) =>
+                  uri.path.endsWith('getAdminData')
+                      ? pending.future
+                      : h.defaultGet(uri);
+          await t.pumpWidget(
+            RepaintBoundary(
+              key: const Key('management_loading_capture'),
+              child: MaterialApp(
+                theme: docDiaryTheme(),
+                debugShowCheckedModeBanner: false,
+                home: MediaQuery(
+                  data: MediaQueryData(
+                    size: size,
+                    padding: EdgeInsets.only(
+                      top: size.width < size.height ? 59 : 20,
+                      bottom: size.width < size.height ? 34 : 21,
+                    ),
+                  ),
+                  child: ManagementMenuScreen(auth: h.auth, entry: entry),
+                ),
+              ),
+            ),
+          );
+          await t.pump(const Duration(milliseconds: 400));
+          final label = '${entry.name}_${size.width.toInt()}';
+          await _expectVisibleLoading(t, '${label}_initial');
+          expect(
+            t
+                .widget<IconButton>(find.byKey(const Key('management_back')))
+                .onPressed,
+            isNull,
+          );
+          expect(find.byKey(const Key('management_accounts')), findsNothing);
+          await t.pump(const Duration(seconds: 30));
+          await _expectVisibleLoading(t, '${label}_slow');
+          h.transport.onGet = h.defaultGet;
+          pending.complete({
+            'count': 1,
+            'items': [h.adminData],
+          });
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('management_loading')), findsNothing);
+          expect(
+            entry == ManagementEntry.reports
+                ? find.byType(NativeReportManagerLayout)
+                : find.byKey(const Key('management_accounts')),
+            findsOneWidget,
+          );
+          await _finish(t);
+        },
+      );
+    }
+  }
 
   _case(
     'live Dashboard opens Management Portal then Reports and refreshes on Back without login writes',

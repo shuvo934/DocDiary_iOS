@@ -79,6 +79,7 @@ class NativeManagementPortalLayout extends StatelessWidget {
               child: SafeArea(
                 bottom: false,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ColoredBox(
                       color: DocColors.primary,
@@ -135,7 +136,14 @@ class NativeManagementPortalLayout extends StatelessWidget {
                           child: SafeArea(
                             top: false,
                             child:
-                                message != null
+                                loading
+                                    ? const Center(
+                                      child: CircularProgressIndicator(
+                                        key: Key('management_loading'),
+                                        color: DocColors.primary,
+                                      ),
+                                    )
+                                    : message != null
                                     ? Center(
                                       child: Padding(
                                         padding: const EdgeInsets.all(24),
@@ -147,39 +155,36 @@ class NativeManagementPortalLayout extends StatelessWidget {
                                     )
                                     : SingleChildScrollView(
                                       key: const Key('management_scroll'),
-                                      child:
-                                          loading
-                                              ? const SizedBox.shrink()
-                                              : Column(
-                                                children: [
-                                                  row(
-                                                    destinations
-                                                        .where(
-                                                          (e) =>
-                                                              e ==
-                                                                  ManagementDestination
-                                                                      .humanResources ||
-                                                              e ==
-                                                                  ManagementDestination
-                                                                      .accounts,
-                                                        )
-                                                        .toList(),
-                                                  ),
-                                                  row(
-                                                    destinations
-                                                        .where(
-                                                          (e) =>
-                                                              e ==
-                                                                  ManagementDestination
-                                                                      .analytics ||
-                                                              e ==
-                                                                  ManagementDestination
-                                                                      .reports,
-                                                        )
-                                                        .toList(),
-                                                  ),
-                                                ],
-                                              ),
+                                      child: Column(
+                                        children: [
+                                          row(
+                                            destinations
+                                                .where(
+                                                  (e) =>
+                                                      e ==
+                                                          ManagementDestination
+                                                              .humanResources ||
+                                                      e ==
+                                                          ManagementDestination
+                                                              .accounts,
+                                                )
+                                                .toList(),
+                                          ),
+                                          row(
+                                            destinations
+                                                .where(
+                                                  (e) =>
+                                                      e ==
+                                                          ManagementDestination
+                                                              .analytics ||
+                                                      e ==
+                                                          ManagementDestination
+                                                              .reports,
+                                                )
+                                                .toList(),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                           ),
                         ),
@@ -189,15 +194,6 @@ class NativeManagementPortalLayout extends StatelessWidget {
                 ),
               ),
             ),
-            if (loading) ...[
-              const ModalBarrier(dismissible: false, color: Colors.black54),
-              const Center(
-                child: CircularProgressIndicator(
-                  key: Key('management_loading'),
-                  color: DocColors.primary,
-                ),
-              ),
-            ],
           ],
         ),
       ),
