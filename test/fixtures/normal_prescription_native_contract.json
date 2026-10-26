@@ -1,0 +1,303 @@
+{
+  "insertNewPrescription": {
+    "headers": [
+      "P_PH_ID",
+      "P_CAT_ID",
+      "P_USER"
+    ],
+    "source": "PrescriptionSetup.java",
+    "method": "createPrescription"
+  },
+  "updatePatAdmFlag": {
+    "headers": [
+      "P_FLAG",
+      "P_PMM_ID"
+    ],
+    "source": "PrescriptionSetup.java",
+    "method": "updatePatAdmFlag"
+  },
+  "insertRefService": {
+    "headers": [
+      "P_DRD_ID",
+      "P_PFN_ID",
+      "P_QTY"
+    ],
+    "source": "addInformation/RefServiceModify.java",
+    "method": "addRefServices"
+  },
+  "updateRefService": {
+    "headers": [
+      "P_PFN_ID",
+      "P_QTY",
+      "P_DRS_ID",
+      "P_DRD_ID"
+    ],
+    "source": "addInformation/RefServiceModify.java",
+    "method": "updateRefService"
+  },
+  "insertDiagnosis": {
+    "headers": [
+      "P_PMM_ID",
+      "P_DM_ID"
+    ],
+    "source": "addInformation/DiagnosisModify.java",
+    "method": "addDiagnosis"
+  },
+  "updateDiagnosis": {
+    "headers": [
+      "P_DM_ID",
+      "P_PDI_ID",
+      "P_PMM_ID"
+    ],
+    "source": "addInformation/DiagnosisModify.java",
+    "method": "updateDiagns"
+  },
+  "deleteDiagnosis": {
+    "headers": [
+      "P_PDI_ID"
+    ],
+    "source": "addInformation/DiagnosisModify.java",
+    "method": "deleteDiagnosis"
+  },
+  "insertComplain": {
+    "headers": [
+      "P_PMM_ID",
+      "P_CM_ID",
+      "P_INJURY_DATE",
+      "P_INJURY_ID"
+    ],
+    "source": "addInformation/ComplainModify.java",
+    "method": "addComplain"
+  },
+  "updateComplain": {
+    "headers": [
+      "P_PMM_ID",
+      "P_CM_ID",
+      "P_DATE",
+      "P_INJURY_ID",
+      "P_PCI_ID"
+    ],
+    "source": "addInformation/ComplainModify.java",
+    "method": "updateComplain"
+  },
+  "insertReferralUnit": {
+    "headers": [
+      "P_PDI_ID",
+      "P_DEPTS_ID",
+      "P_DOC_ID"
+    ],
+    "source": "addInformation/ReferralUnitModify.java",
+    "method": "addReferral"
+  },
+  "updateReferralUnit": {
+    "headers": [
+      "P_DEPTS_ID",
+      "P_DOC_ID",
+      "P_PDI_ID",
+      "P_DRD_ID"
+    ],
+    "source": "addInformation/ReferralUnitModify.java",
+    "method": "updateReferral"
+  },
+  "deleteReferralUnit": {
+    "headers": [
+      "P_DRD_ID"
+    ],
+    "source": "addInformation/ReferralUnitModify.java",
+    "method": "deleteReferral"
+  },
+  "deleteComplain": {
+    "headers": [
+      "P_PCI_ID"
+    ],
+    "source": "adapters/ComplainAdapter.java",
+    "method": "deleteComplain"
+  },
+  "deleteRefService": {
+    "headers": [
+      "P_DRS_ID"
+    ],
+    "source": "adapters/PatRefServiceAdapter.java",
+    "method": "deleteService"
+  },
+  "insertMedication": {
+    "headers": [
+      "P_PMM_ID",
+      "P_MEDICINE_ID",
+      "P_MPM_ID",
+      "P_DURATION",
+      "P_DOSE_ID"
+    ],
+    "source": "fragments/addinfo/MedicationModify.java",
+    "method": "addMedication"
+  },
+  "updateMedication": {
+    "headers": [
+      "P_PMM_ID",
+      "P_MEDICINE_ID",
+      "P_MPM_ID",
+      "P_DURATION",
+      "P_DOSE_ID",
+      "P_PMP_ID"
+    ],
+    "source": "fragments/addinfo/MedicationModify.java",
+    "method": "updateMedication"
+  },
+  "insertMedicalHistory": {
+    "headers": [
+      "P_PMM_ID",
+      "P_MHM_ID",
+      "P_DETAILS"
+    ],
+    "source": "fragments/addinfo/MedHistoryModify.java",
+    "method": "addMedicalHistory"
+  },
+  "updateMedicalHistory": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PMH_ID",
+      "P_DETAILS",
+      "P_MHM_ID"
+    ],
+    "source": "fragments/addinfo/MedHistoryModify.java",
+    "method": "updateMedicalHistory"
+  },
+  "insertDrugHistory": {
+    "headers": [
+      "P_PMM_ID",
+      "P_MEDICINE_ID",
+      "P_DETAILS"
+    ],
+    "source": "fragments/addinfo/DrugHistoryModify.java",
+    "method": "addDrugHistory"
+  },
+  "updateDrugHistory": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PDH_ID",
+      "P_DETAILS",
+      "P_MEDICINE_ID"
+    ],
+    "source": "fragments/addinfo/DrugHistoryModify.java",
+    "method": "updateDrugHistory"
+  },
+  "insertAdvice": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PA_NAME"
+    ],
+    "source": "fragments/addinfo/AdviceModify.java",
+    "method": "addAdvice"
+  },
+  "updateAdvice": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PA_ID",
+      "P_PA_NAME"
+    ],
+    "source": "fragments/addinfo/AdviceModify.java",
+    "method": "updateAdvice"
+  },
+  "insertClinicalFindings": {
+    "headers": [
+      "P_PMM_ID",
+      "P_CFM_ID",
+      "P_DETAILS"
+    ],
+    "source": "fragments/addinfo/ClinicalFindingsModify.java",
+    "method": "addClinicalFindings"
+  },
+  "updateClinicalFindings": {
+    "headers": [
+      "P_PMM_ID",
+      "P_CFM_ID",
+      "P_DETAILS",
+      "P_CF_ID"
+    ],
+    "source": "fragments/addinfo/ClinicalFindingsModify.java",
+    "method": "updateClinicalFindings"
+  },
+  "insertReference": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PREF_NAME"
+    ],
+    "source": "fragments/addinfo/ReferenceModify.java",
+    "method": "addReference"
+  },
+  "updateReference": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PREF_ID",
+      "P_PREF_NAME"
+    ],
+    "source": "fragments/addinfo/ReferenceModify.java",
+    "method": "updateReference"
+  },
+  "insertManagement": {
+    "headers": [
+      "P_PMM_ID",
+      "P_DETAILS"
+    ],
+    "source": "fragments/addinfo/ManagementModify.java",
+    "method": "addManagement"
+  },
+  "updateManagement": {
+    "headers": [
+      "P_PMM_ID",
+      "P_PMAP_ID",
+      "P_DETAILS"
+    ],
+    "source": "fragments/addinfo/ManagementModify.java",
+    "method": "updateManagement"
+  },
+  "deleteMedicalHistory": {
+    "headers": [
+      "P_PMH_ID"
+    ],
+    "source": "fragments/adapters/PatMedicHistAdapter.java",
+    "method": "deleteMedicalHistory"
+  },
+  "deleteMedication": {
+    "headers": [
+      "P_PMP_ID"
+    ],
+    "source": "fragments/adapters/PatMedicationAdapter.java",
+    "method": "deleteMedicine"
+  },
+  "deleteDrugHistory": {
+    "headers": [
+      "P_PDH_ID"
+    ],
+    "source": "fragments/adapters/PatDrugHistAdapter.java",
+    "method": "deleteDrugHistory"
+  },
+  "deleteManagement": {
+    "headers": [
+      "P_PMAP_ID"
+    ],
+    "source": "fragments/adapters/PatManagementAdapter.java",
+    "method": "deleteManagement"
+  },
+  "deleteClinicalFindings": {
+    "headers": [
+      "P_CF_ID"
+    ],
+    "source": "fragments/adapters/PatClFindingsAdapter.java",
+    "method": "deleteClinicalFindings"
+  },
+  "deleteReference": {
+    "headers": [
+      "P_PREF_ID"
+    ],
+    "source": "fragments/adapters/PatReferenceAdapter.java",
+    "method": "deleteRef"
+  },
+  "deleteAdvice": {
+    "headers": [
+      "P_PA_ID"
+    ],
+    "source": "fragments/adapters/PatAdviceAdapter.java",
+    "method": "deleteAdvice"
+  }
+}

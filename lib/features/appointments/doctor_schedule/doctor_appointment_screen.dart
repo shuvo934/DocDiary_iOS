@@ -1,3 +1,6 @@
+import '../../prescription/normal_prescription_models.dart';
+import '../../prescription/normal_prescription_repository.dart';
+import '../../prescription/normal_prescription_screen.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 
@@ -319,6 +322,15 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
                 auth: widget.auth,
                 repository: DoctorProgressRepository(widget.repository),
                 seed: DoctorProgressSeed.fromAppointment(
+                  row!,
+                  ownerDoctorId: profile.doctorId,
+                ),
+              )
+              : action == DoctorAppointmentAction.legacyPrescription
+              ? NormalPrescriptionScreen(
+                auth: widget.auth,
+                repository: NormalPrescriptionRepository(widget.repository),
+                seed: NormalPrescriptionSeed.appointment(
                   row!,
                   ownerDoctorId: profile.doctorId,
                 ),

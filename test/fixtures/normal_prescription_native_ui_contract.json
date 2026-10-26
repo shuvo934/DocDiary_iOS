@@ -1,0 +1,230 @@
+{
+  "complain": {
+    "form_xml": "activity_complain_modify.xml",
+    "add_title": "Add Complain",
+    "update_title": "Update Complain",
+    "fields": [
+      "Complain",
+      "Cause of Injury",
+      "Injury Date"
+    ],
+    "editor_delete": false,
+    "table_xml": "after_creating_prescription_layout.xml",
+    "headers": [
+      "Complain",
+      "Cause of Injury",
+      "Injury Date",
+      ""
+    ],
+    "weights": [
+      3.5,
+      3.5,
+      2.0,
+      1.0
+    ]
+  },
+  "diagnosis": {
+    "form_xml": "activity_diagnosis_modify.xml",
+    "add_title": "Add Diagnosis",
+    "update_title": "Update Diagnosis",
+    "fields": [
+      "Diagnosis"
+    ],
+    "editor_delete": true,
+    "table_xml": "diagnosis_layout.xml",
+    "headers": [
+      "Diagnosis",
+      ""
+    ],
+    "weights": [
+      9.0,
+      1.0
+    ]
+  },
+  "referral": {
+    "form_xml": "activity_referral_unit_modify.xml",
+    "add_title": "Add Referral Unit",
+    "update_title": "Update Referral Unit",
+    "fields": [
+      "Referral Unit",
+      "Referral Doctor"
+    ],
+    "editor_delete": true,
+    "table_xml": "diagnosis_layout.xml",
+    "headers": [
+      "Referral Unit",
+      "Referral Doctor",
+      ""
+    ],
+    "weights": [
+      4.5,
+      4.5,
+      1.0
+    ]
+  },
+  "service": {
+    "form_xml": "activity_ref_service_modify.xml",
+    "add_title": "Add Service",
+    "update_title": "Update Service",
+    "fields": [
+      "Service Name",
+      "Quantity"
+    ],
+    "editor_delete": false,
+    "table_xml": "diagnosis_layout.xml",
+    "headers": [
+      "Service Name",
+      "Quantity",
+      ""
+    ],
+    "weights": [
+      6.0,
+      3.0,
+      1.0
+    ]
+  },
+  "medicalHistory": {
+    "form_xml": "activity_med_history_modify.xml",
+    "add_title": "Add Medical History",
+    "update_title": "Update Medical History",
+    "fields": [
+      "Past Medical History",
+      "Details"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_medical_history.xml",
+    "headers": [
+      "Past Medical History",
+      "Details",
+      ""
+    ],
+    "weights": [
+      5.0,
+      4.0,
+      1.0
+    ]
+  },
+  "drugHistory": {
+    "form_xml": "activity_drug_history_modify.xml",
+    "add_title": "Add Drug History",
+    "update_title": "Update Drug History",
+    "fields": [
+      "Drug Name",
+      "Details"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_drug_history.xml",
+    "headers": [
+      "Drug Name",
+      "Details",
+      ""
+    ],
+    "weights": [
+      5.0,
+      4.0,
+      1.0
+    ]
+  },
+  "clinicalFindings": {
+    "form_xml": "activity_clinical_findings_modify.xml",
+    "add_title": "Add Clinical Findings",
+    "update_title": "Update Clinical Findings",
+    "fields": [
+      "Clinical Findings",
+      "Details"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_clinical_findings.xml",
+    "headers": [
+      "Clinical Findings",
+      "Details",
+      ""
+    ],
+    "weights": [
+      5.0,
+      4.0,
+      1.0
+    ]
+  },
+  "management": {
+    "form_xml": "activity_management_modify.xml",
+    "add_title": "Add Management Plan",
+    "update_title": "Update Management Plan",
+    "fields": [
+      "Management Plan"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_management_plan.xml",
+    "headers": [
+      "Management Plan",
+      ""
+    ],
+    "weights": [
+      9.0,
+      1.0
+    ]
+  },
+  "medication": {
+    "form_xml": "activity_medication_modify.xml",
+    "add_title": "Add Medicine",
+    "update_title": "Update Medicine",
+    "fields": [
+      "Medicine",
+      "Time",
+      "Dose",
+      "Duration (Days)"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_medication.xml",
+    "headers": [
+      "Medicine",
+      "Time",
+      "Dose",
+      "Duration (Days)",
+      ""
+    ],
+    "weights": [
+      3.0,
+      2.0,
+      2.0,
+      2.0,
+      1.0
+    ]
+  },
+  "advice": {
+    "form_xml": "activity_advice_modify.xml",
+    "add_title": "Add Advice",
+    "update_title": "Update Advice",
+    "fields": [
+      "Advice"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_pat_advice.xml",
+    "headers": [
+      "Advice",
+      ""
+    ],
+    "weights": [
+      9.0,
+      1.0
+    ]
+  },
+  "reference": {
+    "form_xml": "activity_reference_modify.xml",
+    "add_title": "Add Reference",
+    "update_title": "Update Reference",
+    "fields": [
+      "Reference"
+    ],
+    "editor_delete": false,
+    "table_xml": "fragment_pat_reference.xml",
+    "headers": [
+      "Reference",
+      ""
+    ],
+    "weights": [
+      9.0,
+      1.0
+    ]
+  }
+}
