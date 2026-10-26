@@ -549,7 +549,10 @@ class NativeNormalPrescriptionLayout extends StatelessWidget {
       NormalPrescriptionSection.advice,
       NormalPrescriptionSection.reference,
     ];
+    // Keep the summary offset when loading or an editor temporarily removes it.
+    // The route's PageStorage restores only this summary, independently of forms.
     return Padding(
+      key: const PageStorageKey<String>('normal_prescription_summary_scroll'),
       padding: const EdgeInsets.only(top: 6.0),
       child: SingleChildScrollView(
         key: const Key('rx_scroll'),
