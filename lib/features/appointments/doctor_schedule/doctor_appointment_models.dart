@@ -193,12 +193,10 @@ class DoctorAppointmentPresentation {
     if (!booked) return DoctorAppointmentTone.empty;
     if (!timed || !past) return DoctorAppointmentTone.upcoming;
     if (!features.needAvail) return DoctorAppointmentTone.completed;
-    // Native deliberately shows older requests as Not Availed, even if the
-    // returned avail_flag is 1. Preserve that existing branch for this phase.
-    if (!today) return DoctorAppointmentTone.missed;
-    return row.value('avail_flag') == '1'
-        ? DoctorAppointmentTone.completed
-        : DoctorAppointmentTone.awaitingAvail;
+    if (row.value('avail_flag') == '1') return DoctorAppointmentTone.completed;
+    return today
+        ? DoctorAppointmentTone.awaitingAvail
+        : DoctorAppointmentTone.missed;
   }
 
   String get patientLabel {
@@ -221,8 +219,8 @@ class DoctorAppointmentPresentation {
       row.value('avail_flag') != '1';
   String? get availMessage {
     if (!booked || !timed || !past || !features.needAvail) return null;
-    if (!today) return 'Not Availed';
-    return row.value('avail_flag') == '1' ? 'Availed' : null;
+    if (row.value('avail_flag') == '1') return 'Availed';
+    return today ? null : 'Not Availed';
   }
 
   bool get showProgress => booked && ((timed && past && today) || hasProgress);

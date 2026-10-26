@@ -246,27 +246,51 @@ void main() {
       expect(awaiting.progressLabel, 'ADD PROGRESS');
     },
   );
-  test(
-    'native older need-avail branch is rose even when avail_flag is one',
-    () {
+  for (final avail in ['1', '0', '2']) {
+    test('older need-avail appointment uses native avail_flag=$avail', () {
       final v = view(
         date: DateTime(2026, 10, 23),
         overrides: {
           'adm_date': '23-OCT-26',
-          'avail_flag': '1',
+          'avail_flag': avail,
           'rvm': '1',
           'rvm_id': 'RX-1',
           'pph_progress': '4',
           'is_ranked': '1',
         },
       );
-      expect(v.tone, DoctorAppointmentTone.missed);
-      expect(v.availMessage, 'Not Availed');
+      expect(
+        v.tone,
+        avail == '1'
+            ? DoctorAppointmentTone.completed
+            : DoctorAppointmentTone.missed,
+      );
+      expect(v.availMessage, avail == '1' ? 'Availed' : 'Not Availed');
       expect(v.showHistory, isFalse);
       expect(v.showAvail, isFalse);
       expect(v.prescriptionAction, DoctorAppointmentAction.prescriptionPreview);
       expect(v.showPrescription, isTrue);
       expect(v.progressLabel, 'VIEW PROGRESS');
+      expect(v.showProgress, isTrue);
+      expect(v.progressChecked, isTrue);
+      expect(v.videoEligible, isFalse);
+    });
+  }
+  test(
+    'avail flag never completes future, exact-time, invalid or empty slots',
+    () {
+      for (final overrides in <JsonMap>[
+        {'avail_flag': '1', 'schedule_time': '02:00 PM'},
+        {'avail_flag': '1', 'schedule_time': '01:30 PM'},
+        {'avail_flag': '1', 'schedule_time': 'invalid'},
+        {'avail_flag': '1', 'patient_data': ''},
+        {'avail_flag': '1', 'patient_data': 'Blocked Time'},
+      ]) {
+        final v = view(overrides: overrides);
+        expect(v.tone, isNot(DoctorAppointmentTone.completed));
+        expect(v.availMessage, isNull);
+        expect(v.showAvail, isFalse);
+      }
     },
   );
   test(
