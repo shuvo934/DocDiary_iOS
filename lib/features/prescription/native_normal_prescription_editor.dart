@@ -20,6 +20,9 @@ class NativeNormalPrescriptionEditor extends StatelessWidget {
     this.enabled = true,
     this.updating = false,
     this.errors = const {},
+    this.onValidate,
+    this.disabledFields = const {},
+    this.messages = const {},
   });
   final RxSectionSpec spec;
   final Map<String, TextEditingController> controllers;
@@ -31,6 +34,9 @@ class NativeNormalPrescriptionEditor extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool enabled, updating;
   final Map<String, String> errors;
+  final ValueChanged<RxField>? onValidate;
+  final Set<String> disabledFields;
+  final Map<String, String> messages;
   @override
   Widget build(BuildContext context) {
     final s = appointmentScale(context);
@@ -57,17 +63,23 @@ class NativeNormalPrescriptionEditor extends StatelessWidget {
                           label: rxNativeFieldLabel(spec, spec.fields[i]),
                           controller: controllers[spec.fields[i].header]!,
                           choices: choices[spec.fields[i].header] ?? const [],
-                          enabled: enabled,
+                          enabled:
+                              enabled &&
+                              !disabledFields.contains(spec.fields[i].header),
                           onPick: () => onPick(spec.fields[i]),
                           onChanged: (text) => onChanged(spec.fields[i], text),
                           onChoice:
                               (choice) => onChoice(spec.fields[i], choice),
+                          onValidate: () => onValidate?.call(spec.fields[i]),
                         ),
-                        if (errors[spec.fields[i].header] != null)
+                        if ((errors[spec.fields[i].header] ??
+                                messages[spec.fields[i].header]) !=
+                            null)
                           Padding(
                             padding: const EdgeInsets.only(left: 8, top: 3),
                             child: Text(
-                              errors[spec.fields[i].header]!,
+                              errors[spec.fields[i].header] ??
+                                  messages[spec.fields[i].header]!,
                               style: rxNativeText(
                                 12,
                                 color: Colors.redAccent,
@@ -92,7 +104,15 @@ class NativeNormalPrescriptionEditor extends StatelessWidget {
                   label: updating ? 'UPDATE' : 'ADD',
                   scale: s,
                   form: true,
-                  onPressed: enabled ? onSave : null,
+                  onPressed:
+                      enabled &&
+                              !spec.fields.any(
+                                (f) =>
+                                    f.required &&
+                                    disabledFields.contains(f.header),
+                              )
+                          ? onSave
+                          : null,
                 ),
               ),
               if (onDelete != null) ...[
@@ -115,8 +135,7 @@ class NativeNormalPrescriptionEditor extends StatelessWidget {
   }
 }
 
-/// Android AutoCompleteTextView: the input itself filters a list anchored to it.
-/// IDs are supplied only by a selected option, never resolved from the name.
+/// The same anchored, searchable input interaction as Thana/Upazila.
 class NativeRxField extends StatefulWidget {
   const NativeRxField({
     super.key,
@@ -128,6 +147,7 @@ class NativeRxField extends StatefulWidget {
     required this.onChanged,
     required this.onChoice,
     this.enabled = true,
+    this.onValidate,
   });
   final RxField field;
   final String label;
@@ -137,6 +157,7 @@ class NativeRxField extends StatefulWidget {
   final ValueChanged<String> onChanged;
   final ValueChanged<RxChoice> onChoice;
   final bool enabled;
+  final VoidCallback? onValidate;
   @override
   State<NativeRxField> createState() => _NativeRxFieldState();
 }
@@ -144,9 +165,27 @@ class NativeRxField extends StatefulWidget {
 class _NativeRxFieldState extends State<NativeRxField>
     with WidgetsBindingObserver {
   final _focus = FocusNode(), _link = LayerLink();
+  final _target = GlobalKey();
   OverlayEntry? _entry;
-  String _query = '';
+  bool _all = false, _refreshScheduled = false, _validationScheduled = false;
+  bool _keyboardVisible = false, _disposing = false;
   bool get _canChoose => widget.enabled && widget.field.lookup.isNotEmpty;
+
+  List<RxChoice> get _options {
+    final query = widget.controller.text.trim().toLowerCase();
+    return widget.choices
+        .where((choice) {
+          final name = choice.name.toLowerCase();
+          return name.isNotEmpty &&
+              (_all ||
+                  name.startsWith(query) ||
+                  name
+                      .split(RegExp(r'\s+'))
+                      .any((word) => word.startsWith(query)));
+        })
+        .toList(growable: false);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -155,7 +194,24 @@ class _NativeRxFieldState extends State<NativeRxField>
   }
 
   void _focusChanged() {
-    if (!_focus.hasFocus) _close();
+    if (!_focus.hasFocus) {
+      _close();
+      _validateAfterFrame();
+    }
+  }
+
+  void _validateAfterFrame() {
+    if (_disposing || _validationScheduled) return;
+    _validationScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _validationScheduled = false;
+      final lifecycle = WidgetsBinding.instance.lifecycleState;
+      if (mounted &&
+          widget.enabled &&
+          (lifecycle == null || lifecycle == AppLifecycleState.resumed)) {
+        widget.onValidate?.call();
+      }
+    });
   }
 
   void _close() {
@@ -163,6 +219,30 @@ class _NativeRxFieldState extends State<NativeRxField>
     _entry = null;
     entry?.remove();
     entry?.dispose();
+  }
+
+  // An overlay is outside this field's subtree. Updating it from
+  // didUpdateWidget would mark an unrelated element dirty during build.
+  void _refreshAfterFrame() {
+    if (_refreshScheduled || _disposing) return;
+    _refreshScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshScheduled = false;
+      if (!mounted) return;
+      final keyboardVisible = View.of(context).viewInsets.bottom > 0;
+      final keyboardClosed = _keyboardVisible && !keyboardVisible;
+      _keyboardVisible = keyboardVisible;
+      if (!widget.enabled || keyboardClosed) {
+        _close();
+        _focus.unfocus();
+      } else if (_entry != null) {
+        if (_focus.hasFocus) {
+          _show(all: _all);
+        } else {
+          _close();
+        }
+      }
+    });
   }
 
   @override
@@ -174,27 +254,24 @@ class _NativeRxFieldState extends State<NativeRxField>
   }
 
   @override
-  void didChangeMetrics() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _entry?.markNeedsBuild();
-    });
-  }
+  void didChangeMetrics() => _refreshAfterFrame();
 
   @override
   void didUpdateWidget(covariant NativeRxField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!widget.enabled) {
-      _close();
-      _focus.unfocus();
-    } else {
-      _entry?.markNeedsBuild();
-    }
+    _refreshAfterFrame();
   }
 
-  void _open() {
+  void _show({bool all = false, bool requestFocus = false}) {
     if (!_canChoose) return;
-    _query = '';
-    _focus.requestFocus();
+    _all = all;
+    if (_options.isEmpty ||
+        (!all && widget.controller.text.trim().length < 2)) {
+      _close();
+      return;
+    }
+    if (requestFocus) _focus.requestFocus();
+    _keyboardVisible = View.of(context).viewInsets.bottom > 0;
     if (_entry != null) {
       _entry!.markNeedsBuild();
       return;
@@ -205,136 +282,105 @@ class _NativeRxFieldState extends State<NativeRxField>
 
   Widget _overlay(BuildContext overlayContext) {
     if (!mounted || !_canChoose) return const SizedBox.shrink();
-    final box = context.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return const SizedBox.shrink();
-    final rect = box.localToGlobal(Offset.zero) & box.size,
-        media = MediaQuery.of(context);
-    // Scaffold consumes local viewInsets when resizing the body. Use the view's
-    // screen coordinates for an overlay positioned above that body.
-    final view = View.of(context);
-    final bottomInset = view.viewInsets.bottom / view.devicePixelRatio;
-    final screenHeight = view.physicalSize.height / view.devicePixelRatio;
-    final below =
-        screenHeight -
-        bottomInset -
-        (bottomInset > 0 ? 0 : media.padding.bottom) -
-        rect.bottom -
-        4;
-    final above = rect.top - media.padding.top - 8;
-    final up = below < 160 && above > below,
-        maxHeight = math.min(300.0, math.max(48.0, up ? above : below));
-    final matches =
-        widget.choices
-            .where(
-              (c) => c.description.toLowerCase().contains(_query.toLowerCase()),
-            )
-            .toList();
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (_) {
-              _close();
-              _focus.unfocus();
-            },
-            child: const SizedBox.expand(),
-          ),
-        ),
-        Positioned(
-          left: 0,
-          top: 0,
-          child: CompositedTransformFollower(
-            link: _link,
-            showWhenUnlinked: false,
-            targetAnchor: up ? Alignment.topLeft : Alignment.bottomLeft,
-            followerAnchor: up ? Alignment.bottomLeft : Alignment.topLeft,
-            child: TextFieldTapRegion(
-              child: Material(
-                elevation: 4,
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-                clipBehavior: Clip.antiAlias,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: rect.width,
-                    maxHeight: maxHeight,
-                  ),
-                  child: SizedBox(
-                    width: rect.width,
-                    child:
-                        matches.isEmpty
-                            ? const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Text('No options found'),
-                            )
-                            : ListView.builder(
-                              key: Key('rx_dropdown_${widget.field.header}'),
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              itemCount: matches.length,
-                              itemBuilder: (context, index) {
-                                final choice = matches[index];
-                                final duplicate =
-                                    matches
-                                        .where((c) => c.name == choice.name)
-                                        .length >
-                                    1;
-                                return InkWell(
-                                  key: Key('rx_choice_${choice.id}'),
-                                  onTap: () {
-                                    _close();
-                                    widget.controller.text = choice.name;
-                                    widget.onChoice(choice);
-                                    _focus.unfocus();
-                                  },
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      minHeight: 48,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            choice.name,
-                                            style: rxNativeText(
-                                              16,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                          if (choice.note.isNotEmpty ||
-                                              duplicate)
-                                            Text(
-                                              choice.note.isEmpty
-                                                  ? 'ID: ${choice.id}'
-                                                  : choice.note,
-                                              style: rxNativeText(12),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
+    final matches = _options;
+    final box = _target.currentContext?.findRenderObject();
+    if (matches.isEmpty || box is! RenderBox || !box.attached || !box.hasSize) {
+      return const SizedBox.shrink();
+    }
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    final media = MediaQuery.of(context), view = View.of(context);
+    // Scaffold consumes its local viewInsets; the overlay uses screen space.
+    final inset = view.viewInsets.bottom / view.devicePixelRatio;
+    final below = math.max(
+      0.0,
+      view.physicalSize.height / view.devicePixelRatio -
+          inset -
+          (inset > 0 ? 0 : media.padding.bottom) -
+          rect.bottom -
+          4,
+    );
+    final above = math.max(0.0, rect.top - media.padding.top - 8);
+    final up = below < 160 && above > below;
+    final maxHeight = math.min(300.0, up ? above : below);
+    if (maxHeight < 1) return const SizedBox.shrink();
+    return Positioned(
+      left: 0,
+      top: 0,
+      width: rect.width,
+      child: CompositedTransformFollower(
+        link: _link,
+        showWhenUnlinked: false,
+        targetAnchor: up ? Alignment.topLeft : Alignment.bottomLeft,
+        followerAnchor: up ? Alignment.bottomLeft : Alignment.topLeft,
+        offset: Offset(0, up ? -2 : 2),
+        child: TextFieldTapRegion(
+          child: Material(
+            elevation: 4,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            clipBehavior: Clip.antiAlias,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight),
+              child: ListView.builder(
+                key: Key('rx_dropdown_${widget.field.header}'),
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: matches.length,
+                itemBuilder: (context, index) {
+                  final choice = matches[index];
+                  final duplicate =
+                      matches.where((c) => c.name == choice.name).length > 1;
+                  return InkWell(
+                    key: Key('rx_choice_${choice.id}'),
+                    onTap: () {
+                      _close();
+                      widget.controller.value = TextEditingValue(
+                        text: choice.name,
+                        selection: TextSelection.collapsed(
+                          offset: choice.name.length,
+                        ),
+                      );
+                      widget.onChoice(choice);
+                      _focus.unfocus();
+                    },
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              choice.name,
+                              style: rxNativeText(16, color: Colors.black),
                             ),
-                  ),
-                ),
+                            if (choice.note.isNotEmpty || duplicate)
+                              Text(
+                                choice.note.isEmpty
+                                    ? 'ID: ${choice.id}'
+                                    : choice.note,
+                                style: rxNativeText(12),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
   @override
   void dispose() {
+    _disposing = true;
     _close();
     WidgetsBinding.instance.removeObserver(this);
     _focus.removeListener(_focusChanged);
@@ -345,10 +391,13 @@ class _NativeRxFieldState extends State<NativeRxField>
   @override
   Widget build(BuildContext context) {
     final date = widget.field.isDate, drop = widget.field.lookup.isNotEmpty;
+    final fill = widget.enabled ? Colors.white : const Color(0xfff5f5f5);
+    final textColor = widget.enabled ? Colors.black : const Color(0xff999999);
     return CompositedTransformTarget(
+      key: _target,
       link: _link,
       child: Material(
-        color: Colors.white,
+        color: fill,
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -361,7 +410,8 @@ class _NativeRxFieldState extends State<NativeRxField>
           focusNode: _focus,
           enabled: widget.enabled,
           readOnly: date,
-          style: rxNativeText(16, color: Colors.black),
+          style: rxNativeText(16, color: textColor),
+          cursorColor: DocColors.greenSea,
           minLines: 1,
           maxLines: widget.field.numeric ? 1 : null,
           keyboardType:
@@ -369,34 +419,42 @@ class _NativeRxFieldState extends State<NativeRxField>
                   ? TextInputType.number
                   : TextInputType.text,
           textInputAction: TextInputAction.done,
+          autocorrect: false,
+          enableSuggestions: false,
+          smartDashesType: SmartDashesType.disabled,
+          smartQuotesType: SmartQuotesType.disabled,
           onTap:
               date
                   ? widget.onPick
                   : drop
-                  ? _open
+                  ? () => _show(all: true, requestFocus: true)
                   : null,
+          onTapOutside: (_) {
+            _close();
+            _focus.unfocus();
+          },
           onChanged: (text) {
             widget.onChanged(text);
-            if (drop) {
-              _query = text;
-              if (_entry == null) {
-                _open();
-                _query = text;
-              }
-              _entry?.markNeedsBuild();
-            }
+            if (drop) _show();
           },
           onEditingComplete: () {
             _close();
             _focus.unfocus();
+            _validateAfterFrame();
           },
           decoration: InputDecoration(
             labelText: widget.label,
-            labelStyle: rxNativeText(16),
+            labelStyle: rxNativeText(
+              16,
+              color:
+                  widget.enabled
+                      ? const Color(0xff6c6e6f)
+                      : const Color(0xff999999),
+            ),
             floatingLabelStyle: rxNativeText(16),
             floatingLabelBehavior: FloatingLabelBehavior.auto,
             filled: true,
-            fillColor: Colors.white,
+            fillColor: fill,
             contentPadding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
             prefixIcon:
                 date
@@ -409,11 +467,25 @@ class _NativeRxFieldState extends State<NativeRxField>
             suffixIcon:
                 drop
                     ? IconButton(
-                      icon: const Icon(
+                      key: Key('rx_dropdown_button_${widget.field.header}'),
+                      tooltip: 'Show ${widget.label}',
+                      icon: Icon(
                         Icons.arrow_drop_down,
-                        color: Color(0xff757575),
+                        color:
+                            widget.enabled
+                                ? const Color(0xff757575)
+                                : const Color(0xff999999),
                       ),
-                      onPressed: widget.enabled ? _open : null,
+                      onPressed:
+                          widget.enabled
+                              ? () {
+                                if (_entry != null) {
+                                  _close();
+                                } else {
+                                  _show(all: true, requestFocus: true);
+                                }
+                              }
+                              : null,
                     )
                     : null,
             border: InputBorder.none,

@@ -57,7 +57,42 @@ class NativeDashboardDialogOwner {
       context: context,
       barrierDismissible: dismissible,
       barrierColor: barrierColor,
-      builder: (_) => PopScope(canPop: dismissible, child: child),
+      builder: (dialogContext) {
+        // Calendar colors belong to the calendar, not every owned dialog.
+        Widget content = child;
+        if (child is DatePickerDialog) {
+          final theme = Theme.of(dialogContext);
+          content = Theme(
+            data: theme.copyWith(
+              colorScheme: theme.colorScheme.copyWith(
+                primary: DocColors.primary,
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: Colors.black87,
+              ),
+              datePickerTheme: theme.datePickerTheme.copyWith(
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                headerBackgroundColor: DocColors.primary,
+                headerForegroundColor: Colors.white,
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: (theme.textButtonTheme.style ?? const ButtonStyle())
+                    .copyWith(
+                      foregroundColor: WidgetStateProperty.resolveWith(
+                        (states) =>
+                            states.contains(WidgetState.disabled)
+                                ? theme.disabledColor
+                                : DocColors.primary,
+                      ),
+                    ),
+              ),
+            ),
+            child: child,
+          );
+        }
+        return PopScope(canPop: dismissible, child: content);
+      },
     );
     _routes.add(route);
     try {

@@ -42,7 +42,9 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
   final _values = <String, String>{},
       _controllers = <String, TextEditingController>{};
   final _choices = <String, List<RxChoice>>{};
+  final _selectedChoices = <String, RxChoice>{};
   final _fieldErrors = <String, String>{};
+  String _doctorDepartmentId = '';
   bool _busy = true,
       _writing = false,
       _foreground = true,
@@ -283,6 +285,7 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
         ],
       ),
     );
+    if (_current && _foreground) setState(() {});
     return result == true && _alive(op);
   }
 
@@ -414,12 +417,22 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
             ? {for (final f in spec.fields) f.header: ''}
             : spec.values(existing),
       );
+    _choices.clear();
+    _selectedChoices.clear();
+    _doctorDepartmentId = '';
     for (final f in spec.fields) {
       final c = _controllers.putIfAbsent(
         f.header,
         () => TextEditingController(),
       );
       c.text = existing == null ? '' : f.display(existing);
+      if (f.isChoice && rxId(_values[f.header] ?? '') && c.text.isNotEmpty) {
+        _selectedChoices[f.header] = RxChoice(
+          _values[f.header]!,
+          c.text,
+          existing == null ? '' : rxValue(existing, f.noteKey),
+        );
+      }
     }
     _existing = existing;
     _fieldErrors.clear();
@@ -431,6 +444,7 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
   Future<void> _loadChoices() async {
     if (!_current || !_foreground || _editing == null) return;
     final op = ++_operation;
+    final departmentId = _values['P_DEPTS_ID'] ?? '';
     setState(() => _busy = true);
     try {
       final p = await _profile(op);
@@ -445,7 +459,7 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
             spec,
             _editContext!,
             f,
-            departmentId: _values['P_DEPTS_ID'] ?? '',
+            departmentId: departmentId,
             isCurrent: () => _alive(op),
           );
         }
@@ -455,6 +469,7 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
         _choices
           ..clear()
           ..addAll(result);
+        _doctorDepartmentId = departmentId;
         _error = null;
       });
     } catch (f) {
@@ -492,6 +507,7 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
         setState(() {
           _values[field.header] = oracleDate(date);
           _controllers[field.header]!.text = oracleDate(date);
+          _fieldErrors.remove(field.header);
         });
       }
       return;
@@ -502,69 +518,184 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
     if (!_ready) return;
     setState(() {
       _values[field.header] = choice.id;
-      _controllers[field.header]!.text = choice.name;
+      _selectedChoices[field.header] = choice;
+      _setChoiceText(field, choice);
       _fieldErrors.remove(field.header);
-      if (field.header == 'P_DEPTS_ID') {
-        _values['P_DOC_ID'] = '';
-        _controllers['P_DOC_ID']?.clear();
+      if (field.header == 'P_DEPTS_ID' && _doctorDepartmentId != choice.id) {
+        _clearReferralDoctor();
       }
     });
-    if (field.header == 'P_DEPTS_ID') await _loadChoices();
+    if (field.header == 'P_DEPTS_ID' && _doctorDepartmentId != choice.id) {
+      await _loadChoices();
+    }
   }
 
   void _fieldChanged(RxField field, String text) {
-    _values[field.header] = field.isChoice ? '' : text;
-    if (_fieldErrors.containsKey(field.header)) {
-      setState(() => _fieldErrors.remove(field.header));
-    }
-    if (field.header == 'P_DEPTS_ID') {
-      _values['P_DOC_ID'] = '';
-      _controllers['P_DOC_ID']?.clear();
+    if (!_ready) return;
+    setState(() {
+      _values[field.header] = field.isChoice ? '' : text;
+      _fieldErrors.remove(field.header);
+      if (field.header == 'P_DEPTS_ID') _clearReferralDoctor();
+    });
+  }
+
+  void _clearReferralDoctor() {
+    _values['P_DOC_ID'] = '';
+    _controllers['P_DOC_ID']?.clear();
+    _choices['P_DOC_ID'] = const [];
+    _selectedChoices.remove('P_DOC_ID');
+    _fieldErrors.remove('P_DOC_ID');
+    _doctorDepartmentId = '';
+  }
+
+  void _setChoiceText(RxField field, RxChoice choice) {
+    final controller = _controllers[field.header]!;
+    if (controller.text != choice.name) {
+      controller.value = TextEditingValue(
+        text: choice.name,
+        selection: TextSelection.collapsed(offset: choice.name.length),
+      );
     }
   }
 
+  List<RxChoice> _fieldChoices(RxField field) {
+    final choices = List<RxChoice>.of(_choices[field.header] ?? const []);
+    final selected = _selectedChoices[field.header];
+    // Retain the real saved/selected name, never the user's edited draft text.
+    if (selected != null && !choices.any((c) => c.id == selected.id)) {
+      choices.insert(0, selected);
+    }
+    return choices;
+  }
+
   Map<String, List<RxChoice>> _editorChoices(RxSectionSpec spec) => {
-    for (final field in spec.fields)
-      field.header: [
-        if (field.isChoice &&
-            (_values[field.header] ?? '').isNotEmpty &&
-            !(_choices[field.header] ?? []).any(
-              (c) => c.id == _values[field.header],
-            ))
-          RxChoice(_values[field.header]!, _controllers[field.header]!.text),
-        ...?_choices[field.header],
-      ],
+    for (final field in spec.fields) field.header: _fieldChoices(field),
   };
+
+  Set<String> _disabledEditorFields(RxSectionSpec spec) {
+    if (spec.section == NormalPrescriptionSection.referral) {
+      final departmentId = _values['P_DEPTS_ID'] ?? '';
+      final doctor = spec.fields.firstWhere((f) => f.header == 'P_DOC_ID');
+      if (!rxId(departmentId) ||
+          _doctorDepartmentId != departmentId ||
+          _fieldChoices(doctor).isEmpty) {
+        return {'P_DOC_ID'};
+      }
+    } else if (spec.section == NormalPrescriptionSection.service) {
+      final service = spec.fields.first;
+      if (_choices.containsKey(service.header) &&
+          _fieldChoices(service).isEmpty) {
+        return {service.header};
+      }
+    }
+    return const {};
+  }
+
+  Map<String, String> _editorMessages(RxSectionSpec spec) {
+    if (spec.section == NormalPrescriptionSection.referral) {
+      final departmentId = _values['P_DEPTS_ID'] ?? '';
+      final doctor = spec.fields.firstWhere((f) => f.header == 'P_DOC_ID');
+      if (rxId(departmentId) &&
+          _doctorDepartmentId == departmentId &&
+          _fieldChoices(doctor).isEmpty) {
+        return {'P_DEPTS_ID': 'No Doctor Found'};
+      }
+    } else if (spec.section == NormalPrescriptionSection.service &&
+        _disabledEditorFields(spec).isNotEmpty) {
+      return {spec.fields.first.header: 'No Service Found'};
+    }
+    return const {};
+  }
+
+  String? _resolveField(RxField field) {
+    final text = _controllers[field.header]!.text.trim();
+    if (text.isEmpty) {
+      _values[field.header] = '';
+      if (field.header == 'P_DEPTS_ID') _clearReferralDoctor();
+      return !field.required
+          ? null
+          : field.isDate
+          ? 'Please Provide Injury Date'
+          : 'Please Write ${rxNativeFieldLabel(_editing!, field)}';
+    }
+    if (!field.isChoice) {
+      _values[field.header] = text;
+      return null;
+    }
+    final choices = _fieldChoices(field);
+    final selected = _selectedChoices[field.header];
+    final matches = choices.where((c) => c.name.trim() == text).toList();
+    // A previous explicit selection disambiguates duplicate display names.
+    // Otherwise, typed text may resolve only one exact catalogue match.
+    final choice =
+        selected != null && matches.any((c) => c.id == selected.id)
+            ? matches.firstWhere((c) => c.id == selected.id)
+            : matches.length == 1
+            ? matches.single
+            : null;
+    if (choice == null) {
+      _values[field.header] = '';
+      if (field.header == 'P_DEPTS_ID') _clearReferralDoctor();
+      return field.header == 'P_DOC_ID'
+          ? 'Invalid Doctor Name'
+          : 'Invalid ${rxNativeFieldLabel(_editing!, field)}';
+    }
+    _values[field.header] = choice.id;
+    _selectedChoices[field.header] = choice;
+    _setChoiceText(field, choice);
+    if (field.header == 'P_DEPTS_ID' && _doctorDepartmentId != choice.id) {
+      _clearReferralDoctor();
+    }
+    return null;
+  }
+
+  void _validateField(RxField field) {
+    if (!_ready ||
+        _editing == null ||
+        _disabledEditorFields(_editing!).contains(field.header)) {
+      return;
+    }
+    setState(() {
+      final error = _resolveField(field);
+      if (error == null) {
+        _fieldErrors.remove(field.header);
+      } else {
+        _fieldErrors[field.header] = error;
+      }
+    });
+    if (field.header == 'P_DEPTS_ID' &&
+        rxId(_values[field.header] ?? '') &&
+        _doctorDepartmentId != _values[field.header]) {
+      unawaited(_loadChoices());
+    }
+  }
 
   Future<void> _submit() async {
     if (!_ready || _editing == null) return;
     final spec = _editing!;
-    final invalidOptional = spec.fields.where(
-      (f) =>
-          f.isChoice &&
-          !f.required &&
-          _controllers[f.header]!.text.trim().isNotEmpty &&
-          (_values[f.header] ?? '').isEmpty,
-    );
+    final disabled = _disabledEditorFields(spec);
+    if (spec.fields.any((f) => f.required && disabled.contains(f.header))) {
+      return;
+    }
+    setState(() {
+      _fieldErrors.clear();
+      for (final field in spec.fields) {
+        final error = _resolveField(field);
+        if (error != null) _fieldErrors[field.header] = error;
+      }
+    });
+    if (spec.section == NormalPrescriptionSection.referral &&
+        rxId(_values['P_DEPTS_ID'] ?? '') &&
+        _doctorDepartmentId != _values['P_DEPTS_ID']) {
+      await _loadChoices();
+      if (!_ready || _editing != spec) return;
+    }
+    if (!mounted || !_ready || _editing != spec) return;
     final error =
-        invalidOptional.isNotEmpty
-            ? 'Invalid Doctor Name'
+        _fieldErrors.isNotEmpty
+            ? _fieldErrors.values.first
             : rxDraftError(spec, _values);
     if (error != null) {
-      setState(() {
-        _fieldErrors.clear();
-        if (invalidOptional.isNotEmpty) {
-          _fieldErrors[invalidOptional.first.header] = 'Invalid Doctor Name';
-        }
-        for (final field in spec.fields) {
-          if (field.required && (_values[field.header] ?? '').trim().isEmpty) {
-            _fieldErrors[field.header] =
-                field.isDate
-                    ? 'Please Provide Injury Date'
-                    : rxNativeMissing(spec, field);
-          }
-        }
-      });
       _toasts.show(context, error);
       return;
     }
@@ -692,6 +823,9 @@ class _NormalPrescriptionScreenState extends State<NormalPrescriptionScreen>
               choices: _editorChoices(editor),
               updating: _existing != null,
               errors: _fieldErrors,
+              onValidate: _validateField,
+              disabledFields: _disabledEditorFields(editor),
+              messages: _editorMessages(editor),
               onDelete:
                   _existing != null &&
                           const [
