@@ -644,9 +644,39 @@ class NativeNormalPrescriptionLayout extends StatelessWidget {
                     _table(NormalPrescriptionSection.diagnosis, s),
                     if (diagnosis != null) ...[
                       const SizedBox(height: 7),
+                      if (seed.readOnly) ...[
+                        Text(
+                          '-----------------------------------------------',
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.clip,
+                          textAlign: TextAlign.center,
+                          style: rxNativeText(
+                            14,
+                            family: 'OpenSans',
+                            weight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 9),
+                      ],
                       _table(NormalPrescriptionSection.referral, s),
                       if (referral != null) ...[
                         const SizedBox(height: 7),
+                        if (seed.readOnly) ...[
+                          Text(
+                            '-----------------------------------------------',
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.clip,
+                            textAlign: TextAlign.center,
+                            style: rxNativeText(
+                              14,
+                              family: 'OpenSans',
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 9),
+                        ],
                         _table(NormalPrescriptionSection.service, s),
                       ],
                     ],
@@ -658,23 +688,31 @@ class NativeNormalPrescriptionLayout extends StatelessWidget {
               _card(_table(treatment[treatmentTab], s)),
               Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: CheckboxListTile(
-                  key: const Key('rx_admission'),
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: DocColors.primary,
-                  value: rxValue(p, 'pmm_admission_flag') == '1',
-                  onChanged:
-                      !seed.readOnly && enabled
-                          ? (v) => onAdmission(v ?? false)
-                          : null,
-                  title: Text(
-                    'Allow this Check Box for Patient Admission',
-                    style: rxNativeText(
-                      14,
-                      family: 'PatuaOne',
-                      weight: FontWeight.w700,
-                      color: DocColors.primary,
+                child: ListTileTheme(
+                  horizontalTitleGap: 4,
+                  minLeadingWidth: 0,
+                  child: CheckboxListTile(
+                    key: const Key('rx_admission'),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    activeColor: DocColors.primary,
+                    value: rxValue(p, 'pmm_admission_flag') == '1',
+                    onChanged:
+                        !seed.readOnly && enabled
+                            ? (v) => onAdmission(v ?? false)
+                            : null,
+                    title: Text(
+                      !seed.readOnly
+                          ? 'Allow this Check Box for Patient Admission'
+                          : 'Patient Admission',
+                      style: rxNativeText(
+                        14,
+                        family: 'PatuaOne',
+                        weight: FontWeight.w700,
+                        color: DocColors.primary,
+                      ),
                     ),
                   ),
                 ),
