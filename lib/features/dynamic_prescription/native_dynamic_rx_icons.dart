@@ -27,6 +27,11 @@ enum DynamicRxGlyph {
   therapy,
   medicineLocked,
   treatmentPlan,
+  advice,
+  followUp,
+  specialAlert,
+  reference,
+  notes,
 }
 
 class NativeDynamicRxIcon extends StatelessWidget {
@@ -552,6 +557,231 @@ class _NativeDynamicRxPainter extends CustomPainter {
               ..lineTo(14.1, 8)
               ..close();
         canvas.drawPath(path0, paint);
+        break;
+      case DynamicRxGlyph.advice:
+        // ic_advice_24.xml: original native fill/stroke geometry; XML tint is green_sea.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(5, 3)
+              ..lineTo(19, 3)
+              ..cubicTo(20.1, 3, 21, 3.9, 21, 5)
+              ..lineTo(21, 15)
+              ..cubicTo(21, 16.1, 20.1, 17, 19, 17)
+              ..lineTo(16, 17)
+              ..lineTo(12, 21)
+              ..lineTo(8, 17)
+              ..lineTo(5, 17)
+              ..cubicTo(3.9, 17, 3, 16.1, 3, 15)
+              ..lineTo(3, 5)
+              ..cubicTo(3, 3.9, 3.9, 3, 5, 3)
+              ..close();
+        canvas.drawPath(
+          path0,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.round,
+        );
+        final path1 =
+            Path()
+              ..moveTo(7, 8)
+              ..lineTo(17, 8)
+              ..moveTo(7, 12)
+              ..lineTo(14, 12);
+        canvas.drawPath(
+          path1,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.miter,
+        );
+        break;
+      case DynamicRxGlyph.followUp:
+        // ic_follow_up_24.xml: original native fill/stroke geometry; XML tint is green_sea.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(6, 4.5)
+              ..lineTo(18, 4.5)
+              ..cubicTo(19.1, 4.5, 20, 5.4, 20, 6.5)
+              ..lineTo(20, 19)
+              ..cubicTo(20, 20.1, 19.1, 21, 18, 21)
+              ..lineTo(6, 21)
+              ..cubicTo(4.9, 21, 4, 20.1, 4, 19)
+              ..lineTo(4, 6.5)
+              ..cubicTo(4, 5.4, 4.9, 4.5, 6, 4.5)
+              ..close();
+        canvas.drawPath(
+          path0,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.round,
+        );
+        final path1 =
+            Path()
+              ..moveTo(8, 2.5)
+              ..lineTo(8, 6.5)
+              ..moveTo(16, 2.5)
+              ..lineTo(16, 6.5)
+              ..moveTo(4, 9)
+              ..lineTo(20, 9);
+        canvas.drawPath(
+          path1,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.miter,
+        );
+        final path2 =
+            Path()
+              ..moveTo(8, 14)
+              ..lineTo(10.5, 16.5)
+              ..lineTo(16, 11);
+        canvas.drawPath(
+          path2,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round,
+        );
+        break;
+      case DynamicRxGlyph.specialAlert:
+        // ic_special_alert_24.xml: original native fill/stroke geometry; XML tint is green_sea.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(12, 3)
+              ..lineTo(22, 20)
+              ..lineTo(2, 20)
+              ..close();
+        canvas.drawPath(
+          path0,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.round,
+        );
+        final path1 =
+            Path()
+              ..moveTo(12, 9)
+              ..lineTo(12, 14);
+        canvas.drawPath(
+          path1,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.miter,
+        );
+        final path2 =
+            Path()
+              ..moveTo(12, 16.5)
+              ..arcToPoint(
+                Offset(12, 18.5),
+                radius: Radius.elliptical(1, 1),
+                rotation: 0,
+                largeArc: true,
+                clockwise: false,
+              )
+              ..arcToPoint(
+                Offset(12, 16.5),
+                radius: Radius.elliptical(1, 1),
+                rotation: 0,
+                largeArc: true,
+                clockwise: false,
+              )
+              ..close();
+        canvas.drawPath(path2, Paint()..color = color);
+        break;
+      case DynamicRxGlyph.reference:
+        // ic_reference_24.xml: original native fill/stroke geometry; XML tint is green_sea.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(3, 5.5)
+              ..cubicTo(6, 4.5, 8.5, 4.8, 11.5, 6.5)
+              ..lineTo(11.5, 20)
+              ..cubicTo(8.5, 18.3, 6, 18, 3, 19)
+              ..close();
+        canvas.drawPath(
+          path0,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.round,
+        );
+        final path1 =
+            Path()
+              ..moveTo(21, 5.5)
+              ..cubicTo(18, 4.5, 15.5, 4.8, 12.5, 6.5)
+              ..lineTo(12.5, 20)
+              ..cubicTo(15.5, 18.3, 18, 18, 21, 19)
+              ..close();
+        canvas.drawPath(
+          path1,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.round,
+        );
+        break;
+      case DynamicRxGlyph.notes:
+        // ic_notes_24.xml: original native fill/stroke geometry; XML tint is green_sea.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(6, 2)
+              ..lineTo(14, 2)
+              ..lineTo(19, 7)
+              ..lineTo(19, 22)
+              ..lineTo(6, 22)
+              ..close();
+        canvas.drawPath(
+          path0,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.butt
+            ..strokeJoin = StrokeJoin.round,
+        );
+        final path1 =
+            Path()
+              ..moveTo(14, 2)
+              ..lineTo(14, 7)
+              ..lineTo(19, 7)
+              ..moveTo(9, 12)
+              ..lineTo(16, 12)
+              ..moveTo(9, 16)
+              ..lineTo(16, 16);
+        canvas.drawPath(
+          path1,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round,
+        );
         break;
       default:
         break;

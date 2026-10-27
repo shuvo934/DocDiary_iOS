@@ -13,6 +13,35 @@ import 'dynamic_rx_test_support.dart';
 
 void main() {
   test(
+    'durationRequired defaults false; true changes blank validation without changing positive integer rules',
+    () {
+      expect(DynamicMedicineEntry.durationError(''), isNull);
+      expect(
+        DynamicMedicineEntry.durationError(' ', durationRequired: true),
+        'Enter duration in days',
+      );
+      expect(
+        DynamicMedicineEntry.durationError('7', durationRequired: true),
+        isNull,
+      );
+      expect(
+        DynamicMedicineEntry.durationError('0', durationRequired: true),
+        'Duration must be greater than 0',
+      );
+      expect(
+        DynamicMedicineEntry.durationError('1.5', durationRequired: true),
+        'Enter a valid positive duration',
+      );
+      expect(
+        DynamicMedicineEntry.durationError(
+          '2147483648',
+          durationRequired: true,
+        ),
+        'Enter a valid positive duration',
+      );
+    },
+  );
+  test(
     'Rx body uses the native three arrays, numeric IDs and no display-only fields',
     () {
       final draft = DynamicRxDraft()..replaceFromData(rxExistingData());

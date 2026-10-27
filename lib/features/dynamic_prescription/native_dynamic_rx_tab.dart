@@ -16,10 +16,12 @@ class NativeDynamicRxTab extends StatefulWidget {
     required this.draft,
     required this.catalogue,
     required this.medicineAllowed,
+    this.durationRequired = false,
   });
   final DynamicRxDraft draft;
   final DynamicRxCatalogue catalogue;
   final bool medicineAllowed;
+  final bool durationRequired;
   @override
   State<NativeDynamicRxTab> createState() => _RxTabState();
 }
@@ -73,6 +75,7 @@ class _RxTabState extends State<NativeDynamicRxTab>
           draft: widget.draft,
           catalogue: widget.catalogue,
           existing: entry,
+          durationRequired: widget.durationRequired,
         ),
       ),
     );

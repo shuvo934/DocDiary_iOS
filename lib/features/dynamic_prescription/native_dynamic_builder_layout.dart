@@ -8,7 +8,7 @@ import 'native_dynamic_builder_icons.dart';
 import 'native_dynamic_rx_controls.dart';
 import 'native_dynamic_rx_icons.dart';
 
-/// activity_prescription_builder.xml. Clinical and Rx share the same builder.
+/// activity_prescription_builder.xml. Clinical, Rx and Advice share the builder.
 class NativeDynamicBuilderLayout extends StatelessWidget {
   const NativeDynamicBuilderLayout({
     super.key,
@@ -324,14 +324,16 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                               width: double.infinity,
                               child: NativeDynamicRxButton(
                                 label:
-                                    selectedTab == 0
-                                        ? 'NEXT: RX'
-                                        : 'NEXT: ADVICE',
+                                    const [
+                                      'NEXT: RX',
+                                      'NEXT: ADVICE',
+                                      'NEXT: REVIEW',
+                                    ][selectedTab],
                                 onPressed:
                                     enabled &&
-                                            selectedTab == 0 &&
+                                            selectedTab < 2 &&
                                             onTabChanged != null
-                                        ? () => onTabChanged!(1)
+                                        ? () => onTabChanged!(selectedTab + 1)
                                         : null,
                               ),
                             ),
@@ -351,7 +353,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
 
   Widget _tab(int index, String label, DynamicRxMetrics m) {
     final selected = selectedTab == index,
-        active = enabled && index < 2 && onTabChanged != null;
+        active = enabled && index < 3 && onTabChanged != null;
     return Expanded(
       child: Semantics(
         selected: selected,

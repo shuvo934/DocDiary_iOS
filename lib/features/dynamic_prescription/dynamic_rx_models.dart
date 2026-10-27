@@ -53,9 +53,11 @@ class DynamicMedicineEntry {
           : medicine.name.toLowerCase() == other.medicine.name.toLowerCase();
 
   /// Duration is optional in native; a supplied value must fit a positive Java int.
-  static String? durationError(String raw) {
+  static String? durationError(String raw, {bool durationRequired = false}) {
     final value = raw.trim();
-    if (value.isEmpty) return null;
+    if (value.isEmpty) {
+      return durationRequired ? 'Enter duration in days' : null;
+    }
     final parsed =
         RegExp(r'^[+-]?[0-9]+$').hasMatch(value) ? int.tryParse(value) : null;
     if (parsed == null || parsed > 2147483647 || parsed < -2147483648) {

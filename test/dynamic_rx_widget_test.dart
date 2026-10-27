@@ -145,6 +145,74 @@ void main() {
   setUp(() => draft = DynamicRxDraft());
   tearDown(() => draft.dispose());
 
+  for (final editing in [false, true]) {
+    testWidgets(
+      'required Duration is labelled and validated in ${editing ? 'Edit' : 'Add'} Medicine',
+      (tester) async {
+        final original = editing ? rxMedicine() : null;
+        if (original != null) draft.saveMedicine(original);
+        await _host(
+          tester,
+          NativeDynamicMedicineSheet(
+            draft: draft,
+            catalogue: rxCatalogue(),
+            existing: original,
+            durationRequired: true,
+          ),
+        );
+        expect(
+          tester
+              .widget<TextField>(find.byKey(const Key('dy_field_rx_duration')))
+              .decoration!
+              .labelText,
+          'Duration (Days)',
+        );
+        if (!editing) await _type(tester, 'rx_medicine', 'Sample medicine');
+        final action = 'dy_action_${editing ? 'UPDATE' : 'ADD'} MEDICINE';
+        await _tap(tester, action);
+        expect(find.text('Enter duration in days'), findsOneWidget);
+        await _type(tester, 'rx_duration', '0');
+        await _tap(tester, action);
+        expect(find.text('Duration must be greater than 0'), findsOneWidget);
+        await _type(tester, 'rx_duration', '7');
+        await _tap(tester, action);
+        expect(draft.medicines.single.duration, '7');
+        if (editing) expect(draft.medicines.single.localId, original!.localId);
+      },
+    );
+  }
+  for (final flag in [false, true]) {
+    testWidgets(
+      'Rx tab forwards durationRequired=$flag to both Medicine actions',
+      (tester) async {
+        final entry = rxMedicine();
+        draft.saveMedicine(entry);
+        await _host(
+          tester,
+          NativeDynamicRxTab(
+            draft: draft,
+            catalogue: rxCatalogue(),
+            medicineAllowed: true,
+            durationRequired: flag,
+          ),
+          sheet: false,
+        );
+        for (final key in ['dy_add_medicine', 'dy_edit_${entry.localId}']) {
+          await _tap(tester, key);
+          expect(
+            tester
+                .widget<NativeDynamicMedicineSheet>(
+                  find.byType(NativeDynamicMedicineSheet),
+                )
+                .durationRequired,
+            flag,
+          );
+          await _tap(tester, 'dy_action_CANCEL');
+        }
+      },
+    );
+  }
+
   testWidgets(
     'Medicine add uses native defaults; blank/unmatched inputs have distinct errors and no empty option row',
     (tester) async {

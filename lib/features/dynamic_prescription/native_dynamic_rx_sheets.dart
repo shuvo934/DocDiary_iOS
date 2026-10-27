@@ -12,10 +12,12 @@ class NativeDynamicMedicineSheet extends StatefulWidget {
     required this.draft,
     required this.catalogue,
     this.existing,
+    this.durationRequired = false,
   });
   final DynamicRxDraft draft;
   final DynamicRxCatalogue catalogue;
   final DynamicMedicineEntry? existing;
+  final bool durationRequired;
   @override
   State<NativeDynamicMedicineSheet> createState() => _MedicineSheetState();
 }
@@ -88,6 +90,7 @@ class _MedicineSheetState extends State<NativeDynamicMedicineSheet> {
     }
     final durationError = DynamicMedicineEntry.durationError(
       _fields['duration']!.text,
+      durationRequired: widget.durationRequired,
     );
     if (durationError != null) {
       setState(() => _errors['duration'] = durationError);
@@ -146,7 +149,10 @@ class _MedicineSheetState extends State<NativeDynamicMedicineSheet> {
             SizedBox(height: m.d(10)),
             NativeDynamicRxField(
               id: 'rx_duration',
-              label: 'Duration (Days) - Optional',
+              label:
+                  widget.durationRequired
+                      ? 'Duration (Days)'
+                      : 'Duration (Days) - Optional',
               controller: _fields['duration']!,
               numeric: true,
               formatters: [FilteringTextInputFormatter.digitsOnly],

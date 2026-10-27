@@ -11,6 +11,7 @@ import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
 import 'dynamic_clinical_models.dart';
+import 'dynamic_advice_models.dart';
 import 'dynamic_prescription_repository.dart';
 import 'dynamic_prescription_seed.dart';
 import 'dynamic_rx_models.dart';
@@ -19,18 +20,21 @@ import 'native_dynamic_clinical_tab.dart';
 import 'native_dynamic_patient_details_sheet.dart';
 import 'native_dynamic_rx_controls.dart';
 import 'native_dynamic_rx_tab.dart';
+import 'native_dynamic_advice_tab.dart';
 
-/// Today's native scheduled builder. Clinical and Rx drafts live for this route.
+/// Today's native scheduled builder. Clinical, Rx and Advice share this route.
 class DynamicPrescriptionClinicalScreen extends StatefulWidget {
   const DynamicPrescriptionClinicalScreen({
     super.key,
     required this.auth,
     required this.repository,
     required this.seed,
+    this.durationRequired = false,
   });
   final AuthController auth;
   final DynamicPrescriptionRepository repository;
   final DynamicPrescriptionSeed seed;
+  final bool durationRequired;
   @override
   State<DynamicPrescriptionClinicalScreen> createState() =>
       _ClinicalScreenState();
@@ -40,6 +44,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     with WidgetsBindingObserver {
   final _draft = DynamicClinicalDraft();
   final _rxDraft = DynamicRxDraft();
+  final _adviceDraft = DynamicAdviceDraft();
   final _pages = PageController();
   final _view = ValueNotifier<int>(0);
   final _navigator = GlobalKey<NavigatorState>();
@@ -48,6 +53,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   AccountProfile? _profile;
   DynamicClinicalCatalogue? _catalogue;
   DynamicRxCatalogue? _rxCatalogue;
+  DynamicAdviceCatalogue? _adviceCatalogue;
   JsonMap _data = const {};
   BuildContext? _innerContext;
   String? _error, _baseline;
@@ -68,12 +74,16 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       _error == null &&
       _catalogue != null &&
       _rxCatalogue != null &&
+      _adviceCatalogue != null &&
       _profile != null;
   String get _snapshot => jsonEncode({
     'clinical': _draft.toBody(),
     'vitals': _draft.vitals?.values,
     // Dirty state includes all local Rx entries even if permission later changes.
     'rx': _rxDraft.toBody(medicineAllowed: true),
+    'advice': _adviceDraft.toBody(),
+    'reference': _adviceDraft.reference,
+    'prescription_notes': _adviceDraft.notes,
   });
   bool get _dirty => _baseline != null && _snapshot != _baseline;
   void _answer(bool value) {
@@ -128,11 +138,13 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       _profile = null;
       _catalogue = null;
       _rxCatalogue = null;
+      _adviceCatalogue = null;
       _data = const {};
       _busy = true;
     });
     _draft.replaceFromData(const {});
     _rxDraft.replaceFromData(const {});
+    _adviceDraft.replaceFromData(const {});
   }
 
   @override
@@ -185,16 +197,25 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
             profile,
             isCurrent: () => _alive(operation),
           ),
+          widget.repository.advice.load(
+            _session!,
+            profile,
+            isCurrent: () => _alive(operation),
+          ),
         ]);
         if (!_alive(operation)) return;
         final catalogue = loaded[0] as DynamicClinicalCatalogue,
             data = loaded[1] as JsonMap,
-            rxCatalogue = loaded[2] as DynamicRxCatalogue;
+            rxCatalogue = loaded[2] as DynamicRxCatalogue,
+            adviceCatalogue = loaded[3] as DynamicAdviceCatalogue;
         final rxData = DynamicRxData.fromData(data);
+        final adviceData = DynamicAdviceData.fromData(data);
         _draft.replaceFromData(data);
         _rxDraft.replace(rxData);
+        _adviceDraft.replace(adviceData);
         _catalogue = catalogue;
         _rxCatalogue = rxCatalogue;
+        _adviceCatalogue = adviceCatalogue;
         _data = data;
         _baseline = _snapshot;
         _initialized = true;
@@ -287,7 +308,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   void _selectTab(int index) {
-    if (!_ready || index < 0 || index > 1 || !_pages.hasClients) return;
+    if (!_ready || index < 0 || index > 2 || !_pages.hasClients) return;
     FocusManager.instance.primaryFocus?.unfocus();
     unawaited(
       _pages.animateToPage(
@@ -345,8 +366,11 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     _innerContext = context;
     if (!_current) return const ColoredBox(color: Colors.white);
     Widget body;
-    if (_initialized && _catalogue != null && _rxCatalogue != null) {
-      // Keep both tabs mounted while rechecking access after resume. Replacing
+    if (_initialized &&
+        _catalogue != null &&
+        _rxCatalogue != null &&
+        _adviceCatalogue != null) {
+      // Keep all tabs mounted while rechecking access after resume. Replacing
       // the body with a loading widget would reset their scroll and expansion.
       body = Stack(
         children: [
@@ -376,6 +400,14 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                   draft: _rxDraft,
                   catalogue: _rxCatalogue!,
                   medicineAllowed: _profile?.value('med_active') == '1',
+                  durationRequired: widget.durationRequired,
+                ),
+                NativeDynamicAdviceTab(
+                  key: ValueKey(
+                    'advice:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                  ),
+                  draft: _adviceDraft,
+                  catalogue: _adviceCatalogue!,
                 ),
               ],
             ),
@@ -444,7 +476,12 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
           (_) => MaterialPageRoute<void>(
             builder:
                 (inner) => ListenableBuilder(
-                  listenable: Listenable.merge([_view, _draft, _rxDraft]),
+                  listenable: Listenable.merge([
+                    _view,
+                    _draft,
+                    _rxDraft,
+                    _adviceDraft,
+                  ]),
                   builder: (context, _) => _layout(context),
                 ),
           ),
@@ -459,6 +496,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     _view.dispose();
     _draft.dispose();
     _rxDraft.dispose();
+    _adviceDraft.dispose();
     _pages.dispose();
     super.dispose();
   }
