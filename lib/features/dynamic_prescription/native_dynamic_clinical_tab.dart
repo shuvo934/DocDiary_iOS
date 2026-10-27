@@ -371,29 +371,26 @@ class _DynamicClinicalTabState extends State<NativeDynamicClinicalTab>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(
-                      height: m.d(26),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Recorded measurements',
-                              style: m.text(
-                                9,
-                                weight: FontWeight.w500,
-                                color: DynamicRxColors.primary,
-                              ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Recorded measurements',
+                            style: m.text(
+                              9,
+                              weight: FontWeight.w500,
+                              color: DynamicRxColors.primary,
                             ),
                           ),
-                          _action(
-                            DynamicRxGlyph.edit,
-                            'Edit vitals',
-                            'dy_edit_vitals',
-                            edit,
-                            m,
-                          ),
-                        ],
-                      ),
+                        ),
+                        _action(
+                          DynamicRxGlyph.edit,
+                          'Edit vitals',
+                          'dy_edit_vitals',
+                          edit,
+                          m,
+                        ),
+                      ],
                     ),
                     const Divider(height: 1, color: DynamicRxColors.outline),
                     for (final line in data!.summary)

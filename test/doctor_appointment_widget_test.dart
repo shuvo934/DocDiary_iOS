@@ -432,17 +432,17 @@ void main() {
   });
   for (final action in [DoctorAppointmentAction.dynamicPrescription]) {
     _case(
-      '${action.name} keeps native visibility but unfinished destination performs no POST',
+      '${action.name} opens builder; a failed initial load performs no POST',
       (t) async {
         final h = DoctorAppointmentHarness();
         await _show(t, h);
         await _tap(t, 'doctor_appointment_0_${action.name}');
         expect(
-          find.byKey(const Key('doctor_appointment_unavailable')),
+          find.byKey(const Key('dy_builder_error')),
           findsOneWidget,
         );
         expect(h.posts, isEmpty);
-        await t.tap(find.text('Close'));
+        await t.tap(find.text('Exit'));
         await t.pumpAndSettle();
         expect(_layout(t).rows.length, 6);
         await _finish(t);

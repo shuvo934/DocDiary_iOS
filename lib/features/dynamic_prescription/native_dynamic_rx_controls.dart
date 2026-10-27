@@ -23,9 +23,10 @@ class DynamicRxMetrics {
     double value, {
     FontWeight weight = FontWeight.w400,
     Color color = DynamicRxColors.text,
+    String family = 'Poppins',
     double? spacing,
   }) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: family,
     fontFamilyFallback: const ['Roboto'],
     fontSize: math.max(1, d(value) - 1),
     fontWeight: weight,
@@ -115,7 +116,18 @@ class NativeDynamicRxField extends StatelessWidget {
           10,
           color: enabled ? const Color(0xff666666) : const Color(0xff999999),
         ),
-        floatingLabelStyle: m.text(8, color: DynamicRxColors.primary),
+        floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return m.text(11, color: const Color(0xff999999));
+          }
+          if (states.contains(WidgetState.error)) {
+            return m.text(11, color: DynamicRxColors.error);
+          }
+          if (states.contains(WidgetState.focused)) {
+            return m.text(11, color: DynamicRxColors.primary);
+          }
+          return m.text(11, color: const Color(0xff666666));
+        }),
         contentPadding: EdgeInsets.symmetric(
           horizontal: m.d(12),
           vertical: m.d(10),

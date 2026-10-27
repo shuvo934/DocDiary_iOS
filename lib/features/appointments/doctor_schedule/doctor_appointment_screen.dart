@@ -25,6 +25,9 @@ import 'doctor_appointment_models.dart';
 import 'doctor_appointment_navigation.dart';
 import 'doctor_appointment_repository.dart';
 import 'native_doctor_appointment_layout.dart';
+import '../../dynamic_prescription/dynamic_prescription_clinical_screen.dart';
+import '../../dynamic_prescription/dynamic_prescription_repository.dart';
+import '../../dynamic_prescription/dynamic_prescription_seed.dart';
 
 class DoctorAppointmentScreen extends StatefulWidget {
   const DoctorAppointmentScreen({
@@ -332,6 +335,15 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
                 repository: NormalPrescriptionRepository(widget.repository),
                 seed: NormalPrescriptionSeed.appointment(
                   row!,
+                  ownerDoctorId: profile.doctorId,
+                ),
+              )
+              : action == DoctorAppointmentAction.dynamicPrescription
+              ? DynamicPrescriptionClinicalScreen(
+                auth: widget.auth,
+                repository: DynamicPrescriptionRepository(widget.repository),
+                seed: DynamicPrescriptionSeed.fromExtras(
+                  route.extras,
                   ownerDoctorId: profile.doctorId,
                 ),
               )
