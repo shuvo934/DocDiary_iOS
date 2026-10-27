@@ -6,13 +6,16 @@ import '../auth/profile_repository.dart';
 import 'dynamic_clinical_models.dart';
 import 'dynamic_clinical_repository.dart';
 import 'dynamic_prescription_seed.dart';
+import 'dynamic_rx_repository.dart';
 
-/// Scheduled Clinical entry point. This stage deliberately has only GET calls.
+/// Scheduled Clinical/Rx entry point. This stage has only GET calls.
 class DynamicPrescriptionRepository {
   DynamicPrescriptionRepository(this.appointments)
-    : clinical = DynamicClinicalRepository(appointments);
+    : clinical = DynamicClinicalRepository(appointments),
+      rx = DynamicRxRepository(appointments);
   final DoctorAppointmentRepository appointments;
   final DynamicClinicalRepository clinical;
+  final DynamicRxRepository rx;
 
   void guard(
     AuthSession session,

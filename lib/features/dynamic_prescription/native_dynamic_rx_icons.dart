@@ -23,6 +23,10 @@ enum DynamicRxGlyph {
   drugHistory,
   investigation,
   importantInfo,
+  pill,
+  therapy,
+  medicineLocked,
+  treatmentPlan,
 }
 
 class NativeDynamicRxIcon extends StatelessWidget {
@@ -43,6 +47,8 @@ class NativeDynamicRxIcon extends StatelessWidget {
       DynamicRxGlyph.drugHistory => 'assets/images/dy_rx_medicine.png',
       DynamicRxGlyph.investigation => 'assets/images/dy_rx_chemistry.png',
       DynamicRxGlyph.importantInfo => 'assets/images/dy_rx_caution.png',
+      DynamicRxGlyph.pill => 'assets/images/dy_rx_pill.png',
+      DynamicRxGlyph.treatmentPlan => 'assets/images/dy_rx_treatment_plan.png',
       _ => null,
     };
     return SizedBox.square(
@@ -458,6 +464,92 @@ class _NativeDynamicRxPainter extends CustomPainter {
               ..moveTo(7, 10)
               ..lineTo(12, 15)
               ..lineTo(17, 10)
+              ..close();
+        canvas.drawPath(path0, paint);
+        break;
+      case DynamicRxGlyph.therapy:
+        // ic_therapy_24.xml: original Android vector geometry (24 x 24).
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(12, 2)
+              ..arcToPoint(
+                Offset(12, 6.5),
+                radius: Radius.elliptical(2.25, 2.25),
+                rotation: 0,
+                largeArc: true,
+                clockwise: false,
+              )
+              ..arcToPoint(
+                Offset(12, 2),
+                radius: Radius.elliptical(2.25, 2.25),
+                rotation: 0,
+                largeArc: true,
+                clockwise: false,
+              )
+              ..close();
+        canvas.drawPath(path0, paint);
+        final path1 =
+            Path()
+              ..moveTo(20.5, 7)
+              ..lineTo(15.8, 7)
+              ..lineTo(13.5, 8.6)
+              ..lineTo(10.5, 8.6)
+              ..lineTo(8.2, 7)
+              ..lineTo(3.5, 7)
+              ..cubicTo(2.67, 7, 2, 7.67, 2, 8.5)
+              ..cubicTo(2, 9.33, 2.67, 10, 3.5, 10)
+              ..lineTo(7.3, 10)
+              ..lineTo(9, 11.2)
+              ..lineTo(9, 15)
+              ..lineTo(6.3, 20.1)
+              ..cubicTo(5.9, 20.84, 6.18, 21.76, 6.92, 22.15)
+              ..cubicTo(7.66, 22.54, 8.58, 22.26, 8.97, 21.52)
+              ..lineTo(12, 16.1)
+              ..lineTo(15.03, 21.52)
+              ..cubicTo(15.42, 22.26, 16.34, 22.54, 17.08, 22.15)
+              ..cubicTo(17.82, 21.76, 18.1, 20.84, 17.7, 20.1)
+              ..lineTo(15, 15)
+              ..lineTo(15, 11.2)
+              ..lineTo(16.7, 10)
+              ..lineTo(20.5, 10)
+              ..cubicTo(21.33, 10, 22, 9.33, 22, 8.5)
+              ..cubicTo(22, 7.67, 21.33, 7, 20.5, 7)
+              ..close();
+        canvas.drawPath(path1, paint);
+        break;
+      case DynamicRxGlyph.medicineLocked:
+        // ic_medicine_locked_24.xml: original Android vector geometry (24 x 24).
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(17, 8)
+              ..lineTo(16, 8)
+              ..lineTo(16, 6)
+              ..cubicTo(16, 3.24, 13.76, 1, 11, 1)
+              ..cubicTo(8.24, 1, 6, 3.24, 6, 6)
+              ..lineTo(6, 8)
+              ..lineTo(5, 8)
+              ..cubicTo(3.9, 8, 3, 8.9, 3, 10)
+              ..lineTo(3, 20)
+              ..cubicTo(3, 21.1, 3.9, 22, 5, 22)
+              ..lineTo(17, 22)
+              ..cubicTo(18.1, 22, 19, 21.1, 19, 20)
+              ..lineTo(19, 10)
+              ..cubicTo(19, 8.9, 18.1, 8, 17, 8)
+              ..close()
+              ..moveTo(11, 17)
+              ..cubicTo(9.9, 17, 9, 16.1, 9, 15)
+              ..cubicTo(9, 13.9, 9.9, 13, 11, 13)
+              ..cubicTo(12.1, 13, 13, 13.9, 13, 15)
+              ..cubicTo(13, 16.1, 12.1, 17, 11, 17)
+              ..close()
+              ..moveTo(14.1, 8)
+              ..lineTo(7.9, 8)
+              ..lineTo(7.9, 6)
+              ..cubicTo(7.9, 4.29, 9.29, 2.9, 11, 2.9)
+              ..cubicTo(12.71, 2.9, 14.1, 4.29, 14.1, 6)
+              ..lineTo(14.1, 8)
               ..close();
         canvas.drawPath(path0, paint);
         break;

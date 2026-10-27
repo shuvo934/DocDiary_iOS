@@ -17,18 +17,26 @@ import 'package:docdiary_ios/features/dynamic_prescription/dynamic_prescription_
 import 'package:docdiary_ios/features/dynamic_prescription/dynamic_prescription_repository.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/dynamic_prescription_seed.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_clinical_tab.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_rx_tab.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/dynamic_rx_models.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_rx_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'doctor_appointment_test_support.dart';
+import 'dynamic_rx_test_support.dart';
 
 class _Harness extends DoctorAppointmentHarness {
   _Harness() {
+    doctorData['med_active'] = '1';
     transport.onGet = respond;
   }
   bool failExisting = false, failPatient = false;
+  bool failRx = false;
+  String patientName = 'Sample Patient';
+  Completer<JsonMap>? pendingProfile;
   Completer<JsonMap>? pendingExisting;
   JsonMap get existingData => {
     'rvm_id': 900,
@@ -38,8 +46,12 @@ class _Harness extends DoctorAppointmentHarness {
       {'cm_id': 1, 'name': 'Existing complain'},
     ],
     'vitals': {'pulse': '72'},
+    ...rxExistingData(),
   };
   Future<JsonMap> respond(Uri uri) async {
+    if (pendingProfile != null && uri.path.endsWith('/getDocData')) {
+      return pendingProfile!.future;
+    }
     if (!uri.path.contains('/dynamic_presc/')) return respondAppointments(uri);
     final endpoint = uri.pathSegments.last;
     if (endpoint == 'getPrescription') {
@@ -86,7 +98,10 @@ class _Harness extends DoctorAppointmentHarness {
         ],
       };
     }
-    return {'items': []};
+    if (failRx && uri.pathSegments.last == 'getDoses') {
+      throw const AppFailure('Dose lookup failed');
+    }
+    return rxOptionResponse(uri);
   }
 
   DynamicPrescriptionRepository get dynamicRepository =>
@@ -96,7 +111,7 @@ class _Harness extends DoctorAppointmentHarness {
         ...doctorAppointmentRoute(
           DoctorAppointmentAction.dynamicPrescription,
           DoctorAppointmentRow({
-            ...doctorAppointmentRow(),
+            ...doctorAppointmentRow(name: patientName),
             'rvm': existing ? '1' : '0',
             if (date != null) 'adm_date': date,
           }, selectedDate: now),
@@ -192,6 +207,57 @@ Future<void> _fonts() async {
       loader.addFont(rootBundle.load('assets/fonts/$file'));
     }
     await loader.load();
+  }
+}
+
+Future<void> _captureRx(WidgetTester tester, String name) async {
+  const output = String.fromEnvironment('DYNAMIC_RX_STAGE2_RENDER_DIR');
+  if (output.isEmpty) return;
+  final context = tester.element(
+    find.byType(DynamicPrescriptionClinicalScreen),
+  );
+  await tester.runAsync(() async {
+    for (final name in [
+      'dy_rx_patient',
+      'dy_rx_diagnosis',
+      'dy_rx_medicine',
+      'dy_rx_chemistry',
+      'dy_rx_caution',
+      'dy_rx_pill',
+      'dy_rx_treatment_plan',
+      'dy_builder_medical_record',
+      'dy_builder_prescription_prv',
+      'dy_builder_template',
+    ]) {
+      await precacheImage(AssetImage('assets/images/$name.png'), context);
+    }
+  });
+  final before = debugDisableShadows;
+  void repaint(RenderObject object) {
+    object.markNeedsPaint();
+    object.visitChildren(repaint);
+  }
+
+  try {
+    debugDisableShadows = false;
+    repaint(tester.binding.renderViews.first);
+    await tester.pumpAndSettle();
+    await tester.runAsync(() async {
+      final render = tester.binding.renderViews.first,
+          folder = Directory(output);
+      final image = await (render.debugLayer! as OffsetLayer).toImage(
+        Offset.zero & render.size,
+        pixelRatio: 3,
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      await folder.create(recursive: true);
+      await File(
+        '${folder.path}/$name.png',
+      ).writeAsBytes(bytes!.buffer.asUint8List());
+      image.dispose();
+    });
+  } finally {
+    debugDisableShadows = before;
   }
 }
 
@@ -536,7 +602,7 @@ void main() {
     },
   );
   testWidgets(
-    'small iPhone viewport retains native header, Clinical controls and inactive next stage',
+    'small iPhone viewport retains native header and opens the Rx stage',
     (tester) async {
       final h = _Harness();
       await _show(tester, h, size: const Size(320, 640));
@@ -548,7 +614,7 @@ void main() {
         tester
             .widget<ElevatedButton>(find.byKey(const Key('dy_action_NEXT: RX')))
             .onPressed,
-        isNull,
+        isNotNull,
       );
       expect(
         tester
@@ -619,6 +685,333 @@ void main() {
           debugDisableShadows = before;
         }
       }
+      expect(h.posts, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'NEXT opens Rx; saved Medicine and Clinical data survive tab taps and native page swipes without refetch',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h);
+      final catalogueReads = h.dynamicReads.length;
+      await _tap(tester, 'dy_action_NEXT: RX');
+      expect(
+        find.byKey(const Key('dy_add_medicine')).hitTestable(),
+        findsOneWidget,
+      );
+      await _tap(tester, 'dy_add_medicine');
+      await tester.enterText(
+        find.byKey(const Key('dy_field_rx_medicine')),
+        'Sample medicine',
+      );
+      await _tap(tester, 'dy_action_ADD MEDICINE');
+      expect(find.text('Dose: 0+0+1'), findsOneWidget);
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.byKey(const Key('dy_action_NEXT: ADVICE')),
+            )
+            .onPressed,
+        isNull,
+      );
+      await _tap(tester, 'dy_builder_tab_CLINICAL');
+      await _tap(tester, 'dy_add_complain');
+      await tester.enterText(
+        find.byKey(const Key('dy_field_entry')),
+        'Clinical draft stays',
+      );
+      await _tap(tester, 'dy_action_ADD COMPLAIN');
+      await _tap(tester, 'dy_builder_tab_RX');
+      expect(find.text('Dose: 0+0+1'), findsOneWidget);
+      await tester.drag(find.byType(PageView), const Offset(320, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('Clinical draft stays').hitTestable(), findsOneWidget);
+      expect(h.dynamicReads, hasLength(catalogueReads));
+      expect(h.posts, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'existing Rx loads all native rows and edit changes participate in the unsaved dialog',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true);
+      await _tap(tester, 'dy_builder_tab_RX');
+      final rx = tester.widget<NativeDynamicRxTab>(
+        find.byType(NativeDynamicRxTab),
+      );
+      expect(rx.draft.medicines.single.duration, '7');
+      expect(rx.draft.therapies.single.notes, 'থেরাপির নোট');
+      expect(rx.draft.treatmentPlans, hasLength(2));
+      await _tap(tester, 'dy_edit_${rx.draft.medicines.single.localId}');
+      await tester.enterText(
+        find.byKey(const Key('dy_field_rx_duration')),
+        '10',
+      );
+      await _tap(tester, 'dy_action_UPDATE MEDICINE');
+      expect(find.text('Duration: 10 Days'), findsOneWidget);
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsOneWidget);
+      await _tap(tester, 'dy_keep_editing');
+      expect(rx.draft.medicines.single.duration, '10');
+      await _tap(tester, 'dy_rx_segment_therapy');
+      expect(find.text('Sample therapy'), findsOneWidget);
+      await _tap(tester, 'dy_toggle_treatment_plan');
+      expect(find.text('Custom plan'), findsOneWidget);
+      expect(h.posts, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'Clinical/Rx scroll and expanded sections remain mounted across tab changes and delayed resume check',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true, size: const Size(393, 690));
+      final clinical = tester.widget<NativeDynamicClinicalTab>(
+        find.byType(NativeDynamicClinicalTab),
+      );
+      final clinicalScroll =
+          tester
+              .widget<SingleChildScrollView>(
+                find.byKey(
+                  const PageStorageKey<String>('dynamic_clinical_scroll'),
+                ),
+              )
+              .controller!;
+      clinicalScroll.jumpTo(280);
+      await tester.pumpAndSettle();
+      final clinicalOffset = clinicalScroll.offset;
+      await _tap(tester, 'dy_builder_tab_RX');
+      final rx = tester.widget<NativeDynamicRxTab>(
+        find.byType(NativeDynamicRxTab),
+      );
+      await _tap(tester, 'dy_toggle_treatment_plan');
+      for (var i = 0; i < 12; i++) {
+        rx.draft.saveTreatmentPlan(
+          DynamicTreatmentPlanEntry(text: 'Extra plan $i'),
+        );
+      }
+      await tester.pumpAndSettle();
+      final rxScroll =
+          tester
+              .widget<SingleChildScrollView>(
+                find.byKey(const PageStorageKey<String>('dynamic_rx_scroll')),
+              )
+              .controller!;
+      rxScroll.jumpTo(420);
+      await tester.pumpAndSettle();
+      final rxOffset = rxScroll.offset;
+      final reads = h.dynamicReads.length;
+      h.pendingProfile = Completer<JsonMap>();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      expect(
+        identical(
+          tester
+              .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab))
+              .draft,
+          rx.draft,
+        ),
+        isTrue,
+      );
+      expect(rxScroll.hasClients, isTrue);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      h.pendingProfile!.complete({
+        'items': [h.doctorData],
+      });
+      await tester.pumpAndSettle();
+      expect(rxScroll.offset, closeTo(rxOffset, .1));
+      await _tap(tester, 'dy_builder_tab_CLINICAL');
+      expect(clinicalScroll.offset, closeTo(clinicalOffset, .1));
+      expect(
+        identical(
+          tester
+              .widget<NativeDynamicClinicalTab>(
+                find.byType(NativeDynamicClinicalTab),
+              )
+              .draft,
+          clinical.draft,
+        ),
+        isTrue,
+      );
+      await _tap(tester, 'dy_builder_tab_RX');
+      expect(rxScroll.offset, closeTo(rxOffset, .1));
+      expect(h.dynamicReads, hasLength(reads));
+      expect(h.posts, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'resume applies medicine permission change without deleting Rx draft or blocking the account',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true);
+      await _tap(tester, 'dy_builder_tab_RX');
+      h.doctorData['med_active'] = '0';
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      final rx = tester.widget<NativeDynamicRxTab>(
+        find.byType(NativeDynamicRxTab),
+      );
+      expect(rx.medicineAllowed, isFalse);
+      expect(rx.draft.medicines, hasLength(1));
+      expect(find.byKey(const Key('dy_add_medicine')), findsNothing);
+      expect(find.text('Sample therapy'), findsOneWidget);
+      expect(h.auth.stage.name, 'authenticated');
+      expect(h.posts, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'failed Rx catalogue offers Retry and cannot expose a partially initialized editor',
+    (tester) async {
+      final h = _Harness()..failRx = true;
+      await _show(tester, h);
+      expect(find.byKey(const Key('dy_builder_error')), findsOneWidget);
+      expect(find.byType(NativeDynamicRxTab), findsNothing);
+      h.failRx = false;
+      await _tap(tester, 'dy_builder_error_retry');
+      await _tap(tester, 'dy_builder_tab_RX');
+      expect(find.text('No medicine added'), findsOneWidget);
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      expect(h.posts, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'logout dismisses Rx edit sheets and removes patient data from the real app',
+    (tester) async {
+      final h = _Harness();
+      await h.signIn();
+      await tester.pumpWidget(
+        DocDiaryApp(
+          auth: h.auth,
+          initializeOnStart: false,
+          dashboard: DashboardRepository(h.transport, now: () => h.now),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dashboard_nav_appointment');
+      await _tap(tester, 'doctor_appointment_1_dynamicPrescription');
+      await _tap(tester, 'dy_builder_tab_RX');
+      await _tap(tester, 'dy_add_medicine');
+      await h.auth.logout();
+      await tester.pumpAndSettle();
+      expect(find.text('Add Medicine'), findsNothing);
+      expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'uploaded right-aligned Visit/Date and long patient name fit the small iPhone card',
+    (tester) async {
+      final h =
+          _Harness()
+            ..patientName =
+                'A very long patient name with several words that needs ellipsis';
+      await _show(tester, h, existing: true, size: const Size(320, 640));
+      final patient = find.byKey(const Key('dy_builder_patient'));
+      final dateTag =
+          find
+              .ancestor(
+                of: find.text('Date: 24-OCT-26'),
+                matching: find.byType(ColoredBox),
+              )
+              .first;
+      final m = DynamicRxMetrics(tester.element(patient));
+      expect(
+        tester.getRect(dateTag).right,
+        closeTo(tester.getRect(patient).right - m.d(10), .1),
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const Key('dy_builder_patient_name')))
+            .overflow,
+        TextOverflow.ellipsis,
+      );
+      await _tap(tester, 'dy_builder_tab_RX');
+      await _tap(tester, 'dy_rx_segment_therapy');
+      expect(
+        find.byKey(const Key('dy_add_therapy')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets('full native Rx screen renders with the uploaded builder UI', (
+    tester,
+  ) async {
+    final h = _Harness();
+    await _show(tester, h);
+    await _tap(tester, 'dy_builder_tab_RX');
+    await _captureRx(tester, 'scheduled_rx_medicine');
+    await _tap(tester, 'dy_rx_segment_therapy');
+    await _captureRx(tester, 'scheduled_rx_therapy');
+    expect(h.posts, isEmpty);
+    await tester.pumpWidget(const SizedBox());
+    h.auth.dispose();
+  });
+
+  testWidgets(
+    'invalid existing Rx IDs stay behind the load error; Retry reloads corrected data',
+    (tester) async {
+      final h = _Harness();
+      h.transport.onGet = (uri) async {
+        if (uri.pathSegments.last == 'getPrescription') {
+          return {
+            'status': 200,
+            'data': {
+              ...h.existingData,
+              'treatment_plans': [
+                {'tpm_id': 'broken-id', 'name': 'Invalid plan'},
+              ],
+            },
+          };
+        }
+        return h.respond(uri);
+      };
+      await _show(tester, h, existing: true);
+      expect(find.byKey(const Key('dy_builder_error')), findsOneWidget);
+      expect(find.byType(NativeDynamicRxTab), findsNothing);
+      h.transport.onGet = h.respond;
+      await _tap(tester, 'dy_builder_error_retry');
+      await _tap(tester, 'dy_builder_tab_RX');
+      final rx = tester.widget<NativeDynamicRxTab>(
+        find.byType(NativeDynamicRxTab),
+      );
+      expect(rx.draft.treatmentPlans.first.masterId, '300');
+      expect(
+        h.dynamicReads.where(
+          (uri) => uri.pathSegments.last == 'getPrescription',
+        ),
+        hasLength(2),
+      );
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
       expect(h.posts, isEmpty);
       await tester.pumpWidget(const SizedBox());
       h.auth.dispose();

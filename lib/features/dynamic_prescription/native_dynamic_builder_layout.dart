@@ -8,7 +8,7 @@ import 'native_dynamic_builder_icons.dart';
 import 'native_dynamic_rx_controls.dart';
 import 'native_dynamic_rx_icons.dart';
 
-/// activity_prescription_builder.xml. Only the delivered Clinical stage is active.
+/// activity_prescription_builder.xml. Clinical and Rx share the same builder.
 class NativeDynamicBuilderLayout extends StatelessWidget {
   const NativeDynamicBuilderLayout({
     super.key,
@@ -18,6 +18,8 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
     required this.onPatient,
     required this.body,
     required this.enabled,
+    this.selectedTab = 0,
+    this.onTabChanged,
   });
   final DynamicPrescriptionSeed seed;
   final JsonMap data;
@@ -25,6 +27,8 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
   final VoidCallback? onPatient;
   final Widget body;
   final bool enabled;
+  final int selectedTab;
+  final ValueChanged<int>? onTabChanged;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
@@ -296,65 +300,14 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                             padding: EdgeInsets.only(top: m.d(8)),
                             child: Row(
                               children: [
-                                for (final label in const [
-                                  'CLINICAL',
-                                  'RX',
-                                  'ADVICE',
-                                  'REVIEW',
-                                ])
-                                  Expanded(
-                                    child: Semantics(
-                                      selected: label == 'CLINICAL',
-                                      enabled: label == 'CLINICAL',
-                                      child: Container(
-                                        key: Key('dy_builder_tab_$label'),
-                                        constraints: BoxConstraints(
-                                          minHeight: m.d(36),
-                                        ),
-                                        alignment: Alignment.center,
-                                        decoration:
-                                            label == 'CLINICAL'
-                                                ? BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        m.d(8),
-                                                      ),
-                                                  gradient:
-                                                      const LinearGradient(
-                                                        begin:
-                                                            Alignment.topCenter,
-                                                        end:
-                                                            Alignment
-                                                                .bottomCenter,
-                                                        colors: [
-                                                          DynamicRxColors
-                                                              .header,
-                                                          DynamicRxColors
-                                                              .primary,
-                                                        ],
-                                                      ),
-                                                )
-                                                : null,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 2.0,
-                                          ),
-                                          child: Text(
-                                            label,
-                                            style: m.text(
-                                              10.5,
-                                              weight: FontWeight.w700,
-                                              family: 'PatuaOne',
-                                              color:
-                                                  label == 'CLINICAL'
-                                                      ? Colors.white
-                                                      : const Color(0xff777777),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                for (final (index, label)
+                                    in const [
+                                      'CLINICAL',
+                                      'RX',
+                                      'ADVICE',
+                                      'REVIEW',
+                                    ].indexed)
+                                  _tab(index, label, m),
                               ],
                             ),
                           ),
@@ -367,11 +320,19 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                               m.d(8),
                               m.d(4),
                             ),
-                            child: const SizedBox(
+                            child: SizedBox(
                               width: double.infinity,
                               child: NativeDynamicRxButton(
-                                label: 'NEXT: RX',
-                                onPressed: null,
+                                label:
+                                    selectedTab == 0
+                                        ? 'NEXT: RX'
+                                        : 'NEXT: ADVICE',
+                                onPressed:
+                                    enabled &&
+                                            selectedTab == 0 &&
+                                            onTabChanged != null
+                                        ? () => onTabChanged!(1)
+                                        : null,
                               ),
                             ),
                           ),
@@ -382,6 +343,55 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tab(int index, String label, DynamicRxMetrics m) {
+    final selected = selectedTab == index,
+        active = enabled && index < 2 && onTabChanged != null;
+    return Expanded(
+      child: Semantics(
+        selected: selected,
+        enabled: active,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: active ? () => onTabChanged!(index) : null,
+            borderRadius: BorderRadius.circular(m.d(8)),
+            child: Container(
+              key: Key('dy_builder_tab_$label'),
+              constraints: BoxConstraints(minHeight: m.d(36)),
+              alignment: Alignment.center,
+              decoration:
+                  selected
+                      ? BoxDecoration(
+                        borderRadius: BorderRadius.circular(m.d(8)),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            DynamicRxColors.header,
+                            DynamicRxColors.primary,
+                          ],
+                        ),
+                      )
+                      : null,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  label,
+                  style: m.text(
+                    10.5,
+                    weight: FontWeight.w700,
+                    family: 'PatuaOne',
+                    color: selected ? Colors.white : const Color(0xff777777),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
