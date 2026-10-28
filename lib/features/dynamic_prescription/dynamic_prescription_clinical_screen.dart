@@ -29,6 +29,8 @@ import 'dynamic_template_models.dart';
 import 'native_dynamic_template_sheet.dart';
 import 'dynamic_history_models.dart';
 import 'native_dynamic_history_sheet.dart';
+import 'dynamic_patient_models.dart';
+import 'native_dynamic_patient_selection_sheet.dart';
 
 /// Today's native scheduled builder: shared drafts, native review and save.
 class DynamicPrescriptionClinicalScreen extends StatefulWidget {
@@ -50,6 +52,14 @@ class DynamicPrescriptionClinicalScreen extends StatefulWidget {
 
 class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     with WidgetsBindingObserver {
+  DynamicPrescriptionSeed? _selectedSeed;
+  DynamicPrescriptionSeed get _seed => _selectedSeed ?? widget.seed;
+  DynamicPatientController? _patientPicker;
+  bool _patientSelectionOpen = false;
+  bool get _canChangePatient =>
+      _seed.isWalkIn &&
+      dynamicRxText(_data['rvm_id']).isEmpty &&
+      !_uncertainCreate;
   final _draft = DynamicClinicalDraft();
   final _rxDraft = DynamicRxDraft();
   final _adviceDraft = DynamicAdviceDraft();
@@ -130,7 +140,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     'prescription_notes': _adviceDraft.notes,
     'disease_template_id': _templates.diseaseId,
     'treatment_template_id': _templates.treatmentId,
-    'prescription_type': '1',
+    'prescription_type': _seed.prescriptionType,
   });
   bool get _dirty {
     if (_baseline == null) return false;
@@ -179,6 +189,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   void _closeSheets() {
+    _patientPicker?.close();
     _history.close();
     _templates.cancelPending();
     _dialogs.close();
@@ -235,10 +246,23 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         recordLogin: false,
         isCurrent: () => _alive(operation),
       );
+      widget.repository.clinical.guard(
+        _session!,
+        profile,
+        () => _alive(operation),
+      );
+      if (_seed.needsPatient) {
+        _refresh(() {
+          _profile = profile;
+          _busy = false;
+        });
+        await _selectPatient(requiredSelection: true);
+        return;
+      }
       widget.repository.guard(
         _session!,
         profile,
-        widget.seed,
+        _seed,
         () => _alive(operation),
       );
       if (!_initialized) {
@@ -251,7 +275,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
           widget.repository.existing(
             _session!,
             profile,
-            widget.seed,
+            _seed,
             isCurrent: () => _alive(operation),
           ),
           widget.repository.rx.load(
@@ -317,7 +341,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       AlertDialog(
         key: const Key('dy_builder_error'),
         title: Text(
-          widget.seed.existing && !_initialized
+          _seed.existing && !_initialized
               ? 'Prescription Load Failed'
               : 'Error!',
         ),
@@ -347,18 +371,133 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   Future<void> _patient(BuildContext context) async {
     if (!_ready) return;
     final operation = _operation, profile = _profile!;
-    await showNativeDynamicRxSheet<void>(
+    final change = await showNativeDynamicRxSheet<bool>(
       context,
       NativeDynamicPatientDetailsSheet(
+        allowPatientChange: _canChangePatient,
         load:
             () => widget.repository.patientDetails(
               _session!,
               profile,
-              widget.seed,
+              _seed,
               isCurrent: () => _alive(operation),
             ),
       ),
     );
+    if (change == true && _ready && _canChangePatient) {
+      await _selectPatient(requiredSelection: false);
+    }
+  }
+
+  Future<void> _selectPatient({required bool requiredSelection}) async {
+    if (!_current ||
+        !_foreground ||
+        _saving ||
+        _patientSelectionOpen ||
+        _profile == null) {
+      return;
+    }
+    if (!requiredSelection && !_canChangePatient) return;
+    final inner = _innerContext;
+    if (inner == null || !inner.mounted) return;
+    final operation = _operation, profile = _profile!;
+    _patientSelectionOpen = true;
+    final picker = DynamicPatientController(
+      currentYear: widget.repository.appointments.now().year,
+      prescriptionType: _seed.prescriptionType,
+      loadRecent:
+          (year) => widget.repository.patients.load(
+            _session!,
+            profile,
+            year: year,
+            isCurrent: () => _alive(operation),
+          ),
+      searchPatients:
+          (query) => widget.repository.patients.load(
+            _session!,
+            profile,
+            query: query,
+            isCurrent: () => _alive(operation),
+          ),
+      onFailure: (failure) {
+        if (_current && failure is AccountAccessFailure) {
+          widget.auth.blockAccess(failure);
+        }
+      },
+    );
+    _patientPicker = picker;
+    try {
+      final selection = await showNativeDynamicPatientSelectionSheet(
+        inner,
+        picker,
+        requiredSelection: requiredSelection,
+      );
+      if (!_alive(operation)) return;
+      if (selection == null) {
+        if (requiredSelection && _seed.needsPatient && mounted) {
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+      final patient = selection.patient;
+      if (!patient.valid) return;
+      final changing =
+          _seed.hasPatient && _seed.patientHistoryId != patient.historyId;
+      if (changing && _history.hasData) {
+        if (!inner.mounted) return;
+        final clear = await _dialogs.show<bool>(
+          inner,
+          AlertDialog(
+            key: const Key('dy_change_patient_dialog'),
+            title: const Text('Change patient?'),
+            content: const Text(
+              'Changing the patient will clear all entered prescription data. Do you want to continue?',
+            ),
+            actions: [
+              TextButton(
+                key: const Key('dy_change_patient_cancel'),
+                onPressed: () => _answer(false),
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                key: const Key('dy_change_patient_confirm'),
+                onPressed: () => _answer(true),
+                child: const Text('CLEAR & CHANGE'),
+              ),
+            ],
+          ),
+          dismissible: true,
+        );
+        if (!_alive(operation) || clear != true) return;
+      }
+      ++_operation;
+      _selectedSeed = _seed.withPatient(
+        patientId: patient.patientId,
+        patientHistoryId: patient.historyId,
+        name: patient.name,
+        code: patient.code,
+        gender: patient.gender,
+        age: patient.age,
+        prescriptionType: selection.prescriptionType,
+      );
+      if (changing) {
+        _templates.clearAfterHistory();
+        _history.close();
+        _draft.replaceFromData(const {});
+        _rxDraft.replaceFromData(const {});
+        _adviceDraft.replaceFromData(const {});
+        _data = const {};
+      }
+      _review.reset();
+      _baseline = _snapshot;
+      _refresh(() {});
+      if (!_initialized) await _load();
+    } finally {
+      _patientSelectionOpen = false;
+      if (identical(_patientPicker, picker)) _patientPicker = null;
+      picker.close();
+      picker.dispose();
+    }
   }
 
   Future<List<DynamicRxOption>> _values(String id) async {
@@ -392,7 +531,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     widget.repository.guard(
       _session!,
       _profile!,
-      widget.seed,
+      _seed,
       () => _alive(operation),
     );
     return widget.repository.templates.options(
@@ -402,7 +541,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       isCurrent:
           () =>
               _alive(operation) &&
-              widget.seed.editableOn(widget.repository.appointments.now()),
+              _seed.editableOn(widget.repository.appointments.now()),
     );
   }
 
@@ -412,7 +551,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     widget.repository.guard(
       _session!,
       _profile!,
-      widget.seed,
+      _seed,
       () => _alive(operation),
     );
     return widget.repository.templates.data(
@@ -423,7 +562,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       isCurrent:
           () =>
               _alive(operation) &&
-              widget.seed.editableOn(widget.repository.appointments.now()),
+              _seed.editableOn(widget.repository.appointments.now()),
     );
   }
 
@@ -443,7 +582,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     return widget.repository.history(
       _session!,
       _profile!,
-      widget.seed,
+      _seed,
       isCurrent: () => _alive(operation),
     );
   }
@@ -454,7 +593,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     return widget.repository.previousPrescription(
       _session!,
       _profile!,
-      widget.seed,
+      _seed,
       sourceRvmId,
       isCurrent: () => _alive(operation),
     );
@@ -480,6 +619,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   Future<void> _save() async {
     if (!_ready ||
         _saving ||
+        _patientSelectionOpen ||
         _templateSheetOpen ||
         _historySheetOpen ||
         _history.applying ||
@@ -535,7 +675,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       widget.repository.guard(
         _session!,
         profile,
-        widget.seed,
+        _seed,
         () => _writeCurrent(operation) && _foreground,
       );
       _profile = profile;
@@ -544,13 +684,19 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         throw const AppFailure('Please review and confirm the prescription');
       }
       if (_uncertainCreate && dynamicRxText(_data['rvm_id']).isEmpty) {
+        if (_seed.isWalkIn) {
+          _pendingSaveError =
+              'The previous save could not be confirmed. Your draft is kept. Check Prescription History before creating another prescription for this patient.';
+          _review.reset();
+          return;
+        }
         // A lost create response must never become a second insert. A found
         // record binds this builder to UPDATE; the local draft stays intact.
         try {
           final found = await widget.repository.lookup(
             _session!,
             profile,
-            widget.seed,
+            _seed,
             isCurrent: () => _writeCurrent(operation),
           );
           if (!_writeCurrent(operation)) return;
@@ -576,7 +722,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         return;
       }
       final request = DynamicPrescriptionSaveRequest.capture(
-        seed: widget.seed,
+        seed: _seed,
         profile: profile,
         review: _review,
         data: _builderData,
@@ -585,7 +731,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       final receipt = await widget.repository.save(
         _session!,
         profile,
-        widget.seed,
+        _seed,
         request,
         isCurrent: () => _writeCurrent(operation),
       );
@@ -723,7 +869,9 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     _innerContext = context;
     if (!_current) return const ColoredBox(color: Colors.white);
     Widget body;
-    if (_initialized &&
+    if (_seed.needsPatient) {
+      body = const SizedBox.shrink();
+    } else if (_initialized &&
         _catalogue != null &&
         _rxCatalogue != null &&
         _adviceCatalogue != null) {
@@ -735,7 +883,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
             ignoring: !_ready,
             child: PageView(
               key: ValueKey(
-                'dynamic_pages:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                'dynamic_pages:${_seed.appointmentId}:${_seed.patientHistoryId}',
               ),
               controller: _pages,
               physics: _ready ? null : const NeverScrollableScrollPhysics(),
@@ -744,7 +892,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
               children: [
                 NativeDynamicClinicalTab(
                   key: ValueKey(
-                    'clinical:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                    'clinical:${_seed.appointmentId}:${_seed.patientHistoryId}',
                   ),
                   draft: _draft,
                   catalogue: _catalogue!,
@@ -752,7 +900,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                 ),
                 NativeDynamicRxTab(
                   key: ValueKey(
-                    'rx:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                    'rx:${_seed.appointmentId}:${_seed.patientHistoryId}',
                   ),
                   draft: _rxDraft,
                   catalogue: _rxCatalogue!,
@@ -761,14 +909,14 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                 ),
                 NativeDynamicAdviceTab(
                   key: ValueKey(
-                    'advice:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                    'advice:${_seed.appointmentId}:${_seed.patientHistoryId}',
                   ),
                   draft: _adviceDraft,
                   catalogue: _adviceCatalogue!,
                 ),
                 NativeDynamicReviewTab(
                   key: ValueKey(
-                    'review:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                    'review:${_seed.appointmentId}:${_seed.patientHistoryId}',
                   ),
                   review: _review,
                   onEdit: _selectTab,
@@ -817,7 +965,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       body = const SizedBox.shrink();
     }
     final frame = NativeDynamicBuilderLayout(
-      seed: widget.seed,
+      seed: _seed,
       data: _builderData,
       onBack: () => unawaited(_back()),
       onPatient: () => unawaited(_patient(context)),
@@ -882,6 +1030,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   );
   @override
   void dispose() {
+    _patientPicker?.close(notify: false);
     ++_operation;
     ++_saveOperation;
     widget.auth.removeListener(_authChanged);

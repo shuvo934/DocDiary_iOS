@@ -338,13 +338,15 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
                   ownerDoctorId: profile.doctorId,
                 ),
               )
-              : action == DoctorAppointmentAction.dynamicPrescription
+              : action == DoctorAppointmentAction.dynamicPrescription ||
+                  action == DoctorAppointmentAction.walkIn
               ? DynamicPrescriptionClinicalScreen(
                 auth: widget.auth,
                 repository: DynamicPrescriptionRepository(widget.repository),
                 seed: DynamicPrescriptionSeed.fromExtras(
                   route.extras,
                   ownerDoctorId: profile.doctorId,
+                  now: widget.repository.now(),
                 ),
               )
               : null);

@@ -184,7 +184,9 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              seed.name.isEmpty
+                                              seed.needsPatient
+                                                  ? 'Select Patient'
+                                                  : seed.name.isEmpty
                                                   ? 'Patient'
                                                   : seed.name,
                                               key: const Key(
@@ -198,7 +200,9 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                                               ),
                                             ),
                                             Text(
-                                              seed.code.isEmpty
+                                              seed.needsPatient
+                                                  ? 'Walk-in Patient'
+                                                  : seed.code.isEmpty
                                                   ? '-'
                                                   : seed.code,
                                               maxLines: 2,
@@ -210,7 +214,9 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                                               ),
                                             ),
                                             Text(
-                                              seed.details.isEmpty
+                                              seed.needsPatient
+                                                  ? 'Tap here to select a patient'
+                                                  : seed.details.isEmpty
                                                   ? 'Patient information'
                                                   : seed.details,
                                               maxLines: 2,
@@ -506,8 +512,13 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
 }
 
 class NativeDynamicPatientDetailsFrame extends StatelessWidget {
-  const NativeDynamicPatientDetailsFrame({super.key, required this.body});
+  const NativeDynamicPatientDetailsFrame({
+    super.key,
+    required this.body,
+    this.onChangePatient,
+  });
   final Widget body;
+  final VoidCallback? onChangePatient;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context);
@@ -589,13 +600,25 @@ class NativeDynamicPatientDetailsFrame extends StatelessWidget {
           const Divider(height: 1, thickness: 1, color: Color(0xffeaecf0)),
           Padding(
             padding: EdgeInsets.fromLTRB(m.d(10), m.d(8), m.d(10), m.d(10)),
-            child: SizedBox(
-              width: double.infinity,
-              child: NativeDynamicRxButton(
-                label: 'CLOSE',
-                outlined: true,
-                onPressed: () => Navigator.pop(context),
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: NativeDynamicRxButton(
+                    label: 'CLOSE',
+                    outlined: true,
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                if (onChangePatient != null) ...[
+                  SizedBox(width: m.d(8)),
+                  Expanded(
+                    child: NativeDynamicRxButton(
+                      label: 'CHANGE PATIENT',
+                      onPressed: onChangePatient,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

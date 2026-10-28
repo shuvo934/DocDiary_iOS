@@ -9,8 +9,13 @@ import 'native_dynamic_builder_layout.dart';
 import 'native_dynamic_rx_controls.dart';
 
 class NativeDynamicPatientDetailsSheet extends StatefulWidget {
-  const NativeDynamicPatientDetailsSheet({super.key, required this.load});
+  const NativeDynamicPatientDetailsSheet({
+    super.key,
+    required this.load,
+    this.allowPatientChange = false,
+  });
   final Future<JsonMap> Function() load;
+  final bool allowPatientChange;
   @override
   State<NativeDynamicPatientDetailsSheet> createState() =>
       _PatientDetailsState();
@@ -136,7 +141,11 @@ class _PatientDetailsState extends State<NativeDynamicPatientDetailsSheet> {
         ),
       );
     }
-    return NativeDynamicPatientDetailsFrame(body: body);
+    return NativeDynamicPatientDetailsFrame(
+      body: body,
+      onChangePatient:
+          widget.allowPatientChange ? () => Navigator.pop(context, true) : null,
+    );
   }
 
   @override

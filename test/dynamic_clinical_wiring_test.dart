@@ -39,6 +39,8 @@ import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_templa
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_history_sheet.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_builder_layout.dart';
 import 'dynamic_history_test_support.dart';
+import 'dynamic_walkin_test_support.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_patient_selection_sheet.dart';
 
 class _Harness extends DoctorAppointmentHarness {
   _Harness() {
@@ -54,6 +56,8 @@ class _Harness extends DoctorAppointmentHarness {
   Completer<JsonMap>? pendingHistory, pendingPrevious;
   bool failHistory = false, failPrevious = false;
   JsonMap? previousData;
+  Completer<JsonMap>? pendingPatientList;
+  bool failPatients = false;
   String patientName = 'Sample Patient';
   Completer<JsonMap>? pendingProfile;
   Completer<JsonMap>? pendingExisting;
@@ -77,6 +81,12 @@ class _Harness extends DoctorAppointmentHarness {
     }
     if (!uri.path.contains('/dynamic_presc/')) return respondAppointments(uri);
     final endpoint = uri.pathSegments.last;
+    if (endpoint == 'getHundredPatListYearWise' ||
+        endpoint == 'getPatListBySearch') {
+      if (pendingPatientList != null) return pendingPatientList!.future;
+      if (failPatients) throw const AppFailure('Patient lookup failed');
+      return {'pat_list': walkInRows()};
+    }
     if (endpoint == 'getPrescriptionHistory') {
       if (pendingHistory != null) return pendingHistory!.future;
       if (failHistory) throw const AppFailure('History unavailable');
@@ -135,7 +145,12 @@ class _Harness extends DoctorAppointmentHarness {
       return {
         'items': [
           {
-            'pat_name': 'Sample Patient',
+            'pat_name':
+                uri.queryParameters['p_ph_id'] == '201'
+                    ? 'Walk-in Patient One'
+                    : uri.queryParameters['p_ph_id'] == '202'
+                    ? 'Walk-in Patient Two'
+                    : 'Sample Patient',
             'ph_sub_code': 'P-11',
             'pat_age': '35 Years',
             'gender': 'Female',
@@ -181,8 +196,16 @@ class _Harness extends DoctorAppointmentHarness {
 
   DynamicPrescriptionRepository get dynamicRepository =>
       DynamicPrescriptionRepository(appointments);
-  DynamicPrescriptionSeed seed({bool existing = false, String? date}) =>
-      DynamicPrescriptionSeed.fromExtras({
+  DynamicPrescriptionSeed seed({
+    bool existing = false,
+    String? date,
+    bool walkIn = false,
+  }) => DynamicPrescriptionSeed.fromExtras(
+    {
+      if (walkIn) ...{
+        'P_PAT_TYPE': '2',
+        'IS_CREATED': '0',
+      } else
         ...doctorAppointmentRoute(
           DoctorAppointmentAction.dynamicPrescription,
           DoctorAppointmentRow({
@@ -191,7 +214,10 @@ class _Harness extends DoctorAppointmentHarness {
             if (date != null) 'adm_date': date,
           }, selectedDate: now),
         ).extras,
-      }, ownerDoctorId: '10');
+    },
+    ownerDoctorId: '10',
+    now: now,
+  );
   List<Uri> get dynamicReads =>
       transport.requests
           .where((r) => r.uri.path.contains('/dynamic_presc/'))
@@ -214,6 +240,7 @@ Future<void> _show(
   _Harness harness, {
   bool timeline = false,
   bool existing = false,
+  bool walkIn = false,
   bool durationRequired = false,
   Size size = const Size(393, 852),
   DashboardDestinationBuilder? destinationBuilder,
@@ -243,7 +270,7 @@ Future<void> _show(
                   : DynamicPrescriptionClinicalScreen(
                     auth: harness.auth,
                     repository: harness.dynamicRepository,
-                    seed: harness.seed(existing: existing),
+                    seed: harness.seed(existing: existing, walkIn: walkIn),
                     durationRequired: durationRequired,
                   );
           return Scaffold(
@@ -293,8 +320,11 @@ Future<void> _captureRx(WidgetTester tester, String name) async {
   const templateOutput = String.fromEnvironment('DYNAMIC_TEMPLATE_RENDER_DIR');
   const reviewOutput = String.fromEnvironment('DYNAMIC_REVIEW_RENDER_DIR');
   const historyOutput = String.fromEnvironment('DYNAMIC_HISTORY_RENDER_DIR');
+  const walkInOutput = String.fromEnvironment('DYNAMIC_WALKIN_RENDER_DIR');
   final output =
-      historyOutput.isNotEmpty
+      walkInOutput.isNotEmpty
+          ? walkInOutput
+          : historyOutput.isNotEmpty
           ? historyOutput
           : templateOutput.isNotEmpty
           ? templateOutput
@@ -378,7 +408,7 @@ void main() {
     });
     tearDown(() => h.auth.dispose());
     test(
-      'seed matches native scheduled extras; past dates and walk-in cannot enter this stage',
+      'seed matches native scheduled extras; past dates and an unselected Walk-in cannot edit',
       () {
         final seed = h.seed(existing: true);
         expect(seed.patientHistoryId, '11');
@@ -2496,4 +2526,436 @@ void main() {
       },
     );
   }
+
+  for (final action in ['close', 'cancel', 'back']) {
+    testWidgets(
+      'Walk-in required selection $action returns to appointments without opening an editable prescription',
+      (tester) async {
+        final h = _Harness();
+        await _show(tester, h, timeline: true);
+        await _tap(tester, 'doctor_appointment_walk_in');
+        expect(find.byType(NativeDynamicPatientSelectionSheet), findsOneWidget);
+        expect(find.byType(NativeDynamicClinicalTab), findsNothing);
+        await _captureRx(tester, 'walkin_required_selection');
+        if (action == 'back') {
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+        } else {
+          await _tap(
+            tester,
+            action == 'close' ? 'dy_select_patient_close' : 'dy_action_CANCEL',
+          );
+        }
+        expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+        expect(find.byType(DoctorAppointmentScreen), findsOneWidget);
+        expect(
+          h.dynamicReads.where((uri) => uri.pathSegments.last == 'getComplain'),
+          isEmpty,
+        );
+        expect(h.transport.binaryRequests, isEmpty);
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+  for (final type in ['2', '1']) {
+    testWidgets(
+      'Walk-in ${type == '2' ? 'Indoor' : 'Outdoor'} selects patient then GENERATE/UPDATE use blank appointment and native flags',
+      (tester) async {
+        final h = _Harness();
+        h.transport.onBytes = (_) async => dynamicSavedResponse();
+        await _show(tester, h, timeline: true);
+        await _tap(tester, 'doctor_appointment_walk_in');
+        if (type == '1') {
+          await _tap(tester, 'dy_dropdown_patient_type');
+          await _tap(tester, 'dy_option_patient_type_1_1');
+        }
+        await _tap(tester, 'dy_patient_option_201_0');
+        await _tap(tester, 'dy_action_SELECT PATIENT');
+        expect(find.byType(NativeDynamicPatientSelectionSheet), findsNothing);
+        expect(find.text('Walk-in Patient One'), findsOneWidget);
+        expect(find.text('Date: 24-OCT-26'), findsOneWidget);
+        expect(find.byType(NativeDynamicClinicalTab), findsOneWidget);
+        await _captureRx(
+          tester,
+          'walkin_builder_${type == '2' ? 'indoor' : 'outdoor'}',
+        );
+        await _review(tester, addPlan: true);
+        await _confirm(tester);
+        await _tap(tester, 'dy_action_GENERATE');
+        final create = h.transport.binaryRequests.single;
+        expect(create.headers['P_PAT_ID'], '101');
+        expect(create.headers['P_PH_ID'], '201');
+        expect(create.headers['P_AD_ID'], '');
+        expect(create.headers['P_PATIENT_TYPE'], '2');
+        expect(create.headers['P_PRESCRIPTION_TYPE'], type);
+        expect(create.headers['P_INSERT_TYPE'], '4');
+        await _tap(tester, 'dy_save_ok');
+        await _tap(tester, 'dy_builder_patient');
+        expect(find.byKey(const Key('dy_action_CHANGE PATIENT')), findsNothing);
+        await _tap(tester, 'dy_action_CLOSE');
+        await _confirm(tester);
+        await _tap(tester, 'dy_action_UPDATE');
+        expect(h.transport.binaryRequests, hasLength(2));
+        final update = h.transport.binaryRequests.last;
+        expect(update.uri.pathSegments.last, 'updatePrescription');
+        expect(update.headers['P_RVM_ID'], '901');
+        expect(update.headers['P_AD_ID'], '');
+        expect(update.headers['P_INSERT_TYPE'], '4');
+        expect(update.headers.containsKey('P_PATIENT_TYPE'), isFalse);
+        expect(
+          h.dynamicReads.where(
+            (uri) => uri.pathSegments.last == 'getPrescription',
+          ),
+          isEmpty,
+        );
+        await _tap(tester, 'dy_save_ok');
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+  testWidgets(
+    'Walk-in Change patient CANCEL keeps the draft; CLEAR & CHANGE clears every section and templates',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, walkIn: true);
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      final clinical =
+          tester
+              .widget<NativeDynamicClinicalTab>(
+                find.byType(NativeDynamicClinicalTab),
+              )
+              .draft;
+      await _tap(tester, 'dy_builder_template');
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      await _tap(tester, 'dy_template_option_treatment_801_0');
+      await _tap(tester, 'dy_template_action_LOAD TREATMENT');
+      clinical.saveVitals(DynamicVitals({'pulse': '76'}));
+      await _tap(tester, 'dy_builder_tab_ADVICE');
+      final advice =
+          tester
+              .widget<NativeDynamicAdviceTab>(
+                find.byType(NativeDynamicAdviceTab),
+              )
+              .draft;
+      advice.saveEntry(
+        DynamicAdviceType.reference,
+        DynamicAdviceEntry(text: 'Old patient reference'),
+      );
+      advice.saveEntry(
+        DynamicAdviceType.notes,
+        DynamicAdviceEntry(text: 'Old patient notes'),
+      );
+      await _tap(tester, 'dy_builder_tab_RX');
+      final rx =
+          tester
+              .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab))
+              .draft;
+      await _review(tester);
+      await _confirm(tester);
+      for (final clear in [false, true]) {
+        await _tap(tester, 'dy_builder_patient');
+        await _tap(tester, 'dy_action_CHANGE PATIENT');
+        await _tap(tester, 'dy_patient_option_202_1');
+        await _tap(tester, 'dy_action_SELECT PATIENT');
+        expect(
+          find.byKey(const Key('dy_change_patient_dialog')),
+          findsOneWidget,
+        );
+        await _captureRx(tester, 'walkin_change_patient_confirmation');
+        await _tap(
+          tester,
+          clear ? 'dy_change_patient_confirm' : 'dy_change_patient_cancel',
+        );
+        if (!clear) {
+          expect(find.text('Walk-in Patient One'), findsOneWidget);
+          expect(advice.notes, 'Old patient notes');
+          expect(rx.medicines, isNotEmpty);
+          expect(
+            tester
+                .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+                .value,
+            isTrue,
+          );
+        }
+      }
+      expect(find.text('Walk-in Patient Two'), findsOneWidget);
+      expect(find.text('No template loaded'), findsOneWidget);
+      expect(clinical.vitals, isNull);
+      expect(clinical.objectives, isEmpty);
+      for (final type in DynamicClinicalType.values) {
+        expect(clinical.entries(type), isEmpty);
+      }
+      for (final type in DynamicAdviceType.values) {
+        expect(advice.entries(type), isEmpty);
+      }
+      expect(rx.medicines, isEmpty);
+      expect(rx.therapies, isEmpty);
+      expect(rx.treatmentPlans, isEmpty);
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'Walk-in selecting the same patient retains entered content and changes Indoor/Outdoor only after SELECT',
+    (tester) async {
+      final h = _Harness();
+      h.transport.onBytes = (_) async => dynamicSavedResponse();
+      await _show(tester, h, walkIn: true);
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await _tap(tester, 'dy_builder_patient');
+      await _tap(tester, 'dy_action_CHANGE PATIENT');
+      await _tap(tester, 'dy_dropdown_patient_type');
+      await _tap(tester, 'dy_option_patient_type_1_1');
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      expect(find.byKey(const Key('dy_change_patient_dialog')), findsNothing);
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .value,
+        isFalse,
+      );
+      await _confirm(tester);
+      await _tap(tester, 'dy_action_GENERATE');
+      final sent = h.transport.binaryRequests.single;
+      expect(sent.headers['P_PRESCRIPTION_TYPE'], '1');
+      expect(
+        (jsonDecode(utf8.decode(sent.body)) as Map)['treatment_plans'],
+        hasLength(1),
+      );
+      await _tap(tester, 'dy_save_ok');
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'Walk-in canceling optional Change patient sheet retains the current builder and confirmed content',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, walkIn: true);
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await _tap(tester, 'dy_builder_patient');
+      await _tap(tester, 'dy_action_CHANGE PATIENT');
+      await _tap(tester, 'dy_action_CANCEL');
+      expect(find.byType(DynamicPrescriptionClinicalScreen), findsOneWidget);
+      expect(find.text('Walk-in Patient One'), findsOneWidget);
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .value,
+        isTrue,
+      );
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  for (final changing in [false, true]) {
+    testWidgets(
+      'Walk-in background invalidates pending ${changing ? 'change' : 'required'} patient read and resumes the correct flow',
+      (tester) async {
+        final h = _Harness();
+        await _show(tester, h, timeline: true);
+        await _tap(tester, 'doctor_appointment_walk_in');
+        if (changing) {
+          await _tap(tester, 'dy_patient_option_201_0');
+          await _tap(tester, 'dy_action_SELECT PATIENT');
+          await _review(tester, addPlan: true);
+          await _confirm(tester);
+          await _tap(tester, 'dy_builder_patient');
+        } else {
+          // Cancel the first selection, then use a separate new builder
+          // so the pending request really belongs to mandatory initial selection.
+          await _tap(tester, 'dy_select_patient_close');
+        }
+        final pending = Completer<JsonMap>();
+        h.pendingPatientList = pending;
+        await tester.tap(
+          find.byKey(
+            Key(
+              changing
+                  ? 'dy_action_CHANGE PATIENT'
+                  : 'doctor_appointment_walk_in',
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.byType(NativeDynamicPatientSelectionSheet), findsOneWidget);
+        for (final state in [
+          AppLifecycleState.inactive,
+          AppLifecycleState.hidden,
+          AppLifecycleState.paused,
+        ]) {
+          tester.binding.handleAppLifecycleStateChanged(state);
+        }
+        await tester.pump();
+        h.pendingPatientList = null;
+        pending.complete({'pat_list': walkInRows()});
+        await tester.pump();
+        for (final state in [
+          AppLifecycleState.hidden,
+          AppLifecycleState.inactive,
+          AppLifecycleState.resumed,
+        ]) {
+          tester.binding.handleAppLifecycleStateChanged(state);
+        }
+        await tester.pumpAndSettle();
+        if (changing) {
+          expect(find.byType(NativeDynamicPatientSelectionSheet), findsNothing);
+          expect(find.text('Walk-in Patient One'), findsOneWidget);
+          expect(
+            tester
+                .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+                .value,
+            isTrue,
+          );
+        } else {
+          expect(
+            find.byType(NativeDynamicPatientSelectionSheet),
+            findsOneWidget,
+          );
+          await _tap(tester, 'dy_action_CANCEL');
+          expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+        }
+        expect(h.transport.binaryRequests, isEmpty);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+  testWidgets(
+    'Walk-in logout closes required selection and ignores late patient data on Login',
+    (tester) async {
+      final h = _Harness();
+      await h.signIn();
+      await tester.pumpWidget(
+        DocDiaryApp(
+          auth: h.auth,
+          initializeOnStart: false,
+          dashboard: DashboardRepository(h.transport, now: () => h.now),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dashboard_nav_appointment');
+      final pending = Completer<JsonMap>();
+      h.pendingPatientList = pending;
+      await tester.tap(find.byKey(const Key('doctor_appointment_walk_in')));
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(NativeDynamicPatientSelectionSheet), findsOneWidget);
+      expect(
+        h.dynamicReads.where(
+          (uri) => uri.pathSegments.last == 'getHundredPatListYearWise',
+        ),
+        hasLength(1),
+      );
+      await h.auth.logout();
+      h.pendingPatientList = null;
+      pending.complete({'pat_list': walkInRows()});
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(NativeDynamicPatientSelectionSheet), findsNothing);
+      expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+      expect(find.text('Walk-in Patient One'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'Walk-in ambiguous create preserves the patient/draft and never reconciles through an empty appointment or repeats INSERT',
+    (tester) async {
+      final h = _Harness();
+      h.transport.onBytes =
+          (_) async => throw const AppFailure('Save response lost');
+      await _show(tester, h, walkIn: true);
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await _tap(tester, 'dy_action_GENERATE');
+      await _tap(tester, 'dy_save_ok');
+      await _confirm(tester);
+      await _tap(tester, 'dy_action_GENERATE');
+      expect(find.textContaining('Check Prescription History'), findsOneWidget);
+      expect(h.transport.binaryRequests, hasLength(1));
+      expect(
+        h.dynamicReads.where(
+          (uri) => uri.pathSegments.last == 'getPrescription',
+        ),
+        isEmpty,
+      );
+      await _tap(tester, 'dy_save_ok');
+      await _tap(tester, 'dy_builder_patient');
+      expect(find.byKey(const Key('dy_action_CHANGE PATIENT')), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'Walk-in History load keeps the selected patient and Outdoor type for a new prescription',
+    (tester) async {
+      final h = _Harness();
+      h.transport.onBytes = (_) async => dynamicSavedResponse();
+      await _show(tester, h, walkIn: true);
+      await _tap(tester, 'dy_dropdown_patient_type');
+      await _tap(tester, 'dy_option_patient_type_1_1');
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      await _tap(tester, 'dy_builder_history');
+      await _tap(tester, 'dy_history_option_600_0');
+      await _tap(tester, 'dy_action_LOAD TO CURRENT RX');
+      expect(find.text('Walk-in Patient One'), findsOneWidget);
+      await _review(tester);
+      await _confirm(tester);
+      await _tap(tester, 'dy_action_GENERATE');
+      final sent = h.transport.binaryRequests.single;
+      expect(sent.headers['P_PAT_ID'], '101');
+      expect(sent.headers['P_PH_ID'], '201');
+      expect(sent.headers['P_AD_ID'], '');
+      expect(sent.headers['P_PATIENT_TYPE'], '2');
+      expect(sent.headers['P_PRESCRIPTION_TYPE'], '1');
+      expect(sent.headers['P_RVM_ID'], isNull);
+      await _tap(tester, 'dy_save_ok');
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'Walk-in disposal cancels a debounced patient search without late GETs',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, walkIn: true);
+      await tester.enterText(
+        find.byKey(const Key('dy_field_patient_search')),
+        'Patient',
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(
+        h.dynamicReads.where(
+          (uri) => uri.pathSegments.last == 'getPatListBySearch',
+        ),
+        isEmpty,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

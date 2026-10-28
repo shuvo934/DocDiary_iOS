@@ -185,6 +185,7 @@ class NativeDynamicRxChoiceField extends StatefulWidget {
     this.enabled = true,
     this.dropdownOnly = false,
     this.maxLines = 1,
+    this.fontSize = 10,
   });
   final String id, label;
   final TextEditingController controller;
@@ -194,6 +195,7 @@ class NativeDynamicRxChoiceField extends StatefulWidget {
   final String? error;
   final bool enabled, dropdownOnly;
   final int maxLines;
+  final double fontSize;
   @override
   State<NativeDynamicRxChoiceField> createState() => _ChoiceFieldState();
 }
@@ -406,6 +408,7 @@ class _ChoiceFieldState extends State<NativeDynamicRxChoiceField>
       child: NativeDynamicRxField(
         id: widget.id,
         label: widget.label,
+        fontSize: widget.fontSize,
         controller: widget.controller,
         enabled: widget.enabled,
         error: widget.error,

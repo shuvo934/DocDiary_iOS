@@ -12,6 +12,7 @@ import 'dynamic_advice_repository.dart';
 import 'dynamic_prescription_save_models.dart';
 import 'dynamic_template_repository.dart';
 import 'dynamic_history_models.dart';
+import 'dynamic_patient_repository.dart';
 
 /// Native scheduled builder reads and a single JSON write at a time.
 class DynamicPrescriptionRepository {
@@ -19,12 +20,14 @@ class DynamicPrescriptionRepository {
     : clinical = DynamicClinicalRepository(appointments),
       rx = DynamicRxRepository(appointments),
       advice = DynamicAdviceRepository(appointments),
-      templates = DynamicTemplateRepository(appointments);
+      templates = DynamicTemplateRepository(appointments),
+      patients = DynamicPatientRepository(appointments);
   final DoctorAppointmentRepository appointments;
   final DynamicClinicalRepository clinical;
   final DynamicRxRepository rx;
   final DynamicAdviceRepository advice;
   final DynamicTemplateRepository templates;
+  final DynamicPatientRepository patients;
   bool _writing = false;
   bool get writing => _writing;
 
@@ -39,7 +42,7 @@ class DynamicPrescriptionRepository {
         seed.ownerDoctorId != profile.doctorId ||
         !seed.editableOn(appointments.now())) {
       throw const AppFailure(
-        'Prescription editing is available for today’s scheduled appointment only.',
+        'Prescription editing requires a selected Walk-in patient or today’s scheduled appointment.',
         kind: FailureKind.invalidData,
       );
     }
@@ -98,6 +101,12 @@ class DynamicPrescriptionRepository {
     DynamicPrescriptionSeed seed, {
     required bool Function() isCurrent,
   }) async {
+    guard(session, profile, seed, isCurrent);
+    if (seed.isWalkIn) {
+      throw const AppFailure(
+        'A Walk-in prescription cannot be identified by appointment. Please check Prescription History.',
+      );
+    }
     final root = await _get(session, profile, seed, 'getPrescription', {
       'p_ph_id': seed.patientHistoryId,
       'p_pat_id': seed.patientId,
