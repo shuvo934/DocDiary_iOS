@@ -231,24 +231,43 @@ void main() {
       expect(draft.entries(type).last.masterId, '502');
     },
   );
-  for (final type in [DynamicAdviceType.advice, DynamicAdviceType.notes]) {
-    testWidgets(
-      '${type.label} keyboard Done validates then commits once and closes the native sheet',
-      (tester) async {
-        await _sheet(tester, draft, type);
-        await _write(tester, '');
-        await tester.testTextInput.receiveAction(TextInputAction.done);
-        await tester.pumpAndSettle();
-        expect(find.byType(NativeDynamicAdviceSheet), findsOneWidget);
-        expect(draft.entries(type), isEmpty);
-        await _write(tester, 'Saved from keyboard Done');
-        await tester.testTextInput.receiveAction(TextInputAction.done);
-        await tester.pumpAndSettle();
-        expect(find.byType(NativeDynamicAdviceSheet), findsNothing);
-        expect(draft.entries(type).single.text, 'Saved from keyboard Done');
-        expect(tester.takeException(), isNull);
-      },
-    );
+  for (final type in DynamicAdviceType.values) {
+    for (final editing in [false, true]) {
+      testWidgets(
+        '${type.label} ${editing ? 'Edit' : 'Add'} Done only closes keyboard; explicit button commits',
+        (tester) async {
+          final entry =
+              editing ? DynamicAdviceEntry(text: 'Previously saved') : null;
+          if (entry != null) draft.saveEntry(type, entry);
+          await _sheet(tester, draft, type, existing: entry);
+          final before = draft.revision;
+          await _write(tester, 'Text waits for the button');
+          await tester.testTextInput.receiveAction(TextInputAction.done);
+          await tester.pumpAndSettle();
+          expect(find.byType(NativeDynamicAdviceSheet), findsOneWidget);
+          expect(draft.revision, before);
+          expect(
+            draft.entries(type).map((item) => item.text),
+            editing ? ['Previously saved'] : <String>[],
+          );
+          final field = find.byKey(const Key('dy_field_advice_entry'));
+          final editable = tester.widget<EditableText>(
+            find.descendant(of: field, matching: find.byType(EditableText)),
+          );
+          expect(editable.focusNode.hasFocus, isFalse);
+          expect(
+            find.byKey(const Key('dy_options_advice_entry')),
+            findsNothing,
+          );
+          await _tap(tester, _saveKey(type, editing: editing));
+          expect(draft.entries(type).single.text, 'Text waits for the button');
+          if (editing) {
+            expect(draft.entries(type).single.localId, entry!.localId);
+          }
+          expect(find.byType(NativeDynamicAdviceSheet), findsNothing);
+        },
+      );
+    }
   }
   for (final type in [DynamicAdviceType.reference, DynamicAdviceType.notes]) {
     testWidgets(

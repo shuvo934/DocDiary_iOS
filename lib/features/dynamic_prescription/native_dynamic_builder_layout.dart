@@ -8,7 +8,7 @@ import 'native_dynamic_builder_icons.dart';
 import 'native_dynamic_rx_controls.dart';
 import 'native_dynamic_rx_icons.dart';
 
-/// activity_prescription_builder.xml. Clinical, Rx and Advice share the builder.
+/// activity_prescription_builder.xml and all four native tabs.
 class NativeDynamicBuilderLayout extends StatelessWidget {
   const NativeDynamicBuilderLayout({
     super.key,
@@ -20,6 +20,10 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
     required this.enabled,
     this.selectedTab = 0,
     this.onTabChanged,
+    this.hasRx = false,
+    this.reviewConfirmed = false,
+    this.onConfirm,
+    this.onSave,
   });
   final DynamicPrescriptionSeed seed;
   final JsonMap data;
@@ -29,6 +33,9 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
   final bool enabled;
   final int selectedTab;
   final ValueChanged<int>? onTabChanged;
+  final bool hasRx, reviewConfirmed;
+  final ValueChanged<bool>? onConfirm;
+  final VoidCallback? onSave;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
@@ -313,6 +320,69 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                           ),
                           SizedBox(height: m.d(4)),
                           Expanded(child: body),
+                          if (selectedTab == 3)
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: m.d(8)),
+                              child: Opacity(
+                                opacity: hasRx ? 1 : .45,
+                                child: InkWell(
+                                  key: const Key('dy_review_confirmation_row'),
+                                  onTap:
+                                      enabled && hasRx && onConfirm != null
+                                          ? () => onConfirm!(!reviewConfirmed)
+                                          : null,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: m.d(32),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        SizedBox.square(
+                                          dimension: m.d(28),
+                                          child: Checkbox(
+                                            key: const Key('dy_review_confirm'),
+                                            value: reviewConfirmed,
+                                            onChanged:
+                                                enabled &&
+                                                        hasRx &&
+                                                        onConfirm != null
+                                                    ? (value) => onConfirm!(
+                                                      value ?? false,
+                                                    )
+                                                    : null,
+                                            activeColor:
+                                                DynamicRxColors.primary,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            side: const BorderSide(
+                                              color: DynamicRxColors.primary,
+                                              width: 1.5,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: m.d(8)),
+                                        Expanded(
+                                          child: Text(
+                                            'I have reviewed the prescription details',
+                                            style: m.text(
+                                              8,
+                                              color: const Color(0xff344054),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           Padding(
                             padding: EdgeInsets.fromLTRB(
                               m.d(8),
@@ -324,15 +394,23 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                               width: double.infinity,
                               child: NativeDynamicRxButton(
                                 label:
-                                    const [
-                                      'NEXT: RX',
-                                      'NEXT: ADVICE',
-                                      'NEXT: REVIEW',
-                                    ][selectedTab],
+                                    selectedTab == 3
+                                        ? dynamicRxText(data['rvm_id']).isEmpty
+                                            ? 'GENERATE'
+                                            : 'UPDATE'
+                                        : const [
+                                          'NEXT: RX',
+                                          'NEXT: ADVICE',
+                                          'NEXT: REVIEW',
+                                        ][selectedTab],
                                 onPressed:
-                                    enabled &&
-                                            selectedTab < 2 &&
-                                            onTabChanged != null
+                                    !enabled
+                                        ? null
+                                        : selectedTab == 3
+                                        ? hasRx && reviewConfirmed
+                                            ? onSave
+                                            : null
+                                        : onTabChanged != null
                                         ? () => onTabChanged!(selectedTab + 1)
                                         : null,
                               ),
@@ -353,7 +431,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
 
   Widget _tab(int index, String label, DynamicRxMetrics m) {
     final selected = selectedTab == index,
-        active = enabled && index < 3 && onTabChanged != null;
+        active = enabled && onTabChanged != null;
     return Expanded(
       child: Semantics(
         selected: selected,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/failure.dart';
 import '../../core/native_json.dart';
+import '../../core/app_toast.dart';
 import '../auth/account_access.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
@@ -21,8 +22,11 @@ import 'native_dynamic_patient_details_sheet.dart';
 import 'native_dynamic_rx_controls.dart';
 import 'native_dynamic_rx_tab.dart';
 import 'native_dynamic_advice_tab.dart';
+import 'dynamic_prescription_review_models.dart';
+import 'dynamic_prescription_save_models.dart';
+import 'native_dynamic_review_tab.dart';
 
-/// Today's native scheduled builder. Clinical, Rx and Advice share this route.
+/// Today's native scheduled builder: shared drafts, native review and save.
 class DynamicPrescriptionClinicalScreen extends StatefulWidget {
   const DynamicPrescriptionClinicalScreen({
     super.key,
@@ -45,10 +49,16 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   final _draft = DynamicClinicalDraft();
   final _rxDraft = DynamicRxDraft();
   final _adviceDraft = DynamicAdviceDraft();
+  late final _review = DynamicPrescriptionReview(
+    clinical: _draft,
+    rx: _rxDraft,
+    advice: _adviceDraft,
+  );
   final _pages = PageController();
   final _view = ValueNotifier<int>(0);
   final _navigator = GlobalKey<NavigatorState>();
   final _dialogs = NativeDashboardDialogOwner();
+  final _toast = AppToastOwner();
   AuthSession? _session;
   AccountProfile? _profile;
   DynamicClinicalCatalogue? _catalogue;
@@ -60,6 +70,11 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   bool _busy = true, _foreground = true, _initialized = false, _leaving = false;
   int _operation = 0;
   int _selectedTab = 0;
+  int _saveOperation = 0;
+  bool _saving = false, _uncertainCreate = false, _blockingFeedback = false;
+  DynamicPrescriptionSaveReceipt? _pendingReceipt;
+  String? _pendingSaveError;
+  bool _writeCurrent(int operation) => _current && operation == _saveOperation;
   bool get _current =>
       mounted &&
       _session != null &&
@@ -84,8 +99,19 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     'advice': _adviceDraft.toBody(),
     'reference': _adviceDraft.reference,
     'prescription_notes': _adviceDraft.notes,
+    'disease_template_id': dynamicRxText(_data['td_id']),
+    'treatment_template_id': dynamicRxText(_data['tt_id']),
+    'prescription_type': '1',
   });
-  bool get _dirty => _baseline != null && _snapshot != _baseline;
+  bool get _dirty {
+    if (_baseline == null) return false;
+    try {
+      return _snapshot != _baseline;
+    } on AppFailure {
+      return true;
+    }
+  }
+
   void _answer(bool value) {
     final inner = _innerContext;
     if (_current &&
@@ -133,6 +159,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   void _authChanged() {
     if (_current) return;
     ++_operation;
+    ++_saveOperation;
     _closeSheets();
     _refresh(() {
       _profile = null;
@@ -141,6 +168,9 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       _adviceCatalogue = null;
       _data = const {};
       _busy = true;
+      _saving = false;
+      _pendingReceipt = null;
+      _pendingSaveError = null;
     });
     _draft.replaceFromData(const {});
     _rxDraft.replaceFromData(const {});
@@ -221,10 +251,12 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         _initialized = true;
       }
       if (!_alive(operation)) return;
+      _review.medicineAllowed = profile.value('med_active') == '1';
       _refresh(() {
         _profile = profile;
         _busy = false;
       });
+      unawaited(_showSaveFeedback());
     } catch (failure) {
       if (!_alive(operation) || failure is ObsoleteRequest) return;
       if (failure is AccountAccessFailure) {
@@ -308,7 +340,9 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   void _selectTab(int index) {
-    if (!_ready || index < 0 || index > 2 || !_pages.hasClients) return;
+    if (!_ready || _saving || index < 0 || index > 3 || !_pages.hasClients) {
+      return;
+    }
     FocusManager.instance.primaryFocus?.unfocus();
     unawaited(
       _pages.animateToPage(
@@ -319,7 +353,197 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     );
   }
 
+  Future<void> _save() async {
+    if (!_ready || _saving || !_review.canGenerate) return;
+    final context = _innerContext;
+    if (context == null || !context.mounted) return;
+    if (_review.incompleteObjectives.isNotEmpty) {
+      final updating = dynamicRxText(_data['rvm_id']).isNotEmpty;
+      final go = await _dialogs.show<bool>(
+        context,
+        AlertDialog(
+          key: const Key('dy_objective_required'),
+          title: const Text('Objective Information Required'),
+          content: Text(
+            'Please select a value or enter notes for the following Objective Info before '
+            '${updating ? 'updating' : 'generating'} the prescription:\n'
+            '${_review.incompleteObjectives.map((name) => '• $name').join('\n')}',
+          ),
+          actions: [
+            TextButton(
+              key: const Key('dy_objective_cancel'),
+              onPressed: () => _answer(false),
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              key: const Key('dy_objective_go'),
+              onPressed: () => _answer(true),
+              child: const Text('GO TO CLINICAL'),
+            ),
+          ],
+        ),
+        dismissible: true,
+      );
+      if (_current && _foreground && go == true) {
+        _review.reset();
+        _selectTab(0);
+      }
+      return;
+    }
+    final operation = ++_saveOperation;
+    _refresh(() => _saving = true);
+    try {
+      // Refresh account access before the one native write. Backgrounding before
+      // this check completes never starts a POST; a dispatched POST is not resent.
+      final profile = await widget.auth.profiles.open(
+        _session!,
+        recordLogin: false,
+        isCurrent: () => _writeCurrent(operation) && _foreground,
+      );
+      widget.repository.guard(
+        _session!,
+        profile,
+        widget.seed,
+        () => _writeCurrent(operation) && _foreground,
+      );
+      _profile = profile;
+      _review.medicineAllowed = profile.value('med_active') == '1';
+      if (!_review.canGenerate) {
+        throw const AppFailure('Please review and confirm the prescription');
+      }
+      if (_uncertainCreate && dynamicRxText(_data['rvm_id']).isEmpty) {
+        // A lost create response must never become a second insert. A found
+        // record binds this builder to UPDATE; the local draft stays intact.
+        try {
+          final found = await widget.repository.lookup(
+            _session!,
+            profile,
+            widget.seed,
+            isCurrent: () => _writeCurrent(operation),
+          );
+          if (!_writeCurrent(operation)) return;
+          _refresh(() {
+            _data = {
+              ..._data,
+              'rvm_id': found['rvm_id'],
+              'rvm_code': found['rvm_code'],
+            };
+            _uncertainCreate = false;
+          });
+          _review.reset();
+          _pendingSaveError =
+              'A prescription was found for this appointment. Your draft is kept. Review it again before pressing UPDATE.';
+        } catch (failure) {
+          if (failure is ObsoleteRequest || failure is AccountAccessFailure) {
+            rethrow;
+          }
+          _pendingSaveError =
+              'The previous save could not be confirmed. Your draft is kept. Reopen the appointment to check its saved prescription before trying again.';
+          _review.reset();
+        }
+        return;
+      }
+      final request = DynamicPrescriptionSaveRequest.capture(
+        seed: widget.seed,
+        profile: profile,
+        review: _review,
+        data: _data,
+      );
+      final savedSnapshot = _snapshot;
+      final receipt = await widget.repository.save(
+        _session!,
+        profile,
+        widget.seed,
+        request,
+        isCurrent: () => _writeCurrent(operation),
+      );
+      if (!_writeCurrent(operation)) return;
+      _refresh(() {
+        _data = {
+          ..._data,
+          'rvm_id': receipt.rvmId,
+          if (receipt.code.isNotEmpty) 'rvm_code': receipt.code,
+        };
+        _baseline = savedSnapshot;
+        _uncertainCreate = false;
+        _pendingReceipt = receipt;
+      });
+      _review.reset();
+    } catch (failure) {
+      if (!_writeCurrent(operation) || failure is ObsoleteRequest) return;
+      if (failure is AccountAccessFailure) {
+        widget.auth.blockAccess(failure);
+        return;
+      }
+      if (failure is DynamicPrescriptionSaveFailure) {
+        if (dynamicRxText(_data['rvm_id']).isEmpty) _uncertainCreate = true;
+        _review.reset();
+      }
+      _pendingSaveError =
+          failure is AppFailure
+              ? failure.message
+              : 'Prescription failed to create. Please check your network and try again.';
+    } finally {
+      if (_writeCurrent(operation)) {
+        _refresh(() => _saving = false);
+        unawaited(_showSaveFeedback());
+      }
+    }
+  }
+
+  Future<void> _showSaveFeedback() async {
+    final context = _innerContext;
+    if (!_ready ||
+        _saving ||
+        _dialogs.isOpen ||
+        context == null ||
+        !context.mounted) {
+      return;
+    }
+    final receipt = _pendingReceipt, error = _pendingSaveError;
+    if (receipt == null && error == null) return;
+    _pendingReceipt = null;
+    _pendingSaveError = null;
+    _blockingFeedback = receipt != null;
+    final message =
+        receipt == null
+            ? error!
+            : receipt.message +
+                (!receipt.updating && receipt.code.isNotEmpty
+                    ? '\nPrescription Code: ${receipt.code}'
+                    : '');
+    try {
+      final acknowledged = await _dialogs.show<bool>(
+        context,
+        AlertDialog(
+          key: Key(receipt == null ? 'dy_save_error' : 'dy_save_success'),
+          title: Text(receipt == null ? 'Error!' : 'Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              key: const Key('dy_save_ok'),
+              onPressed: () => _answer(true),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+        dismissible: receipt == null,
+      );
+      if (_current && !_foreground && acknowledged != true) {
+        _pendingReceipt = receipt;
+        _pendingSaveError = error;
+      }
+    } finally {
+      _blockingFeedback = false;
+    }
+  }
+
   Future<void> _back() async {
+    if (_saving) {
+      _toast.show(context, 'Please wait while the prescription is being saved');
+      return;
+    }
+    if (_blockingFeedback && _dialogs.isOpen) return;
     if (_leaving) return;
     final nested = _navigator.currentState;
     if (nested?.canPop() ?? false) {
@@ -409,6 +633,13 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                   draft: _adviceDraft,
                   catalogue: _adviceCatalogue!,
                 ),
+                NativeDynamicReviewTab(
+                  key: ValueKey(
+                    'review:${widget.seed.appointmentId}:${widget.seed.patientHistoryId}',
+                  ),
+                  review: _review,
+                  onEdit: _selectTab,
+                ),
               ],
             ),
           ),
@@ -452,15 +683,39 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     } else {
       body = const SizedBox.shrink();
     }
-    return NativeDynamicBuilderLayout(
+    final frame = NativeDynamicBuilderLayout(
       seed: widget.seed,
       data: _data,
       onBack: () => unawaited(_back()),
       onPatient: () => unawaited(_patient(context)),
       body: body,
-      enabled: _ready,
+      enabled: _ready && !_saving,
       selectedTab: _selectedTab,
       onTabChanged: _selectTab,
+      hasRx: _review.hasRx,
+      reviewConfirmed: _review.confirmed,
+      onConfirm: _review.confirm,
+      onSave: () => unawaited(_save()),
+    );
+    return Stack(
+      children: [
+        IgnorePointer(
+          ignoring: _saving,
+          child: Opacity(opacity: _saving ? 0 : 1, child: frame),
+        ),
+        if (_saving)
+          const Positioned.fill(
+            child: ColoredBox(
+              color: Colors.white,
+              child: Center(
+                child: CircularProgressIndicator(
+                  key: Key('dy_save_progress'),
+                  color: DynamicRxColors.primary,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -481,6 +736,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                     _draft,
                     _rxDraft,
                     _adviceDraft,
+                    _review,
                   ]),
                   builder: (context, _) => _layout(context),
                 ),
@@ -490,10 +746,13 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   @override
   void dispose() {
     ++_operation;
+    ++_saveOperation;
     widget.auth.removeListener(_authChanged);
     WidgetsBinding.instance.removeObserver(this);
     _dialogs.dispose();
     _view.dispose();
+    _toast.dispose();
+    _review.dispose();
     _draft.dispose();
     _rxDraft.dispose();
     _adviceDraft.dispose();

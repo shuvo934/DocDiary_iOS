@@ -1,5 +1,6 @@
 import '../../core/failure.dart';
 import '../../core/native_json.dart';
+import '../../core/transport.dart';
 import '../appointments/doctor_schedule/doctor_appointment_repository.dart';
 import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
@@ -8,8 +9,9 @@ import 'dynamic_clinical_repository.dart';
 import 'dynamic_prescription_seed.dart';
 import 'dynamic_rx_repository.dart';
 import 'dynamic_advice_repository.dart';
+import 'dynamic_prescription_save_models.dart';
 
-/// Scheduled Clinical/Rx/Advice entry point. This stage has only GET calls.
+/// Native scheduled builder reads and a single JSON write at a time.
 class DynamicPrescriptionRepository {
   DynamicPrescriptionRepository(this.appointments)
     : clinical = DynamicClinicalRepository(appointments),
@@ -19,6 +21,8 @@ class DynamicPrescriptionRepository {
   final DynamicClinicalRepository clinical;
   final DynamicRxRepository rx;
   final DynamicAdviceRepository advice;
+  bool _writing = false;
+  bool get writing => _writing;
 
   void guard(
     AuthSession session,
@@ -80,6 +84,16 @@ class DynamicPrescriptionRepository {
   }) async {
     guard(session, profile, seed, isCurrent);
     if (!seed.existing) return const {};
+    return lookup(session, profile, seed, isCurrent: isCurrent);
+  }
+
+  /// Also used to reconcile a create whose response was not confirmed.
+  Future<JsonMap> lookup(
+    AuthSession session,
+    AccountProfile profile,
+    DynamicPrescriptionSeed seed, {
+    required bool Function() isCurrent,
+  }) async {
     final root = await _get(session, profile, seed, 'getPrescription', {
       'p_ph_id': seed.patientHistoryId,
       'p_pat_id': seed.patientId,
@@ -100,6 +114,85 @@ class DynamicPrescriptionRepository {
       );
     }
     return data;
+  }
+
+  Future<DynamicPrescriptionSaveReceipt> save(
+    AuthSession session,
+    AccountProfile profile,
+    DynamicPrescriptionSeed seed,
+    DynamicPrescriptionSaveRequest request, {
+    required bool Function() isCurrent,
+  }) async {
+    guard(session, profile, seed, isCurrent);
+    if (_writing) {
+      throw const AppFailure(
+        'Please wait while the prescription is being saved',
+      );
+    }
+    if (request.doctorId != profile.doctorId ||
+        request.patientId != seed.patientId ||
+        request.patientHistoryId != seed.patientHistoryId ||
+        request.appointmentId != seed.appointmentId ||
+        (request.headers['P_PATIENT_TYPE'] != null &&
+            request.headers['P_PATIENT_TYPE'] != seed.patientType)) {
+      throw const AppFailure(
+        'Prescription target information changed. Please reopen this appointment.',
+        kind: FailureKind.invalidData,
+      );
+    }
+    final transport = appointments.transport;
+    if (transport is! BinaryTransport) {
+      throw const AppFailure(
+        'This connection cannot send prescription JSON.',
+        kind: FailureKind.invalidData,
+      );
+    }
+    // dart:io's HTTP header format cannot carry Unicode text. Never silently
+    // replace characters or invent an encoding the native endpoint cannot read.
+    if (request.headers.values.any(
+      (value) => RegExp(r'[^\x09\x20-\x7e]').hasMatch(value),
+    )) {
+      throw const AppFailure(
+        'Some Reference or Notes characters cannot be sent in this format. Please edit the text and try again.',
+        kind: FailureKind.invalidData,
+      );
+    }
+    _writing = true;
+    try {
+      // Native Volley has zero POST retries. Never automatically resend this body.
+      final response = await transport
+          .postBytes(
+            apiEndpoint(
+              session.center.baseUri,
+              'dynamic_presc/${request.endpoint}',
+            ),
+            request.body,
+            headers: request.headers,
+            contentType: DynamicPrescriptionSaveRequest.contentType,
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout:
+                () =>
+                    throw const AppFailure(
+                      'The server took too long to respond. Please try again.',
+                      kind: FailureKind.network,
+                    ),
+          );
+      guard(session, profile, seed, isCurrent);
+      return DynamicPrescriptionSaveReceipt.fromResponse(response, request);
+    } catch (failure) {
+      guard(session, profile, seed, isCurrent);
+      if (failure is ObsoleteRequest) rethrow;
+      throw DynamicPrescriptionSaveFailure(
+        failure is AppFailure
+            ? failure.message
+            : 'Prescription failed to create. Please check your network and try again.',
+        kind: failure is AppFailure ? failure.kind : FailureKind.network,
+      );
+    } finally {
+      _writing = false;
+    }
   }
 
   Future<JsonMap> patientDetails(

@@ -32,6 +32,9 @@ enum DynamicRxGlyph {
   specialAlert,
   reference,
   notes,
+  stethoscope,
+  reviewReady,
+  reviewAttention,
 }
 
 class NativeDynamicRxIcon extends StatelessWidget {
@@ -54,6 +57,7 @@ class NativeDynamicRxIcon extends StatelessWidget {
       DynamicRxGlyph.importantInfo => 'assets/images/dy_rx_caution.png',
       DynamicRxGlyph.pill => 'assets/images/dy_rx_pill.png',
       DynamicRxGlyph.treatmentPlan => 'assets/images/dy_rx_treatment_plan.png',
+      DynamicRxGlyph.stethoscope => 'assets/images/dy_rx_stethoscope.png',
       _ => null,
     };
     return SizedBox.square(
@@ -782,6 +786,51 @@ class _NativeDynamicRxPainter extends CustomPainter {
             ..strokeCap = StrokeCap.round
             ..strokeJoin = StrokeJoin.round,
         );
+        break;
+      case DynamicRxGlyph.reviewReady:
+        // ic_review_ready_24.xml: original Android vector geometry.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(9, 16.2)
+              ..lineTo(4.8, 12)
+              ..lineTo(3.4, 13.4)
+              ..lineTo(9, 19)
+              ..lineTo(21, 7)
+              ..lineTo(19.6, 5.6)
+              ..close();
+        canvas.drawPath(path0, paint);
+        break;
+      case DynamicRxGlyph.reviewAttention:
+        // ic_review_attention_24.xml: original Android vector geometry.
+        canvas.scale(size.width / 24, size.height / 24);
+        final path0 =
+            Path()
+              ..moveTo(11, 5)
+              ..lineTo(13, 5)
+              ..lineTo(13, 14)
+              ..lineTo(11, 14)
+              ..close();
+        canvas.drawPath(path0, paint);
+        final path1 =
+            Path()
+              ..moveTo(12, 16)
+              ..arcToPoint(
+                Offset(12, 18.8),
+                radius: Radius.elliptical(1.4, 1.4),
+                rotation: 0,
+                largeArc: true,
+                clockwise: false,
+              )
+              ..arcToPoint(
+                Offset(12, 16),
+                radius: Radius.elliptical(1.4, 1.4),
+                rotation: 0,
+                largeArc: true,
+                clockwise: false,
+              )
+              ..close();
+        canvas.drawPath(path1, paint);
         break;
       default:
         break;

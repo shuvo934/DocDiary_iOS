@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -23,6 +24,7 @@ import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_rx_con
 import 'package:docdiary_ios/features/dynamic_prescription/dynamic_advice_models.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_advice_tab.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_rx_sheets.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_review_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +33,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'doctor_appointment_test_support.dart';
 import 'dynamic_rx_test_support.dart';
 import 'dynamic_advice_test_support.dart';
+import 'dynamic_review_test_support.dart';
 
 class _Harness extends DoctorAppointmentHarness {
   _Harness() {
@@ -227,7 +230,11 @@ Future<void> _fonts() async {
 Future<void> _captureRx(WidgetTester tester, String name) async {
   const rxOutput = String.fromEnvironment('DYNAMIC_RX_STAGE2_RENDER_DIR');
   const adviceOutput = String.fromEnvironment('DYNAMIC_ADVICE_RENDER_DIR');
-  final output = adviceOutput.isNotEmpty ? adviceOutput : rxOutput;
+  const reviewOutput = String.fromEnvironment('DYNAMIC_REVIEW_RENDER_DIR');
+  final output =
+      reviewOutput.isNotEmpty
+          ? reviewOutput
+          : (adviceOutput.isNotEmpty ? adviceOutput : rxOutput);
   if (output.isEmpty) return;
   final context = tester.element(
     find.byType(DynamicPrescriptionClinicalScreen),
@@ -235,6 +242,7 @@ Future<void> _captureRx(WidgetTester tester, String name) async {
   await tester.runAsync(() async {
     for (final name in [
       'dy_rx_patient',
+      'dy_rx_stethoscope',
       'dy_rx_diagnosis',
       'dy_rx_medicine',
       'dy_rx_chemistry',
@@ -276,6 +284,22 @@ Future<void> _captureRx(WidgetTester tester, String name) async {
     debugDisableShadows = before;
   }
 }
+
+Future<void> _review(WidgetTester tester, {bool addPlan = false}) async {
+  await _tap(tester, 'dy_builder_tab_RX');
+  if (addPlan) {
+    tester
+        .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab))
+        .draft
+        .saveTreatmentPlan(
+          DynamicTreatmentPlanEntry(text: 'Local treatment plan'),
+        );
+    await tester.pumpAndSettle();
+  }
+  await _tap(tester, 'dy_builder_tab_REVIEW');
+}
+
+Future<void> _confirm(WidgetTester tester) => _tap(tester, 'dy_review_confirm');
 
 void main() {
   setUpAll(_fonts);
@@ -1085,7 +1109,7 @@ void main() {
               find.byKey(const Key('dy_action_NEXT: REVIEW')),
             )
             .onPressed,
-        isNull,
+        isNotNull,
       );
       await _tap(tester, 'dy_add_advice');
       await tester.enterText(
@@ -1339,6 +1363,442 @@ void main() {
       expect(h.posts, isEmpty);
       await tester.pumpWidget(const SizedBox());
       h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'Review route and NEXT expose native summaries; empty Rx cannot confirm or generate',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h);
+      await _tap(tester, 'dy_builder_tab_ADVICE');
+      await _tap(tester, 'dy_action_NEXT: REVIEW');
+      expect(find.text('Rx information required'), findsOneWidget);
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .onChanged,
+        isNull,
+      );
+      expect(
+        tester
+            .widget<ElevatedButton>(find.byKey(const Key('dy_action_GENERATE')))
+            .onPressed,
+        isNull,
+      );
+      await _captureRx(tester, 'scheduled_review_empty');
+      await _tap(tester, 'dy_review_edit_rx');
+      expect(
+        find.byKey(const Key('dy_add_medicine')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  for (final existing in [false, true]) {
+    testWidgets(
+      '${existing ? "UPDATE" : "GENERATE"} sends native JSON once and retains saved draft with confirmation reset',
+      (tester) async {
+        final h = _Harness();
+        h.transport.onBytes =
+            (_) async =>
+                existing
+                    ? {'string_out': 'Prescription updated successfully.'}
+                    : dynamicSavedResponse();
+        await _show(tester, h, existing: existing);
+        await _review(tester, addPlan: !existing);
+        expect(find.text('Ready for final review'), findsOneWidget);
+        final before = h.transport.requests.length;
+        await _confirm(tester);
+        await _captureRx(
+          tester,
+          existing ? 'scheduled_review_existing' : 'scheduled_review_ready',
+        );
+        await _tap(
+          tester,
+          existing ? 'dy_action_UPDATE' : 'dy_action_GENERATE',
+        );
+        expect(
+          h.transport.requests
+              .skip(before)
+              .where((r) => r.uri.path.endsWith('/getDocData')),
+          hasLength(1),
+        );
+        expect(h.transport.binaryRequests, hasLength(1));
+        final sent = h.transport.binaryRequests.single;
+        expect(
+          sent.uri.pathSegments.last,
+          existing ? 'updatePrescription' : 'insertPrescription',
+        );
+        expect(
+          jsonDecode(utf8.decode(sent.body))['treatment_plans'],
+          isNotEmpty,
+        );
+        expect(find.byKey(const Key('dy_save_success')), findsOneWidget);
+        if (!existing) {
+          expect(
+            find.textContaining('Prescription Code: 2600901'),
+            findsOneWidget,
+          );
+        }
+        await _captureRx(
+          tester,
+          existing ? 'scheduled_update_success' : 'scheduled_generate_success',
+        );
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('dy_save_success')), findsOneWidget);
+        await _tap(tester, 'dy_save_ok');
+        expect(
+          find.text(existing ? 'Visit: 2600900' : 'Visit: 2600901'),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<ElevatedButton>(find.byKey(const Key('dy_action_UPDATE')))
+              .onPressed,
+          isNull,
+        );
+        expect(
+          tester
+              .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+              .value,
+          isFalse,
+        );
+        await _tap(tester, 'dy_builder_back');
+        expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+        expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+
+  testWidgets(
+    'Objective validation blocks POST and GO TO CLINICAL clears confirmation',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h);
+      final clinical =
+          tester
+              .widget<NativeDynamicClinicalTab>(
+                find.byType(NativeDynamicClinicalTab),
+              )
+              .draft;
+      clinical.saveObjective(
+        DynamicObjectiveEntry(
+          objective: const DynamicRxOption('10', 'ROM'),
+          muscleJoint: const DynamicRxOption('30', 'Knee'),
+        ),
+      );
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await _tap(tester, 'dy_action_GENERATE');
+      expect(find.byKey(const Key('dy_objective_required')), findsOneWidget);
+      expect(find.textContaining('prescription:\n• ROM'), findsOneWidget);
+      await _captureRx(tester, 'scheduled_review_objective_required');
+      expect(h.transport.binaryRequests, isEmpty);
+      await _tap(tester, 'dy_objective_go');
+      expect(
+        find.byKey(const Key('dy_add_vitals')).hitTestable(),
+        findsOneWidget,
+      );
+      await _tap(tester, 'dy_builder_tab_REVIEW');
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .value,
+        isFalse,
+      );
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'Advice Done and Cancel keep Review confirmation; explicit UPDATE resets it',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true);
+      await _review(tester);
+      await _confirm(tester);
+      await _tap(tester, 'dy_builder_tab_ADVICE');
+      final advice =
+          tester
+              .widget<NativeDynamicAdviceTab>(
+                find.byType(NativeDynamicAdviceTab),
+              )
+              .draft;
+      await _tap(tester, 'dy_toggle_advice');
+      await _tap(
+        tester,
+        'dy_edit_${advice.entries(DynamicAdviceType.advice).single.localId}',
+      );
+      await tester.enterText(
+        find.byKey(const Key('dy_field_advice_entry')),
+        'Changed advice',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(
+        advice.entries(DynamicAdviceType.advice).single.text,
+        'Existing advice',
+      );
+      await _tap(tester, 'dy_action_CANCEL');
+      await _tap(tester, 'dy_builder_tab_REVIEW');
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .value,
+        isTrue,
+      );
+      await _tap(tester, 'dy_builder_tab_ADVICE');
+      await _tap(
+        tester,
+        'dy_edit_${advice.entries(DynamicAdviceType.advice).single.localId}',
+      );
+      await tester.enterText(
+        find.byKey(const Key('dy_field_advice_entry')),
+        'Changed advice',
+      );
+      await _tap(tester, 'dy_action_UPDATE ADVICE');
+      await _tap(tester, 'dy_builder_tab_REVIEW');
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .value,
+        isFalse,
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'pending write blocks double tap and Back; failed update preserves draft and Review scroll',
+    (tester) async {
+      final h = _Harness();
+      final pending = Completer<JsonMap>();
+      h.transport.onBytes = (_) => pending.future;
+      await _show(tester, h, existing: true, size: const Size(320, 640));
+      await _review(tester);
+      final scroll =
+          tester
+              .widget<SingleChildScrollView>(
+                find.byKey(
+                  const PageStorageKey<String>('dynamic_review_scroll'),
+                ),
+              )
+              .controller!;
+      scroll.jumpTo(scroll.position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      final offset = scroll.offset;
+      await _confirm(tester);
+      final button = tester.widget<ElevatedButton>(
+        find.byKey(const Key('dy_action_UPDATE')),
+      );
+      button.onPressed!();
+      button.onPressed!();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(h.transport.binaryRequests, hasLength(1));
+      expect(find.byKey(const Key('dy_save_progress')), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      expect(find.byType(DynamicPrescriptionClinicalScreen), findsOneWidget);
+      pending.completeError(const AppFailure('Save unavailable'));
+      await tester.pumpAndSettle();
+      expect(find.text('Save unavailable'), findsOneWidget);
+      await _tap(tester, 'dy_save_ok');
+      expect(scroll.offset, closeTo(offset, .1));
+      expect(
+        tester
+            .widget<NativeDynamicReviewTab>(find.byType(NativeDynamicReviewTab))
+            .review
+            .rx
+            .treatmentPlans,
+        hasLength(2),
+      );
+      expect(h.transport.binaryRequests, hasLength(1));
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  for (final found in [false, true]) {
+    testWidgets(
+      'unconfirmed create is reconciled with GET only, record found=$found',
+      (tester) async {
+        final h = _Harness();
+        h.transport.onBytes =
+            (_) async => throw const AppFailure('Connection lost');
+        await _show(tester, h);
+        await _review(tester, addPlan: true);
+        await _confirm(tester);
+        await _tap(tester, 'dy_action_GENERATE');
+        expect(find.text('Connection lost'), findsOneWidget);
+        await _tap(tester, 'dy_save_ok');
+        h.failExisting = !found;
+        await _confirm(tester);
+        await _tap(tester, 'dy_action_GENERATE');
+        expect(h.transport.binaryRequests, hasLength(1));
+        expect(
+          h.dynamicReads.where(
+            (uri) => uri.pathSegments.last == 'getPrescription',
+          ),
+          hasLength(1),
+        );
+        expect(
+          find.textContaining(
+            found
+                ? 'A prescription was found'
+                : 'previous save could not be confirmed',
+          ),
+          findsOneWidget,
+        );
+        await _tap(tester, 'dy_save_ok');
+        expect(
+          tester
+              .widget<NativeDynamicReviewTab>(
+                find.byType(NativeDynamicReviewTab),
+              )
+              .review
+              .rx
+              .treatmentPlans
+              .single
+              .text,
+          'Local treatment plan',
+        );
+        expect(
+          find.byKey(Key(found ? 'dy_action_UPDATE' : 'dy_action_GENERATE')),
+          findsOneWidget,
+        );
+        await _tap(tester, 'dy_builder_back');
+        expect(find.byKey(const Key('dy_unsaved')), findsOneWidget);
+        await _tap(tester, 'dy_keep_editing');
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+
+  testWidgets(
+    'save rechecks fresh medicine access and cannot send hidden-only medicine',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h);
+      await _tap(tester, 'dy_builder_tab_RX');
+      final rx =
+          tester
+              .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab))
+              .draft;
+      rx.saveMedicine(rxMedicine());
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dy_builder_tab_REVIEW');
+      await _confirm(tester);
+      h.doctorData['med_active'] = '0';
+      await _tap(tester, 'dy_action_GENERATE');
+      expect(
+        find.text('Please review and confirm the prescription'),
+        findsOneWidget,
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await _tap(tester, 'dy_save_ok');
+      expect(find.text('Rx information required'), findsOneWidget);
+      expect(rx.medicines, hasLength(1));
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets('background before profile verification sends no POST', (
+    tester,
+  ) async {
+    final h = _Harness();
+    await _show(tester, h);
+    await _review(tester, addPlan: true);
+    await _confirm(tester);
+    final pending = Completer<JsonMap>();
+    h.pendingProfile = pending;
+    await tester.tap(find.byKey(const Key('dy_action_GENERATE')));
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    h.pendingProfile = null;
+    pending.complete({
+      'items': [h.doctorData],
+    });
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(h.transport.binaryRequests, isEmpty);
+    expect(find.byKey(const Key('dy_save_success')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    h.auth.dispose();
+  });
+
+  testWidgets(
+    'background after dispatch adopts receipt once and shows success on resume',
+    (tester) async {
+      final h = _Harness();
+      final pending = Completer<JsonMap>();
+      h.transport.onBytes = (_) => pending.future;
+      await _show(tester, h);
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await tester.tap(find.byKey(const Key('dy_action_GENERATE')));
+      await tester.pump();
+      expect(h.transport.binaryRequests, hasLength(1));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      pending.complete(dynamicSavedResponse());
+      await tester.pump();
+      expect(find.byKey(const Key('dy_save_success')), findsNothing);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('dy_save_success')), findsOneWidget);
+      await _tap(tester, 'dy_save_ok');
+      expect(find.text('Visit: 2600901'), findsOneWidget);
+      expect(h.transport.binaryRequests, hasLength(1));
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'logout while saving ignores a late patient receipt and removes builder',
+    (tester) async {
+      final h = _Harness();
+      final pending = Completer<JsonMap>();
+      h.transport.onBytes = (_) => pending.future;
+      await h.signIn();
+      await tester.pumpWidget(
+        DocDiaryApp(
+          auth: h.auth,
+          initializeOnStart: false,
+          dashboard: DashboardRepository(h.transport, now: () => h.now),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dashboard_nav_appointment');
+      await _tap(tester, 'doctor_appointment_1_dynamicPrescription');
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await tester.tap(find.byKey(const Key('dy_action_GENERATE')));
+      await tester.pump();
+      expect(h.transport.binaryRequests, hasLength(1));
+      await h.auth.logout();
+      pending.complete(dynamicSavedResponse());
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+      expect(find.byKey(const Key('dy_save_success')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
     },
   );
 }
