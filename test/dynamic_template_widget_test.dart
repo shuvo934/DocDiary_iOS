@@ -148,6 +148,70 @@ void main() {
     f.dispose();
   });
 
+  for (final size in [const Size(393, 852), const Size(320, 640)]) {
+    for (final treatment in [false, true]) {
+      testWidgets(
+        '${treatment ? "Treatment" : "Disease"} search keeps focus and input while the keyboard resizes ${size.width.toInt()}px sheet',
+        (tester) async {
+          if (treatment) {
+            await c.apply(DynamicTemplateKind.disease, diseaseTemplates.first);
+          }
+          await _host(tester, c, size: size);
+          final kind = treatment ? 'treatment' : 'disease';
+          final field = find.byKey(Key('dy_field_template_search_$kind'));
+          final editable = find.descendant(
+            of: field,
+            matching: find.byType(EditableText),
+          );
+          await tester.showKeyboard(field);
+          await tester.pump();
+          final state = tester.state<EditableTextState>(editable);
+          final focus = state.widget.focusNode;
+          expect(focus.hasFocus, isTrue);
+          final before = applies;
+          // Exercise the viewport animation that crosses the compact-layout
+          // threshold on iPhone, without enterText implicitly restoring focus.
+          for (final inset in [120.0, 240.0, 300.0, 380.0, 240.0, 0.0]) {
+            tester.view.viewInsets = FakeViewPadding(bottom: inset);
+            await tester.pumpAndSettle();
+            expect(tester.state<EditableTextState>(editable), same(state));
+            expect(focus.hasFocus, isTrue);
+            expect(tester.testTextInput.isVisible, isTrue);
+            expect(tester.takeException(), isNull);
+            if (treatment && inset == 380) {
+              await _capture(
+                tester,
+                'treatment_keyboard_${size.width.toInt()}',
+              );
+            }
+          }
+          tester.testTextInput.updateEditingValue(
+            TextEditingValue(text: treatment ? 'strengthening' : 'upper'),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            find.text(treatment ? 'Exercise Plan' : 'Occupational Template'),
+            findsOneWidget,
+          );
+          expect(
+            find.text(treatment ? 'Therapy Plan' : 'Physiotherapy Template'),
+            findsNothing,
+          );
+          expect(focus.hasFocus, isTrue);
+          await _tap(tester, 'dy_template_clear_search');
+          expect(tester.widget<TextField>(field).controller!.text, isEmpty);
+          expect(focus.hasFocus, isTrue);
+          await tester.testTextInput.receiveAction(TextInputAction.done);
+          await tester.pumpAndSettle();
+          expect(focus.hasFocus, isFalse);
+          expect(applies, before);
+          expect(find.byType(NativeDynamicTemplateSheet), findsOneWidget);
+          await _tap(tester, 'dy_template_close');
+        },
+      );
+    }
+  }
+
   testWidgets(
     'native Disease search and selection; keyboard Done never applies the chosen template',
     (tester) async {

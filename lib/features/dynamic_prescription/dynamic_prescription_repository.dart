@@ -11,6 +11,7 @@ import 'dynamic_rx_repository.dart';
 import 'dynamic_advice_repository.dart';
 import 'dynamic_prescription_save_models.dart';
 import 'dynamic_template_repository.dart';
+import 'dynamic_history_models.dart';
 
 /// Native scheduled builder reads and a single JSON write at a time.
 class DynamicPrescriptionRepository {
@@ -119,6 +120,67 @@ class DynamicPrescriptionRepository {
     return data;
   }
 
+  /// Native History is refreshed on every sheet opening, never cached.
+  Future<List<DynamicPrescriptionHistoryItem>> history(
+    AuthSession session,
+    AccountProfile profile,
+    DynamicPrescriptionSeed seed, {
+    required bool Function() isCurrent,
+  }) async {
+    final root = await _get(session, profile, seed, 'getPrescriptionHistory', {
+      'p_ph_id': seed.patientHistoryId,
+      'p_pat_id': seed.patientId,
+      'p_doc_id': profile.doctorId,
+    }, isCurrent);
+    final items = root['items'];
+    if (items is! List<Object?>) {
+      throw const AppFailure(
+        'Prescription history data not found',
+        kind: FailureKind.invalidData,
+      );
+    }
+    return List.unmodifiable([
+      for (final row in items)
+        if (row is Map<String, Object?> &&
+            dynamicRxText(row['rvm_id']).isNotEmpty)
+          DynamicPrescriptionHistoryItem.fromData(row),
+    ]);
+  }
+
+  Future<JsonMap> previousPrescription(
+    AuthSession session,
+    AccountProfile profile,
+    DynamicPrescriptionSeed seed,
+    String sourceRvmId, {
+    required bool Function() isCurrent,
+  }) async {
+    if (sourceRvmId.trim().isEmpty) {
+      throw const AppFailure('Prescription information not found');
+    }
+    final root = await _get(
+      session,
+      profile,
+      seed,
+      'loadPreviousPrescription',
+      {'p_rvm_id': sourceRvmId.trim()},
+      isCurrent,
+    );
+    if (dynamicRxText(root['status']) != '200') {
+      throw AppFailure(
+        dynamicRxText(root['message']).isEmpty
+            ? 'Previous prescription could not be loaded'
+            : dynamicRxText(root['message']),
+      );
+    }
+    if (root['data'] is! Map<String, Object?>) {
+      throw const AppFailure(
+        'Previous prescription data not found',
+        kind: FailureKind.invalidData,
+      );
+    }
+    return nativeObject(root['data']);
+  }
+
   Future<DynamicPrescriptionSaveReceipt> save(
     AuthSession session,
     AccountProfile profile,
@@ -156,7 +218,9 @@ class DynamicPrescriptionRepository {
       (value) => RegExp(r'[^\x09\x20-\x7e]').hasMatch(value),
     )) {
       throw const AppFailure(
-        'Some Reference or Notes characters cannot be sent in this format. Please edit the text and try again.',
+        'Reference and Notes currently do not support Bangla or other non-English characters. '
+        'Please use English text in these two fields and try again.\n\n'
+        'The prescription has not been saved. Your draft is kept.',
         kind: FailureKind.invalidData,
       );
     }

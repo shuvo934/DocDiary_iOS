@@ -108,6 +108,24 @@ class DynamicTemplateController extends ChangeNotifier {
     _notify();
   }
 
+  /// Native history clears template selections and the disease-specific
+  /// Treatment catalogue, while keeping the already loaded Disease catalogue.
+  void clearAfterHistory() {
+    cancelPending();
+    diseaseId = '';
+    diseaseName = '';
+    treatmentId = '';
+    treatmentName = '';
+    treatments = const [];
+    _treatmentDisease = '';
+    _treatmentLoaded = false;
+    treatmentError = '';
+    diseaseApplyError = false;
+    treatmentApplyError = false;
+    diseaseError = '';
+    _notify();
+  }
+
   Future<void> loadDiseases({bool retry = false}) async {
     if (_disposed || diseaseLoading || _diseaseLoaded && !retry) return;
     final version = ++_diseaseVersion;

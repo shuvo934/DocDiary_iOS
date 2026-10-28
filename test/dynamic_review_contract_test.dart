@@ -451,26 +451,47 @@ void main() {
     test(
       'Unicode stays valid in JSON; unsupported raw header text is refused before any POST',
       () async {
-        final notes = f.advice.entries(DynamicAdviceType.notes).single;
-        f.advice.saveEntry(
+        for (final type in [
+          DynamicAdviceType.reference,
           DynamicAdviceType.notes,
-          DynamicAdviceEntry(localId: notes.localId, text: 'বাংলা নোট'),
-          updating: true,
-        );
-        f.review.confirm(true);
-        final req = request();
-        await expectLater(
-          h.repository.save(
-            h.auth.session!,
-            h.auth.profile!,
-            h.seed(),
-            req,
-            isCurrent: () => true,
-          ),
-          throwsA(isA<AppFailure>()),
-        );
-        expect(h.transport.binaryRequests, isEmpty);
-        expect(h.repository.writing, isFalse);
+        ]) {
+          final entry = f.advice.entries(type).single;
+          for (final text in ['বাংলা নোট', 'Mixed বাংলা text', 'Notes 📝']) {
+            f.advice.saveEntry(
+              type,
+              DynamicAdviceEntry(localId: entry.localId, text: text),
+              updating: true,
+            );
+            f.review.confirm(true);
+            await expectLater(
+              h.repository.save(
+                h.auth.session!,
+                h.auth.profile!,
+                h.seed(),
+                request(),
+                isCurrent: () => true,
+              ),
+              throwsA(
+                isA<AppFailure>().having(
+                  (failure) => failure.message,
+                  'clear language message',
+                  allOf(
+                    contains('do not support Bangla'),
+                    contains('Your draft is kept'),
+                  ),
+                ),
+              ),
+            );
+            expect(f.advice.entries(type).single.text, text);
+            expect(h.transport.binaryRequests, isEmpty);
+            expect(h.repository.writing, isFalse);
+          }
+          f.advice.saveEntry(
+            type,
+            DynamicAdviceEntry(localId: entry.localId, text: 'English text'),
+            updating: true,
+          );
+        }
       },
     );
     test(

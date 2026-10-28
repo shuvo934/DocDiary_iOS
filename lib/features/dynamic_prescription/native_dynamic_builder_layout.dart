@@ -25,6 +25,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
     this.onConfirm,
     this.onSave,
     this.onTemplates,
+    this.onHistory,
   });
   final DynamicPrescriptionSeed seed;
   final JsonMap data;
@@ -38,6 +39,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
   final ValueChanged<bool>? onConfirm;
   final VoidCallback? onSave;
   final VoidCallback? onTemplates;
+  final VoidCallback? onHistory;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
@@ -79,6 +81,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
       child: Scaffold(
         backgroundColor: DynamicRxColors.header,
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               SizedBox(
@@ -113,9 +116,9 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                     IconButton(
                       key: const Key('dy_builder_history'),
                       tooltip: 'Prescription History',
-                      onPressed: null,
+                      onPressed: enabled ? onHistory : null,
                       icon: Opacity(
-                        opacity: .45,
+                        opacity: enabled && onHistory != null ? 1 : .45,
                         child: NativeDynamicBuilderIcon(
                           DynamicBuilderGlyph.history,
                           size: m.d(19),
@@ -148,113 +151,30 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                   ),
                   child: ColoredBox(
                     color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        children: [
-                          card(
-                            InkWell(
-                              key: const Key('dy_builder_patient'),
-                              onTap: enabled ? onPatient : null,
-                              child: Padding(
-                                padding: EdgeInsets.all(m.d(10)),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: m.d(40),
-                                      height: m.d(40),
-                                      decoration: const BoxDecoration(
-                                        color: DynamicRxColors.light,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      padding: EdgeInsets.all(m.d(6)),
-                                      child: const NativeDynamicBuilderIcon(
-                                        DynamicBuilderGlyph.person,
-                                      ),
-                                    ),
-                                    SizedBox(width: m.d(8)),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            seed.name.isEmpty
-                                                ? 'Patient'
-                                                : seed.name,
-                                            key: const Key(
-                                              'dy_builder_patient_name',
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: m.text(
-                                              12,
-                                              weight: FontWeight.w700,
-                                            ),
-                                          ),
-                                          Text(
-                                            seed.code.isEmpty ? '-' : seed.code,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: m.text(
-                                              8,
-                                              color: DynamicRxColors.secondary,
-                                            ),
-                                          ),
-                                          Text(
-                                            seed.details.isEmpty
-                                                ? 'Patient information'
-                                                : seed.details,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: m.text(
-                                              8,
-                                              color: DynamicRxColors.secondary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: m.d(8)),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        tag(
-                                          'Visit: ${visit.isEmpty ? '...' : visit}',
-                                        ),
-                                        SizedBox(height: m.d(2)),
-                                        tag('Date: ${seed.visitDate}'),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Semantics(
-                            enabled: enabled && onTemplates != null,
-                            button: true,
-                            child: InkWell(
-                              onTap: enabled ? onTemplates : null,
-                              child: card(
-                                Padding(
-                                  key: const Key('dy_builder_template'),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Column(
+                          children: [
+                            card(
+                              InkWell(
+                                key: const Key('dy_builder_patient'),
+                                onTap: enabled ? onPatient : null,
+                                child: Padding(
                                   padding: EdgeInsets.all(m.d(10)),
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: m.d(30),
-                                        height: m.d(30),
-                                        padding: EdgeInsets.all(m.d(6)),
-                                        decoration: BoxDecoration(
+                                        width: m.d(40),
+                                        height: m.d(40),
+                                        decoration: const BoxDecoration(
                                           color: DynamicRxColors.light,
-                                          borderRadius: BorderRadius.circular(
-                                            m.d(8),
-                                          ),
+                                          shape: BoxShape.circle,
                                         ),
+                                        padding: EdgeInsets.all(m.d(6)),
                                         child: const NativeDynamicBuilderIcon(
-                                          DynamicBuilderGlyph.template,
+                                          DynamicBuilderGlyph.person,
                                         ),
                                       ),
                                       SizedBox(width: m.d(8)),
@@ -264,16 +184,37 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Prescription Templates',
+                                              seed.name.isEmpty
+                                                  ? 'Patient'
+                                                  : seed.name,
+                                              key: const Key(
+                                                'dy_builder_patient_name',
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                               style: m.text(
-                                                11,
+                                                12,
                                                 weight: FontWeight.w700,
                                               ),
                                             ),
                                             Text(
-                                              templateText.isEmpty
-                                                  ? 'No template loaded'
-                                                  : templateText,
+                                              seed.code.isEmpty
+                                                  ? '-'
+                                                  : seed.code,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: m.text(
+                                                8,
+                                                color:
+                                                    DynamicRxColors.secondary,
+                                              ),
+                                            ),
+                                            Text(
+                                              seed.details.isEmpty
+                                                  ? 'Patient information'
+                                                  : seed.details,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                               style: m.text(
                                                 8,
                                                 color:
@@ -283,104 +224,93 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      if (templateText.isNotEmpty)
-                                        Padding(
-                                          padding: EdgeInsets.all(m.d(5)),
-                                          child: NativeDynamicBuilderIcon(
-                                            DynamicBuilderGlyph.check,
-                                            size: m.d(18),
+                                      SizedBox(width: m.d(8)),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          tag(
+                                            'Visit: ${visit.isEmpty ? '...' : visit}',
                                           ),
-                                        ),
-                                      SizedBox(
-                                        width: m.d(26),
-                                        child: Center(
-                                          child: Text(
-                                            '›',
-                                            style: TextStyle(
-                                              fontFamily: 'Archivo',
-                                              fontSize: m.d(24) - 1,
-                                              color: DynamicRxColors.secondary,
-                                            ),
-                                          ),
-                                        ),
+                                          SizedBox(height: m.d(2)),
+                                          tag('Date: ${seed.visitDate}'),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(top: m.d(8)),
-                            child: Row(
-                              children: [
-                                for (final (index, label)
-                                    in const [
-                                      'CLINICAL',
-                                      'RX',
-                                      'ADVICE',
-                                      'REVIEW',
-                                    ].indexed)
-                                  _tab(index, label, m),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: m.d(4)),
-                          Expanded(child: body),
-                          if (selectedTab == 3)
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: m.d(8)),
-                              child: Opacity(
-                                opacity: hasRx ? 1 : .45,
-                                child: InkWell(
-                                  key: const Key('dy_review_confirmation_row'),
-                                  onTap:
-                                      enabled && hasRx && onConfirm != null
-                                          ? () => onConfirm!(!reviewConfirmed)
-                                          : null,
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      minHeight: m.d(32),
-                                    ),
+                            Semantics(
+                              enabled: enabled && onTemplates != null,
+                              button: true,
+                              child: InkWell(
+                                onTap: enabled ? onTemplates : null,
+                                child: card(
+                                  Padding(
+                                    key: const Key('dy_builder_template'),
+                                    padding: EdgeInsets.all(m.d(10)),
                                     child: Row(
                                       children: [
-                                        SizedBox.square(
-                                          dimension: m.d(28),
-                                          child: Checkbox(
-                                            key: const Key('dy_review_confirm'),
-                                            value: reviewConfirmed,
-                                            onChanged:
-                                                enabled &&
-                                                        hasRx &&
-                                                        onConfirm != null
-                                                    ? (value) => onConfirm!(
-                                                      value ?? false,
-                                                    )
-                                                    : null,
-                                            activeColor:
-                                                DynamicRxColors.primary,
-                                            materialTapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                            visualDensity:
-                                                VisualDensity.compact,
-                                            side: const BorderSide(
-                                              color: DynamicRxColors.primary,
-                                              width: 1.5,
+                                        Container(
+                                          width: m.d(30),
+                                          height: m.d(30),
+                                          padding: EdgeInsets.all(m.d(6)),
+                                          decoration: BoxDecoration(
+                                            color: DynamicRxColors.light,
+                                            borderRadius: BorderRadius.circular(
+                                              m.d(8),
                                             ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(2),
-                                            ),
+                                          ),
+                                          child: const NativeDynamicBuilderIcon(
+                                            DynamicBuilderGlyph.template,
                                           ),
                                         ),
                                         SizedBox(width: m.d(8)),
                                         Expanded(
-                                          child: Text(
-                                            'I have reviewed the prescription details',
-                                            style: m.text(
-                                              8,
-                                              color: const Color(0xff344054),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Prescription Templates',
+                                                style: m.text(
+                                                  11,
+                                                  weight: FontWeight.w700,
+                                                ),
+                                              ),
+                                              Text(
+                                                templateText.isEmpty
+                                                    ? 'No template loaded'
+                                                    : templateText,
+                                                style: m.text(
+                                                  8,
+                                                  color:
+                                                      DynamicRxColors.secondary,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (templateText.isNotEmpty)
+                                          Padding(
+                                            padding: EdgeInsets.all(m.d(5)),
+                                            child: NativeDynamicBuilderIcon(
+                                              DynamicBuilderGlyph.check,
+                                              size: m.d(18),
+                                            ),
+                                          ),
+                                        SizedBox(
+                                          width: m.d(26),
+                                          child: Center(
+                                            child: Text(
+                                              '›',
+                                              style: TextStyle(
+                                                fontFamily: 'Archivo',
+                                                fontSize: m.d(24) - 1,
+                                                color:
+                                                    DynamicRxColors.secondary,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -390,40 +320,129 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(
-                              m.d(8),
-                              m.d(6),
-                              m.d(8),
-                              m.d(4),
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: NativeDynamicRxButton(
-                                label:
-                                    selectedTab == 3
-                                        ? dynamicRxText(data['rvm_id']).isEmpty
-                                            ? 'GENERATE'
-                                            : 'UPDATE'
-                                        : const [
-                                          'NEXT: RX',
-                                          'NEXT: ADVICE',
-                                          'NEXT: REVIEW',
-                                        ][selectedTab],
-                                onPressed:
-                                    !enabled
-                                        ? null
-                                        : selectedTab == 3
-                                        ? hasRx && reviewConfirmed
-                                            ? onSave
-                                            : null
-                                        : onTabChanged != null
-                                        ? () => onTabChanged!(selectedTab + 1)
-                                        : null,
+                            Padding(
+                              padding: EdgeInsets.only(top: m.d(8)),
+                              child: Row(
+                                children: [
+                                  for (final (index, label)
+                                      in const [
+                                        'CLINICAL',
+                                        'RX',
+                                        'ADVICE',
+                                        'REVIEW',
+                                      ].indexed)
+                                    _tab(index, label, m),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(height: m.d(4)),
+                            Expanded(child: body),
+                            if (selectedTab == 3)
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: m.d(8),
+                                ),
+                                child: Opacity(
+                                  opacity: hasRx ? 1 : .45,
+                                  child: InkWell(
+                                    key: const Key(
+                                      'dy_review_confirmation_row',
+                                    ),
+                                    onTap:
+                                        enabled && hasRx && onConfirm != null
+                                            ? () => onConfirm!(!reviewConfirmed)
+                                            : null,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minHeight: m.d(32),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          SizedBox.square(
+                                            dimension: m.d(28),
+                                            child: Checkbox(
+                                              key: const Key(
+                                                'dy_review_confirm',
+                                              ),
+                                              value: reviewConfirmed,
+                                              onChanged:
+                                                  enabled &&
+                                                          hasRx &&
+                                                          onConfirm != null
+                                                      ? (value) => onConfirm!(
+                                                        value ?? false,
+                                                      )
+                                                      : null,
+                                              activeColor:
+                                                  DynamicRxColors.primary,
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              side: const BorderSide(
+                                                color: DynamicRxColors.primary,
+                                                width: 1.5,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: m.d(8)),
+                                          Expanded(
+                                            child: Text(
+                                              'I have reviewed the prescription details',
+                                              style: m.text(
+                                                8,
+                                                color: const Color(0xff344054),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                m.d(8),
+                                m.d(6),
+                                m.d(8),
+                                m.d(4),
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: NativeDynamicRxButton(
+                                  label:
+                                      selectedTab == 3
+                                          ? dynamicRxText(
+                                                data['rvm_id'],
+                                              ).isEmpty
+                                              ? 'GENERATE'
+                                              : 'UPDATE'
+                                          : const [
+                                            'NEXT: RX',
+                                            'NEXT: ADVICE',
+                                            'NEXT: REVIEW',
+                                          ][selectedTab],
+                                  onPressed:
+                                      !enabled
+                                          ? null
+                                          : selectedTab == 3
+                                          ? hasRx && reviewConfirmed
+                                              ? onSave
+                                              : null
+                                          : onTabChanged != null
+                                          ? () => onTabChanged!(selectedTab + 1)
+                                          : null,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

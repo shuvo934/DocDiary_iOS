@@ -533,13 +533,15 @@ class _TemplateSheetState extends State<NativeDynamicTemplateSheet> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final minimum = m.d(treatment ? 310 : 230);
-          if (constraints.maxHeight < minimum) {
-            return SingleChildScrollView(
-              key: const Key('dy_template_compact_scroll'),
-              child: SizedBox(height: minimum, child: contents()),
-            );
-          }
-          return contents();
+          // Keep the field and its focus/input connection mounted when the
+          // keyboard crosses the compact-height threshold, in either step.
+          return SingleChildScrollView(
+            key: const Key('dy_template_compact_scroll'),
+            child: SizedBox(
+              height: math.max(minimum, constraints.maxHeight),
+              child: contents(),
+            ),
+          );
         },
       ),
     );

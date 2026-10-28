@@ -36,6 +36,9 @@ import 'dynamic_advice_test_support.dart';
 import 'dynamic_review_test_support.dart';
 import 'dynamic_template_test_support.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_template_sheet.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_history_sheet.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_builder_layout.dart';
+import 'dynamic_history_test_support.dart';
 
 class _Harness extends DoctorAppointmentHarness {
   _Harness() {
@@ -48,6 +51,9 @@ class _Harness extends DoctorAppointmentHarness {
   bool failTemplate = false;
   bool existingTemplates = false;
   Completer<JsonMap>? pendingTemplate;
+  Completer<JsonMap>? pendingHistory, pendingPrevious;
+  bool failHistory = false, failPrevious = false;
+  JsonMap? previousData;
   String patientName = 'Sample Patient';
   Completer<JsonMap>? pendingProfile;
   Completer<JsonMap>? pendingExisting;
@@ -71,6 +77,21 @@ class _Harness extends DoctorAppointmentHarness {
     }
     if (!uri.path.contains('/dynamic_presc/')) return respondAppointments(uri);
     final endpoint = uri.pathSegments.last;
+    if (endpoint == 'getPrescriptionHistory') {
+      if (pendingHistory != null) return pendingHistory!.future;
+      if (failHistory) throw const AppFailure('History unavailable');
+      return {'items': historyRows()};
+    }
+    if (endpoint == 'loadPreviousPrescription') {
+      if (pendingPrevious != null) return pendingPrevious!.future;
+      if (failPrevious) {
+        return {'status': 500, 'message': 'Previous prescription unavailable'};
+      }
+      return {
+        'status': 200,
+        'data': previousData ?? previousPrescriptionData(),
+      };
+    }
     if (endpoint == 'getPrescription') {
       if (pendingExisting != null) return pendingExisting!.future;
       if (failExisting) {
@@ -271,8 +292,11 @@ Future<void> _captureRx(WidgetTester tester, String name) async {
   const adviceOutput = String.fromEnvironment('DYNAMIC_ADVICE_RENDER_DIR');
   const templateOutput = String.fromEnvironment('DYNAMIC_TEMPLATE_RENDER_DIR');
   const reviewOutput = String.fromEnvironment('DYNAMIC_REVIEW_RENDER_DIR');
+  const historyOutput = String.fromEnvironment('DYNAMIC_HISTORY_RENDER_DIR');
   final output =
-      templateOutput.isNotEmpty
+      historyOutput.isNotEmpty
+          ? historyOutput
+          : templateOutput.isNotEmpty
           ? templateOutput
           : reviewOutput.isNotEmpty
           ? reviewOutput
@@ -702,7 +726,7 @@ void main() {
         tester
             .widget<IconButton>(find.byKey(const Key('dy_builder_history')))
             .onPressed,
-        isNull,
+        isNotNull,
       );
       await _tap(tester, 'dy_add_vitals');
       await _tap(tester, 'dy_action_CANCEL');
@@ -1519,6 +1543,101 @@ void main() {
     );
   }
 
+  for (final existing in [false, true]) {
+    for (final type in [DynamicAdviceType.reference, DynamicAdviceType.notes]) {
+      testWidgets(
+        '${existing ? "UPDATE" : "GENERATE"} with Bangla ${type.label} shows a clear dialog, keeps the draft and allows English correction',
+        (tester) async {
+          final h = _Harness();
+          h.transport.onBytes = (_) async => dynamicSavedResponse();
+          await _show(tester, h, existing: existing);
+          await _tap(tester, 'dy_builder_tab_ADVICE');
+          final draft =
+              tester
+                  .widget<NativeDynamicAdviceTab>(
+                    find.byType(NativeDynamicAdviceTab),
+                  )
+                  .draft;
+          final editing = draft.entries(type).isNotEmpty;
+          await _tap(tester, 'dy_add_${type.name}');
+          await tester.enterText(
+            find.byKey(const Key('dy_field_advice_entry')),
+            'বাংলা লেখা',
+          );
+          await _tap(
+            tester,
+            'dy_action_${editing ? "UPDATE" : "ADD"} ${type.label.toUpperCase()}',
+          );
+          await _review(tester, addPlan: !existing);
+          await _confirm(tester);
+          final lookups =
+              h.transport.requests
+                  .where(
+                    (request) => request.uri.path.endsWith('/getPrescription'),
+                  )
+                  .length;
+          final saveAction =
+              existing ? 'dy_action_UPDATE' : 'dy_action_GENERATE';
+          await _tap(tester, saveAction);
+          expect(find.byKey(const Key('dy_save_error')), findsOneWidget);
+          expect(find.textContaining('do not support Bangla'), findsOneWidget);
+          expect(find.textContaining('Your draft is kept'), findsOneWidget);
+          expect(h.transport.binaryRequests, isEmpty);
+          expect(draft.entries(type).single.text, 'বাংলা লেখা');
+          await _captureRx(
+            tester,
+            'unsupported_${type.name}_${existing ? "update" : "create"}',
+          );
+          await _tap(tester, 'dy_save_ok');
+          await _tap(tester, 'dy_builder_tab_ADVICE');
+          await _tap(tester, 'dy_add_${type.name}');
+          expect(
+            tester
+                .widget<TextField>(
+                  find.byKey(const Key('dy_field_advice_entry')),
+                )
+                .controller!
+                .text,
+            'বাংলা লেখা',
+          );
+          await tester.enterText(
+            find.byKey(const Key('dy_field_advice_entry')),
+            'English ${type.label}',
+          );
+          await _tap(tester, 'dy_action_UPDATE ${type.label.toUpperCase()}');
+          await _review(tester);
+          await _confirm(tester);
+          await _tap(tester, saveAction);
+          expect(find.byKey(const Key('dy_save_success')), findsOneWidget);
+          expect(h.transport.binaryRequests, hasLength(1));
+          final sent = h.transport.binaryRequests.single;
+          expect(
+            sent.headers[type == DynamicAdviceType.reference
+                ? 'P_REFERENCE'
+                : 'P_NOTES'],
+            'English ${type.label}',
+          );
+          expect(sent.headers['P_INSERT_TYPE'], '4');
+          expect(
+            sent.uri.pathSegments.last,
+            existing ? 'updatePrescription' : 'insertPrescription',
+          );
+          // A preflight validation failure must not mark a create as uncertain
+          // or trigger recovery/another insert on the corrected manual save.
+          expect(
+            h.transport.requests.where(
+              (request) => request.uri.path.endsWith('/getPrescription'),
+            ),
+            hasLength(lookups),
+          );
+          await _tap(tester, 'dy_save_ok');
+          await tester.pumpWidget(const SizedBox());
+          h.auth.dispose();
+        },
+      );
+    }
+  }
+
   testWidgets(
     'Objective validation blocks POST and GO TO CLINICAL clears confirmation',
     (tester) async {
@@ -2099,4 +2218,282 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  for (final existing in [false, true]) {
+    testWidgets(
+      'History load copies content into the current ${existing ? "UPDATE" : "GENERATE"} identity and requires review again',
+      (tester) async {
+        final h = _Harness()..existingTemplates = existing;
+        h.transport.onBytes = (_) async => dynamicSavedResponse();
+        await _show(tester, h, existing: existing);
+        await _review(tester, addPlan: !existing);
+        await _confirm(tester);
+        await _tap(tester, 'dy_builder_history');
+        await _captureRx(tester, 'builder_history');
+        await _tap(tester, 'dy_history_option_600_0');
+        await _tap(tester, 'dy_action_LOAD TO CURRENT RX');
+        await _tap(tester, 'dy_history_replace_load');
+        expect(find.byType(NativeDynamicHistorySheet), findsNothing);
+        expect(
+          tester
+              .widget<NativeDynamicBuilderLayout>(
+                find.byType(NativeDynamicBuilderLayout),
+              )
+              .selectedTab,
+          0,
+        );
+        expect(
+          find.text(existing ? 'Visit: 2600900' : 'Visit: ...'),
+          findsOneWidget,
+        );
+        expect(find.text('Sample Patient'), findsOneWidget);
+        expect(find.text('No template loaded'), findsOneWidget);
+        final clinical =
+            tester
+                .widget<NativeDynamicClinicalTab>(
+                  find.byType(NativeDynamicClinicalTab),
+                )
+                .draft;
+        expect(clinical.vitals!['weight'], '66');
+        expect(
+          clinical.entries(DynamicClinicalType.complain).single.text,
+          'Template complain',
+        );
+        await _captureRx(
+          tester,
+          existing ? 'history_loaded_update' : 'history_loaded_create',
+        );
+        await _tap(tester, 'dy_builder_tab_ADVICE');
+        final advice =
+            tester
+                .widget<NativeDynamicAdviceTab>(
+                  find.byType(NativeDynamicAdviceTab),
+                )
+                .draft;
+        expect(advice.reference, 'Previous reference');
+        expect(advice.notes, 'Previous notes');
+        await _review(tester);
+        expect(
+          tester
+              .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+              .value,
+          isFalse,
+        );
+        expect(h.transport.binaryRequests, isEmpty);
+        await _confirm(tester);
+        await _tap(
+          tester,
+          existing ? 'dy_action_UPDATE' : 'dy_action_GENERATE',
+        );
+        final sent = h.transport.binaryRequests.single;
+        final seed = h.seed(existing: existing);
+        expect(sent.headers['P_DOC_ID'], '10');
+        expect(sent.headers['P_PH_ID'], seed.patientHistoryId);
+        expect(sent.headers['P_PAT_ID'], seed.patientId);
+        expect(sent.headers['P_AD_ID'], seed.appointmentId);
+        expect(sent.headers['P_RVM_ID'], existing ? '900' : null);
+        expect(sent.headers['P_TD_ID'], '');
+        expect(sent.headers['P_TT_ID'], '');
+        expect(sent.headers['P_REFERENCE'], 'Previous reference');
+        expect(sent.headers['P_NOTES'], 'Previous notes');
+        expect(sent.headers['P_WEIGHT'], '66');
+        expect(sent.headers['P_INSERT_TYPE'], '4');
+        expect(
+          sent.uri.pathSegments.last,
+          existing ? 'updatePrescription' : 'insertPrescription',
+        );
+        expect(
+          (jsonDecode(utf8.decode(sent.body)) as Map)['medications'],
+          isNotEmpty,
+        );
+        await _tap(tester, 'dy_save_ok');
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+  testWidgets(
+    'History replacement Cancel preserves a confirmed existing prescription and clean Back',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true);
+      await _review(tester);
+      await _confirm(tester);
+      await _tap(tester, 'dy_builder_history');
+      await _tap(tester, 'dy_history_option_600_0');
+      await _tap(tester, 'dy_action_LOAD TO CURRENT RX');
+      await _tap(tester, 'dy_history_replace_cancel');
+      await _tap(tester, 'dy_history_close');
+      expect(
+        tester
+            .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+            .value,
+        isTrue,
+      );
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'History reopen retrieves fresh patient data with no retained selection',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h);
+      await _tap(tester, 'dy_builder_history');
+      await _tap(tester, 'dy_history_option_600_0');
+      await _tap(tester, 'dy_history_close');
+      await _tap(tester, 'dy_builder_history');
+      expect(
+        h.transport.requests.where(
+          (r) => r.uri.path.endsWith('/getPrescriptionHistory'),
+        ),
+        hasLength(2),
+      );
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.byKey(const Key('dy_action_LOAD TO CURRENT RX')),
+            )
+            .onPressed,
+        isNull,
+      );
+      await _tap(tester, 'dy_history_close');
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  for (final previous in [false, true]) {
+    testWidgets(
+      'background cancels pending History ${previous ? "replacement" : "list"} and rejects the late response',
+      (tester) async {
+        final h = _Harness();
+        await _show(tester, h, existing: true);
+        final clinical =
+            tester
+                .widget<NativeDynamicClinicalTab>(
+                  find.byType(NativeDynamicClinicalTab),
+                )
+                .draft;
+        final pending = Completer<JsonMap>();
+        if (previous) {
+          h.pendingPrevious = pending;
+          await _tap(tester, 'dy_builder_history');
+          await _tap(tester, 'dy_history_option_600_0');
+          await _tap(tester, 'dy_action_LOAD TO CURRENT RX');
+          await tester.tap(find.byKey(const Key('dy_history_replace_load')));
+          await tester.pump();
+        } else {
+          h.pendingHistory = pending;
+          await tester.tap(find.byKey(const Key('dy_builder_history')));
+          await tester.pump(const Duration(milliseconds: 400));
+        }
+        for (final state in [
+          AppLifecycleState.inactive,
+          AppLifecycleState.hidden,
+          AppLifecycleState.paused,
+        ]) {
+          tester.binding.handleAppLifecycleStateChanged(state);
+        }
+        await tester.pump();
+        h.pendingHistory = null;
+        h.pendingPrevious = null;
+        pending.complete(
+          previous
+              ? {'status': 200, 'data': previousPrescriptionData()}
+              : {'items': historyRows()},
+        );
+        await tester.pump();
+        for (final state in [
+          AppLifecycleState.hidden,
+          AppLifecycleState.inactive,
+          AppLifecycleState.resumed,
+        ]) {
+          tester.binding.handleAppLifecycleStateChanged(state);
+        }
+        await tester.pumpAndSettle();
+        expect(find.byType(NativeDynamicHistorySheet), findsNothing);
+        expect(
+          clinical.entries(DynamicClinicalType.complain).single.text,
+          'Existing complain',
+        );
+        await _tap(tester, 'dy_builder_history');
+        expect(find.text('3 prescriptions found'), findsOneWidget);
+        await _tap(tester, 'dy_history_close');
+        await _tap(tester, 'dy_builder_back');
+        expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+        expect(h.transport.binaryRequests, isEmpty);
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+  testWidgets(
+    'logout closes History confirmation and removes all patient information from Login',
+    (tester) async {
+      final h = _Harness();
+      await h.signIn();
+      await tester.pumpWidget(
+        DocDiaryApp(
+          auth: h.auth,
+          initializeOnStart: false,
+          dashboard: DashboardRepository(h.transport, now: () => h.now),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dashboard_nav_appointment');
+      await _tap(tester, 'doctor_appointment_0_dynamicPrescription');
+      await _tap(tester, 'dy_builder_history');
+      await _tap(tester, 'dy_history_option_600_0');
+      await _tap(tester, 'dy_action_LOAD TO CURRENT RX');
+      expect(
+        find.byKey(const Key('dy_history_replace_dialog')),
+        findsOneWidget,
+      );
+      await h.auth.logout();
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(NativeDynamicHistorySheet), findsNothing);
+      expect(find.byKey(const Key('dy_history_replace_dialog')), findsNothing);
+      expect(find.text('Sample Patient'), findsNothing);
+      expect(h.transport.binaryRequests, isEmpty);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  for (final size in [const Size(393, 852), const Size(320, 640)]) {
+    testWidgets(
+      'uploaded builder SafeArea keeps the footer above the home indicator at ${size.width.toInt()}px',
+      (tester) async {
+        final h = _Harness();
+        await _show(tester, h, size: size);
+        final safeAreas = find.descendant(
+          of: find.byType(NativeDynamicBuilderLayout),
+          matching: find.byType(SafeArea),
+        );
+        expect(
+          tester.widgetList<SafeArea>(safeAreas).any((area) => !area.bottom),
+          isTrue,
+        );
+        expect(
+          tester
+              .widgetList<SafeArea>(safeAreas)
+              .any((area) => !area.top && area.bottom),
+          isTrue,
+        );
+        expect(
+          tester.getRect(find.byKey(const Key('dy_action_NEXT: RX'))).bottom,
+          lessThanOrEqualTo(size.height - 34),
+        );
+        await _captureRx(tester, 'builder_safe_area_${size.width.toInt()}');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
 }

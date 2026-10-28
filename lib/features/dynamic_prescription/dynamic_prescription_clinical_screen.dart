@@ -27,6 +27,8 @@ import 'dynamic_prescription_save_models.dart';
 import 'native_dynamic_review_tab.dart';
 import 'dynamic_template_models.dart';
 import 'native_dynamic_template_sheet.dart';
+import 'dynamic_history_models.dart';
+import 'native_dynamic_history_sheet.dart';
 
 /// Today's native scheduled builder: shared drafts, native review and save.
 class DynamicPrescriptionClinicalScreen extends StatefulWidget {
@@ -68,6 +70,18 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     },
   );
   bool _templateSheetOpen = false;
+  bool _historySheetOpen = false;
+  late final _history = DynamicHistoryController(
+    review: _review,
+    templates: _templates,
+    loadOptions: _historyOptions,
+    loadData: _historyData,
+    onFailure: (failure) {
+      if (_current && failure is AccountAccessFailure) {
+        widget.auth.blockAccess(failure);
+      }
+    },
+  );
   JsonMap get _builderData => {..._data, ..._templates.metadata};
   final _pages = PageController();
   final _view = ValueNotifier<int>(0);
@@ -165,6 +179,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   void _closeSheets() {
+    _history.close();
     _templates.cancelPending();
     _dialogs.close();
     // All patient edit sheets are scoped to this nested navigator. Removing this
@@ -413,7 +428,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   Future<void> _showTemplates(BuildContext context) async {
-    if (!_ready || _saving || _templateSheetOpen) return;
+    if (!_ready || _saving || _templateSheetOpen || _historySheetOpen) return;
     _templateSheetOpen = true;
     try {
       await showNativeDynamicTemplateSheet(context, _templates);
@@ -422,10 +437,52 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     }
   }
 
+  Future<List<DynamicPrescriptionHistoryItem>> _historyOptions() {
+    if (!_ready || _saving) throw const ObsoleteRequest();
+    final operation = _operation;
+    return widget.repository.history(
+      _session!,
+      _profile!,
+      widget.seed,
+      isCurrent: () => _alive(operation),
+    );
+  }
+
+  Future<JsonMap> _historyData(String sourceRvmId) {
+    if (!_ready || _saving) throw const ObsoleteRequest();
+    final operation = _operation;
+    return widget.repository.previousPrescription(
+      _session!,
+      _profile!,
+      widget.seed,
+      sourceRvmId,
+      isCurrent: () => _alive(operation),
+    );
+  }
+
+  Future<void> _showHistory(BuildContext context) async {
+    if (!_ready || _saving || _historySheetOpen || _templateSheetOpen) return;
+    _historySheetOpen = true;
+    try {
+      final loaded = await showNativeDynamicHistorySheet(context, _history);
+      if (!_ready || !context.mounted || loaded != true) return;
+      _selectTab(0);
+      _toast.show(
+        context,
+        'Previous prescription loaded. Review and edit before saving.',
+      );
+    } finally {
+      _historySheetOpen = false;
+      _history.close();
+    }
+  }
+
   Future<void> _save() async {
     if (!_ready ||
         _saving ||
         _templateSheetOpen ||
+        _historySheetOpen ||
+        _history.applying ||
         _templates.applying ||
         !_review.canGenerate) {
       return;
@@ -614,7 +671,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   Future<void> _back() async {
-    if (_templates.applying) return;
+    if (_templates.applying || _history.applying) return;
     if (_saving) {
       _toast.show(context, 'Please wait while the prescription is being saved');
       return;
@@ -773,6 +830,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       onConfirm: _review.confirm,
       onSave: () => unawaited(_save()),
       onTemplates: () => unawaited(_showTemplates(context)),
+      onHistory: () => unawaited(_showHistory(context)),
     );
     return Stack(
       children: [
@@ -815,6 +873,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                     _adviceDraft,
                     _review,
                     _templates,
+                    _history,
                   ]),
                   builder: (context, _) => _layout(context),
                 ),
@@ -830,6 +889,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     _dialogs.dispose();
     _view.dispose();
     _toast.dispose();
+    _history.dispose();
     _templates.dispose();
     _review.dispose();
     _draft.dispose();
