@@ -25,6 +25,8 @@ import 'native_dynamic_advice_tab.dart';
 import 'dynamic_prescription_review_models.dart';
 import 'dynamic_prescription_save_models.dart';
 import 'native_dynamic_review_tab.dart';
+import 'dynamic_template_models.dart';
+import 'native_dynamic_template_sheet.dart';
 
 /// Today's native scheduled builder: shared drafts, native review and save.
 class DynamicPrescriptionClinicalScreen extends StatefulWidget {
@@ -54,6 +56,19 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     rx: _rxDraft,
     advice: _adviceDraft,
   );
+  late final _templates = DynamicTemplateController(
+    review: _review,
+    loadDiseaseOptions: () => _templateOptions(),
+    loadTreatmentOptions: (id) => _templateOptions(diseaseId: id),
+    loadData: _templateData,
+    onFailure: (failure) {
+      if (_current && failure is AccountAccessFailure) {
+        widget.auth.blockAccess(failure);
+      }
+    },
+  );
+  bool _templateSheetOpen = false;
+  JsonMap get _builderData => {..._data, ..._templates.metadata};
   final _pages = PageController();
   final _view = ValueNotifier<int>(0);
   final _navigator = GlobalKey<NavigatorState>();
@@ -99,8 +114,8 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     'advice': _adviceDraft.toBody(),
     'reference': _adviceDraft.reference,
     'prescription_notes': _adviceDraft.notes,
-    'disease_template_id': dynamicRxText(_data['td_id']),
-    'treatment_template_id': dynamicRxText(_data['tt_id']),
+    'disease_template_id': _templates.diseaseId,
+    'treatment_template_id': _templates.treatmentId,
     'prescription_type': '1',
   });
   bool get _dirty {
@@ -150,6 +165,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   void _closeSheets() {
+    _templates.cancelPending();
     _dialogs.close();
     // All patient edit sheets are scoped to this nested navigator. Removing this
     // screen cannot leave a patient sheet above Login or a different account.
@@ -172,6 +188,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       _pendingReceipt = null;
       _pendingSaveError = null;
     });
+    _templates.restore(const {});
     _draft.replaceFromData(const {});
     _rxDraft.replaceFromData(const {});
     _adviceDraft.replaceFromData(const {});
@@ -247,6 +264,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         _rxCatalogue = rxCatalogue;
         _adviceCatalogue = adviceCatalogue;
         _data = data;
+        _templates.restore(data);
         _baseline = _snapshot;
         _initialized = true;
       }
@@ -353,8 +371,65 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     );
   }
 
+  Future<List<DynamicTemplateOption>> _templateOptions({String? diseaseId}) {
+    if (!_ready || _saving) throw const ObsoleteRequest();
+    final operation = _operation;
+    widget.repository.guard(
+      _session!,
+      _profile!,
+      widget.seed,
+      () => _alive(operation),
+    );
+    return widget.repository.templates.options(
+      _session!,
+      _profile!,
+      diseaseId: diseaseId,
+      isCurrent:
+          () =>
+              _alive(operation) &&
+              widget.seed.editableOn(widget.repository.appointments.now()),
+    );
+  }
+
+  Future<JsonMap> _templateData(DynamicTemplateKind kind, String id) {
+    if (!_ready || _saving) throw const ObsoleteRequest();
+    final operation = _operation;
+    widget.repository.guard(
+      _session!,
+      _profile!,
+      widget.seed,
+      () => _alive(operation),
+    );
+    return widget.repository.templates.data(
+      _session!,
+      _profile!,
+      kind,
+      id,
+      isCurrent:
+          () =>
+              _alive(operation) &&
+              widget.seed.editableOn(widget.repository.appointments.now()),
+    );
+  }
+
+  Future<void> _showTemplates(BuildContext context) async {
+    if (!_ready || _saving || _templateSheetOpen) return;
+    _templateSheetOpen = true;
+    try {
+      await showNativeDynamicTemplateSheet(context, _templates);
+    } finally {
+      _templateSheetOpen = false;
+    }
+  }
+
   Future<void> _save() async {
-    if (!_ready || _saving || !_review.canGenerate) return;
+    if (!_ready ||
+        _saving ||
+        _templateSheetOpen ||
+        _templates.applying ||
+        !_review.canGenerate) {
+      return;
+    }
     final context = _innerContext;
     if (context == null || !context.mounted) return;
     if (_review.incompleteObjectives.isNotEmpty) {
@@ -447,7 +522,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         seed: widget.seed,
         profile: profile,
         review: _review,
-        data: _data,
+        data: _builderData,
       );
       final savedSnapshot = _snapshot;
       final receipt = await widget.repository.save(
@@ -539,6 +614,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   }
 
   Future<void> _back() async {
+    if (_templates.applying) return;
     if (_saving) {
       _toast.show(context, 'Please wait while the prescription is being saved');
       return;
@@ -685,7 +761,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     }
     final frame = NativeDynamicBuilderLayout(
       seed: widget.seed,
-      data: _data,
+      data: _builderData,
       onBack: () => unawaited(_back()),
       onPatient: () => unawaited(_patient(context)),
       body: body,
@@ -696,6 +772,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       reviewConfirmed: _review.confirmed,
       onConfirm: _review.confirm,
       onSave: () => unawaited(_save()),
+      onTemplates: () => unawaited(_showTemplates(context)),
     );
     return Stack(
       children: [
@@ -737,6 +814,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                     _rxDraft,
                     _adviceDraft,
                     _review,
+                    _templates,
                   ]),
                   builder: (context, _) => _layout(context),
                 ),
@@ -752,6 +830,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     _dialogs.dispose();
     _view.dispose();
     _toast.dispose();
+    _templates.dispose();
     _review.dispose();
     _draft.dispose();
     _rxDraft.dispose();

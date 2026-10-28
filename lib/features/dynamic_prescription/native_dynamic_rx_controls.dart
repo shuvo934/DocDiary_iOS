@@ -56,8 +56,12 @@ class NativeDynamicRxField extends StatelessWidget {
     this.formatters,
     this.filled = false,
     this.unit,
+    this.fontSize = 10,
+    this.fontWeight = FontWeight.w500,
   });
   final String id, label;
+  final double fontSize;
+  final FontWeight fontWeight;
   final TextEditingController controller;
   final FocusNode? focusNode;
   final bool enabled, readOnly, numeric, filled;
@@ -99,8 +103,8 @@ class NativeDynamicRxField extends StatelessWidget {
       inputFormatters: formatters,
       cursorColor: DynamicRxColors.primary,
       style: m.text(
-        10,
-        weight: FontWeight.w500,
+        fontSize,
+        weight: fontWeight,
         color: enabled ? DynamicRxColors.text : const Color(0xff999999),
       ),
       onChanged: onChanged,
@@ -113,20 +117,20 @@ class NativeDynamicRxField extends StatelessWidget {
         alignLabelWithHint: minLines > 1,
         labelText: label,
         labelStyle: m.text(
-          10,
+          fontSize,
           color: enabled ? const Color(0xff666666) : const Color(0xff999999),
         ),
         floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
           if (states.contains(WidgetState.disabled)) {
-            return m.text(11, color: const Color(0xff999999));
+            return m.text(fontSize + 1, color: const Color(0xff999999));
           }
           if (states.contains(WidgetState.error)) {
-            return m.text(11, color: DynamicRxColors.error);
+            return m.text(fontSize + 1, color: DynamicRxColors.error);
           }
           if (states.contains(WidgetState.focused)) {
-            return m.text(11, color: DynamicRxColors.primary);
+            return m.text(fontSize + 1, color: DynamicRxColors.primary);
           }
-          return m.text(11, color: const Color(0xff666666));
+          return m.text(fontSize + 1, color: const Color(0xff666666));
         }),
         contentPadding: EdgeInsets.symmetric(
           horizontal: m.d(12),

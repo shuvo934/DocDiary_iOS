@@ -34,6 +34,8 @@ import 'doctor_appointment_test_support.dart';
 import 'dynamic_rx_test_support.dart';
 import 'dynamic_advice_test_support.dart';
 import 'dynamic_review_test_support.dart';
+import 'dynamic_template_test_support.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_template_sheet.dart';
 
 class _Harness extends DoctorAppointmentHarness {
   _Harness() {
@@ -43,6 +45,9 @@ class _Harness extends DoctorAppointmentHarness {
   bool failExisting = false, failPatient = false;
   bool failRx = false;
   bool failAdvice = false;
+  bool failTemplate = false;
+  bool existingTemplates = false;
+  Completer<JsonMap>? pendingTemplate;
   String patientName = 'Sample Patient';
   Completer<JsonMap>? pendingProfile;
   Completer<JsonMap>? pendingExisting;
@@ -50,6 +55,9 @@ class _Harness extends DoctorAppointmentHarness {
     'rvm_id': 900,
     'rvm_code': '2600900',
     'td_name': 'Disease template',
+    if (existingTemplates) 'td_id': '701',
+    if (existingTemplates) 'tt_id': '801',
+    if (existingTemplates) 'tt_name': 'Exercise Plan',
     'complaints': [
       {'cm_id': 1, 'name': 'Existing complain'},
     ],
@@ -69,6 +77,37 @@ class _Harness extends DoctorAppointmentHarness {
         return {'status': 500, 'message': 'Prescription lookup failed'};
       }
       return {'status': 200, 'data': existingData};
+    }
+    if (endpoint == 'getDiseaseTemplate' ||
+        endpoint == 'getTreatmentTemplate') {
+      final treatment = endpoint == 'getTreatmentTemplate',
+          prefix = treatment ? 'tt' : 'td';
+      return {
+        'items': [
+          for (final item in treatment ? treatmentTemplates : diseaseTemplates)
+            {
+              '${prefix}_id': item.id,
+              '${prefix}_name': item.name,
+              '${prefix}_description': item.description,
+            },
+        ],
+      };
+    }
+    if (endpoint == 'loadDiseaseTemplate' ||
+        endpoint == 'loadTreatmentTemplate') {
+      if (pendingTemplate != null) {
+        return pendingTemplate!.future;
+      }
+      if (failTemplate) {
+        return {'status': 500, 'message': 'Template data unavailable'};
+      }
+      return {
+        'status': 200,
+        'data':
+            endpoint == 'loadDiseaseTemplate'
+                ? diseaseTemplateData()
+                : treatmentTemplateData(),
+      };
     }
     if (endpoint == 'getPatDetails') {
       if (failPatient) throw const AppFailure('Patient lookup failed');
@@ -230,9 +269,12 @@ Future<void> _fonts() async {
 Future<void> _captureRx(WidgetTester tester, String name) async {
   const rxOutput = String.fromEnvironment('DYNAMIC_RX_STAGE2_RENDER_DIR');
   const adviceOutput = String.fromEnvironment('DYNAMIC_ADVICE_RENDER_DIR');
+  const templateOutput = String.fromEnvironment('DYNAMIC_TEMPLATE_RENDER_DIR');
   const reviewOutput = String.fromEnvironment('DYNAMIC_REVIEW_RENDER_DIR');
   final output =
-      reviewOutput.isNotEmpty
+      templateOutput.isNotEmpty
+          ? templateOutput
+          : reviewOutput.isNotEmpty
           ? reviewOutput
           : (adviceOutput.isNotEmpty ? adviceOutput : rxOutput);
   if (output.isEmpty) return;
@@ -1797,6 +1839,262 @@ void main() {
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
       expect(find.byKey(const Key('dy_save_success')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'template card loads native two-step picker; successful templates keep visit and save with iOS flag 4',
+    (tester) async {
+      final h = _Harness();
+      h.transport.onBytes = (_) async => dynamicSavedResponse();
+      await _show(tester, h);
+      await _tap(tester, 'dy_builder_template');
+      expect(find.byType(NativeDynamicTemplateSheet), findsOneWidget);
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _captureRx(tester, 'builder_template_disease');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      expect(find.text('STEP 2 OF 2'), findsOneWidget);
+      await _tap(tester, 'dy_template_option_treatment_801_0');
+      await _captureRx(tester, 'builder_template_treatment');
+      await _tap(tester, 'dy_template_action_LOAD TREATMENT');
+      expect(find.byType(NativeDynamicTemplateSheet), findsNothing);
+      expect(
+        find.text('Disease: Occupational Template\nTreatment: Exercise Plan'),
+        findsOneWidget,
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await _review(tester);
+      await _confirm(tester);
+      await _captureRx(tester, 'builder_templates_review');
+      await _tap(tester, 'dy_action_GENERATE');
+      final sent = h.transport.binaryRequests.single;
+      expect(sent.headers['P_TD_ID'], '701');
+      expect(sent.headers['P_TT_ID'], '801');
+      expect(sent.headers['P_INSERT_TYPE'], '4');
+      expect(jsonDecode(utf8.decode(sent.body))['treatment_plans'], [
+        {'tpm_id': 300, 'name': 'Template treatment plan'},
+      ]);
+      await _tap(tester, 'dy_save_ok');
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'existing prescription template replacement Cancel is clean; LOAD preserves Vitals/Reference/Notes and UPDATE identity',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true);
+      final clinical =
+          tester
+              .widget<NativeDynamicClinicalTab>(
+                find.byType(NativeDynamicClinicalTab),
+              )
+              .draft;
+      final oldComplain = clinical.entries(DynamicClinicalType.complain).single;
+      await _tap(tester, 'dy_builder_template');
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      await _tap(tester, 'dy_template_replace_cancel');
+      await _tap(tester, 'dy_template_close');
+      expect(
+        clinical.entries(DynamicClinicalType.complain).single,
+        same(oldComplain),
+      );
+      await _tap(tester, 'dy_builder_template');
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      await _tap(tester, 'dy_template_replace_load');
+      await _tap(tester, 'dy_template_action_DONE');
+      expect(find.text('Visit: 2600900'), findsOneWidget);
+      expect(clinical.vitals!['pulse'], '72');
+      await _review(tester);
+      final review =
+          tester
+              .widget<NativeDynamicReviewTab>(
+                find.byType(NativeDynamicReviewTab),
+              )
+              .review;
+      expect(review.advice.reference, 'Existing reference');
+      expect(review.advice.notes, 'Existing prescription notes');
+      expect(review.rx.medicines, isEmpty);
+      expect(review.rx.therapies, isEmpty);
+      expect(review.rx.treatmentPlans, isEmpty);
+      expect(
+        tester
+            .widget<ElevatedButton>(find.byKey(const Key('dy_action_UPDATE')))
+            .onPressed,
+        isNull,
+      );
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsOneWidget);
+      await _tap(tester, 'dy_keep_editing');
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'loaded template picker reopens at Treatment with cached catalogues and selected native IDs',
+    (tester) async {
+      final h = _Harness()..existingTemplates = true;
+      await _show(tester, h, existing: true);
+      await _tap(tester, 'dy_builder_template');
+      expect(find.text('STEP 2 OF 2'), findsOneWidget);
+      final reads = h.dynamicReads.length;
+      expect(
+        tester
+            .widget<Radio<String>>(find.byType(Radio<String>).first)
+            .groupValue,
+        '801',
+      );
+      await _tap(tester, 'dy_template_close');
+      await _tap(tester, 'dy_builder_template');
+      expect(h.dynamicReads, hasLength(reads));
+      await _tap(tester, 'dy_template_change');
+      expect(
+        tester
+            .widget<Radio<String>>(find.byType(Radio<String>).first)
+            .groupValue,
+        '701',
+      );
+      await _tap(tester, 'dy_template_close');
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'failed template load keeps the complete existing draft and confirmation untouched',
+    (tester) async {
+      final h = _Harness()..failTemplate = true;
+      await _show(tester, h, existing: true);
+      await _review(tester);
+      await _confirm(tester);
+      final review =
+          tester
+              .widget<NativeDynamicReviewTab>(
+                find.byType(NativeDynamicReviewTab),
+              )
+              .review;
+      final before = jsonEncode({
+        'clinical': review.clinical.toBody(),
+        'rx': review.rx.toBody(medicineAllowed: true),
+        'advice': review.advice.toBody(),
+      });
+      await _tap(tester, 'dy_builder_template');
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      await _tap(tester, 'dy_template_replace_load');
+      expect(find.text('Template data unavailable'), findsOneWidget);
+      await _tap(tester, 'dy_template_close');
+      expect(
+        jsonEncode({
+          'clinical': review.clinical.toBody(),
+          'rx': review.rx.toBody(medicineAllowed: true),
+          'advice': review.advice.toBody(),
+        }),
+        before,
+      );
+      expect(review.confirmed, isTrue);
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'background cancels pending template apply, closes owned dialogs/sheet and preserves old draft on resume',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, existing: true);
+      final clinical =
+          tester
+              .widget<NativeDynamicClinicalTab>(
+                find.byType(NativeDynamicClinicalTab),
+              )
+              .draft;
+      final pending = Completer<JsonMap>();
+      h.pendingTemplate = pending;
+      await _tap(tester, 'dy_builder_template');
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      await tester.tap(find.byKey(const Key('dy_template_replace_load')));
+      await tester.pump();
+      expect(find.byKey(const Key('dy_template_progress')), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      expect(find.byType(NativeDynamicTemplateSheet), findsOneWidget);
+      for (final state in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      await tester.pump();
+      h.pendingTemplate = null;
+      pending.complete({'status': 200, 'data': diseaseTemplateData()});
+      await tester.pump();
+      for (final state in [
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]) {
+        tester.binding.handleAppLifecycleStateChanged(state);
+      }
+      await tester.pumpAndSettle();
+      expect(find.byType(NativeDynamicTemplateSheet), findsNothing);
+      expect(
+        clinical.entries(DynamicClinicalType.complain).single.text,
+        'Existing complain',
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await _tap(tester, 'dy_builder_template');
+      expect(find.text('STEP 1 OF 2'), findsOneWidget);
+      await _tap(tester, 'dy_template_close');
+      await _tap(tester, 'dy_builder_back');
+      expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+
+  testWidgets(
+    'logout closes template replacement dialog and cannot expose the patient on Login',
+    (tester) async {
+      final h = _Harness();
+      await h.signIn();
+      await tester.pumpWidget(
+        DocDiaryApp(
+          auth: h.auth,
+          initializeOnStart: false,
+          dashboard: DashboardRepository(h.transport, now: () => h.now),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dashboard_nav_appointment');
+      await _tap(tester, 'doctor_appointment_0_dynamicPrescription');
+      await _tap(tester, 'dy_builder_template');
+      await _tap(tester, 'dy_template_option_disease_701_0');
+      await _tap(tester, 'dy_template_action_LOAD DISEASE TEMPLATE');
+      expect(
+        find.byKey(const Key('dy_template_replace_dialog')),
+        findsOneWidget,
+      );
+      await h.auth.logout();
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(NativeDynamicTemplateSheet), findsNothing);
+      expect(find.byKey(const Key('dy_template_replace_dialog')), findsNothing);
+      expect(h.transport.binaryRequests, isEmpty);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },

@@ -294,6 +294,80 @@ class DynamicVitals {
 
 /// Clinical data lives in the builder's draft, not in each sheet/tab's state.
 /// As in the native ViewModel, editing here never sends a server write.
+/// Parsed clinical content, staged before publishing a template or prescription.
+class DynamicClinicalData {
+  DynamicClinicalData({
+    required Map<DynamicClinicalType, List<DynamicClinicalEntry>> entries,
+    required List<DynamicObjectiveEntry> objectives,
+    this.vitals,
+  }) : entries = Map.unmodifiable({
+         for (final entry in entries.entries)
+           entry.key: List<DynamicClinicalEntry>.unmodifiable(entry.value),
+       }),
+       objectives = List.unmodifiable(objectives);
+  final Map<DynamicClinicalType, List<DynamicClinicalEntry>> entries;
+  final List<DynamicObjectiveEntry> objectives;
+  final DynamicVitals? vitals;
+
+  factory DynamicClinicalData.fromData(JsonMap data) {
+    final next = <DynamicClinicalType, List<DynamicClinicalEntry>>{};
+    for (final type in DynamicClinicalType.values) {
+      next[type] = [
+        for (final row in nativeArray(data[type.bodyKey]))
+          if (dynamicRxText(
+            row[type == DynamicClinicalType.importantInfo ? 'text' : 'name'],
+          ).isNotEmpty)
+            DynamicClinicalEntry(
+              masterId: type.hasOptions ? dynamicRxText(row[type.idKey]) : null,
+              text: dynamicRxText(
+                row[type == DynamicClinicalType.importantInfo
+                    ? 'text'
+                    : 'name'],
+              ),
+              notes: type.hasNotes ? dynamicRxText(row['notes']) : '',
+            ),
+      ];
+    }
+    DynamicRxOption? option(JsonMap row, String id, String name) {
+      final key = dynamicRxText(row[id]), title = dynamicRxText(row[name]);
+      return key.isEmpty && title.isEmpty ? null : DynamicRxOption(key, title);
+    }
+
+    final objectives = <DynamicObjectiveEntry>[];
+    for (final row in nativeArray(data['objective_info'])) {
+      final objective = option(row, 'om_id', 'om_name');
+      if (objective == null || objective.id.isEmpty || objective.name.isEmpty) {
+        continue;
+      }
+      objectives.add(
+        DynamicObjectiveEntry(
+          objective: objective,
+          value: option(row, 'od_id', 'od_name'),
+          muscleJoint: option(row, 'mjl_id', 'mjl_name'),
+          notes: dynamicRxText(row['notes']),
+        ),
+      );
+    }
+    final rawVitals = data['vitals'];
+    final vitalMap = rawVitals == null ? null : nativeObject(rawVitals);
+    final vitals =
+        vitalMap == null
+            ? null
+            : DynamicVitals({
+              for (final key in DynamicVitals.keys)
+                key: dynamicRxText(vitalMap[key]),
+            });
+    return DynamicClinicalData(
+      entries: next,
+      objectives: objectives,
+      vitals:
+          vitals != null && (!vitals.isEmpty || vitals['bmi'].isNotEmpty)
+              ? vitals
+              : null,
+    );
+  }
+}
+
 class DynamicClinicalDraft extends ChangeNotifier {
   final _entries = <DynamicClinicalType, List<DynamicClinicalEntry>>{};
   List<DynamicObjectiveEntry> _objectives = [];
@@ -371,62 +445,17 @@ class DynamicClinicalDraft extends ChangeNotifier {
   }
 
   /// All parsing finishes before publishing, so a bad load keeps the draft.
-  void replaceFromData(JsonMap data) {
-    final next = <DynamicClinicalType, List<DynamicClinicalEntry>>{};
-    for (final type in DynamicClinicalType.values) {
-      next[type] = [
-        for (final row in nativeArray(data[type.bodyKey]))
-          if (dynamicRxText(
-            row[type == DynamicClinicalType.importantInfo ? 'text' : 'name'],
-          ).isNotEmpty)
-            DynamicClinicalEntry(
-              masterId: type.hasOptions ? dynamicRxText(row[type.idKey]) : null,
-              text: dynamicRxText(
-                row[type == DynamicClinicalType.importantInfo
-                    ? 'text'
-                    : 'name'],
-              ),
-              notes: type.hasNotes ? dynamicRxText(row['notes']) : '',
-            ),
-      ];
-    }
-    DynamicRxOption? option(JsonMap row, String id, String name) {
-      final key = dynamicRxText(row[id]), title = dynamicRxText(row[name]);
-      return key.isEmpty && title.isEmpty ? null : DynamicRxOption(key, title);
-    }
+  void replaceFromData(JsonMap data) =>
+      replace(DynamicClinicalData.fromData(data));
 
-    final objectives = <DynamicObjectiveEntry>[];
-    for (final row in nativeArray(data['objective_info'])) {
-      final objective = option(row, 'om_id', 'om_name');
-      if (objective == null || objective.id.isEmpty || objective.name.isEmpty) {
-        continue;
-      }
-      objectives.add(
-        DynamicObjectiveEntry(
-          objective: objective,
-          value: option(row, 'od_id', 'od_name'),
-          muscleJoint: option(row, 'mjl_id', 'mjl_name'),
-          notes: dynamicRxText(row['notes']),
-        ),
-      );
-    }
-    final rawVitals = data['vitals'];
-    final vitalMap = rawVitals == null ? null : nativeObject(rawVitals);
-    final vitals =
-        vitalMap == null
-            ? null
-            : DynamicVitals({
-              for (final key in DynamicVitals.keys)
-                key: dynamicRxText(vitalMap[key]),
-            });
+  void replace(DynamicClinicalData data) {
     _entries
       ..clear()
-      ..addAll(next);
-    _objectives = objectives;
-    _vitals =
-        vitals != null && (!vitals.isEmpty || vitals['bmi'].isNotEmpty)
-            ? vitals
-            : null;
+      ..addAll({
+        for (final entry in data.entries.entries) entry.key: [...entry.value],
+      });
+    _objectives = [...data.objectives];
+    _vitals = data.vitals;
     _changed();
   }
 

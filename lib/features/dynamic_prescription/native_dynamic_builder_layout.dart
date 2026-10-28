@@ -24,6 +24,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
     this.reviewConfirmed = false,
     this.onConfirm,
     this.onSave,
+    this.onTemplates,
   });
   final DynamicPrescriptionSeed seed;
   final JsonMap data;
@@ -36,6 +37,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
   final bool hasRx, reviewConfirmed;
   final ValueChanged<bool>? onConfirm;
   final VoidCallback? onSave;
+  final VoidCallback? onTemplates;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
@@ -231,74 +233,79 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                             ),
                           ),
                           Semantics(
-                            enabled: false,
-                            child: card(
-                              Padding(
-                                key: const Key('dy_builder_template'),
-                                padding: EdgeInsets.all(m.d(10)),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: m.d(30),
-                                      height: m.d(30),
-                                      padding: EdgeInsets.all(m.d(6)),
-                                      decoration: BoxDecoration(
-                                        color: DynamicRxColors.light,
-                                        borderRadius: BorderRadius.circular(
-                                          m.d(8),
+                            enabled: enabled && onTemplates != null,
+                            button: true,
+                            child: InkWell(
+                              onTap: enabled ? onTemplates : null,
+                              child: card(
+                                Padding(
+                                  key: const Key('dy_builder_template'),
+                                  padding: EdgeInsets.all(m.d(10)),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: m.d(30),
+                                        height: m.d(30),
+                                        padding: EdgeInsets.all(m.d(6)),
+                                        decoration: BoxDecoration(
+                                          color: DynamicRxColors.light,
+                                          borderRadius: BorderRadius.circular(
+                                            m.d(8),
+                                          ),
+                                        ),
+                                        child: const NativeDynamicBuilderIcon(
+                                          DynamicBuilderGlyph.template,
                                         ),
                                       ),
-                                      child: const NativeDynamicBuilderIcon(
-                                        DynamicBuilderGlyph.template,
-                                      ),
-                                    ),
-                                    SizedBox(width: m.d(8)),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Prescription Templates',
-                                            style: m.text(
-                                              11,
-                                              weight: FontWeight.w700,
+                                      SizedBox(width: m.d(8)),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Prescription Templates',
+                                              style: m.text(
+                                                11,
+                                                weight: FontWeight.w700,
+                                              ),
                                             ),
+                                            Text(
+                                              templateText.isEmpty
+                                                  ? 'No template loaded'
+                                                  : templateText,
+                                              style: m.text(
+                                                8,
+                                                color:
+                                                    DynamicRxColors.secondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (templateText.isNotEmpty)
+                                        Padding(
+                                          padding: EdgeInsets.all(m.d(5)),
+                                          child: NativeDynamicBuilderIcon(
+                                            DynamicBuilderGlyph.check,
+                                            size: m.d(18),
                                           ),
-                                          Text(
-                                            templateText.isEmpty
-                                                ? 'No template loaded'
-                                                : templateText,
-                                            style: m.text(
-                                              8,
+                                        ),
+                                      SizedBox(
+                                        width: m.d(26),
+                                        child: Center(
+                                          child: Text(
+                                            '›',
+                                            style: TextStyle(
+                                              fontFamily: 'Archivo',
+                                              fontSize: m.d(24) - 1,
                                               color: DynamicRxColors.secondary,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (templateText.isNotEmpty)
-                                      Padding(
-                                        padding: EdgeInsets.all(m.d(5)),
-                                        child: NativeDynamicBuilderIcon(
-                                          DynamicBuilderGlyph.check,
-                                          size: m.d(18),
                                         ),
                                       ),
-                                    SizedBox(
-                                      width: m.d(26),
-                                      child: Center(
-                                        child: Text(
-                                          '›',
-                                          style: TextStyle(
-                                            fontFamily: 'Archivo',
-                                            fontSize: m.d(24) - 1,
-                                            color: DynamicRxColors.secondary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

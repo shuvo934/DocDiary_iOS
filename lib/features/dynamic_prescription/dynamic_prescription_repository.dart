@@ -10,17 +10,20 @@ import 'dynamic_prescription_seed.dart';
 import 'dynamic_rx_repository.dart';
 import 'dynamic_advice_repository.dart';
 import 'dynamic_prescription_save_models.dart';
+import 'dynamic_template_repository.dart';
 
 /// Native scheduled builder reads and a single JSON write at a time.
 class DynamicPrescriptionRepository {
   DynamicPrescriptionRepository(this.appointments)
     : clinical = DynamicClinicalRepository(appointments),
       rx = DynamicRxRepository(appointments),
-      advice = DynamicAdviceRepository(appointments);
+      advice = DynamicAdviceRepository(appointments),
+      templates = DynamicTemplateRepository(appointments);
   final DoctorAppointmentRepository appointments;
   final DynamicClinicalRepository clinical;
   final DynamicRxRepository rx;
   final DynamicAdviceRepository advice;
+  final DynamicTemplateRepository templates;
   bool _writing = false;
   bool get writing => _writing;
 
