@@ -2958,4 +2958,224 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  void assertPatientTab(WidgetTester tester, int index) {
+    final layout = tester.widget<NativeDynamicBuilderLayout>(
+      find.byType(NativeDynamicBuilderLayout),
+    );
+    final pager = tester.widget<PageView>(find.byType(PageView));
+    expect(layout.selectedTab, index);
+    expect(
+      pager.controller!.page,
+      closeTo(index, .001),
+      reason: 'The visible page must match the highlighted tab and footer.',
+    );
+    final types = <Type>[
+      NativeDynamicClinicalTab,
+      NativeDynamicRxTab,
+      NativeDynamicAdviceTab,
+      NativeDynamicReviewTab,
+    ];
+    expect(find.byType(types[index]).hitTestable(), findsOneWidget);
+    expect(
+      find
+          .byKey(
+            Key(
+              'dy_action_${const ['NEXT: RX', 'NEXT: ADVICE', 'NEXT: REVIEW', 'GENERATE'][index]}',
+            ),
+          )
+          .hitTestable(),
+      findsOneWidget,
+    );
+  }
+
+  Future<void> changePatient(
+    WidgetTester tester,
+    String historyId,
+    int row,
+  ) async {
+    await _tap(tester, 'dy_builder_patient');
+    await _tap(tester, 'dy_action_CHANGE PATIENT');
+    await _tap(tester, 'dy_patient_option_${historyId}_$row');
+    await _tap(tester, 'dy_action_SELECT PATIENT');
+    if (find
+        .byKey(const Key('dy_change_patient_dialog'))
+        .evaluate()
+        .isNotEmpty) {
+      await _tap(tester, 'dy_change_patient_confirm');
+    }
+  }
+
+  for (final index in [0, 1, 2, 3]) {
+    testWidgets(
+      'patient switch keeps visible content, selected tab and footer aligned on ${const ['CLINICAL', 'RX', 'ADVICE', 'REVIEW'][index]}',
+      (tester) async {
+        final h = _Harness();
+        await _show(tester, h, walkIn: true);
+        await _tap(tester, 'dy_patient_option_201_0');
+        await _tap(tester, 'dy_action_SELECT PATIENT');
+        await _tap(
+          tester,
+          'dy_builder_tab_${const ['CLINICAL', 'RX', 'ADVICE', 'REVIEW'][index]}',
+        );
+        assertPatientTab(tester, index);
+        await changePatient(tester, '202', 1);
+        expect(find.text('Walk-in Patient Two'), findsOneWidget);
+        assertPatientTab(tester, index);
+        await _captureRx(
+          tester,
+          'patient_change_${const ['clinical', 'rx', 'advice', 'review'][index]}',
+        );
+        final next = (index + 1) % 4;
+        await _tap(
+          tester,
+          'dy_builder_tab_${const ['CLINICAL', 'RX', 'ADVICE', 'REVIEW'][next]}',
+        );
+        assertPatientTab(tester, next);
+        await _tap(
+          tester,
+          'dy_builder_tab_${const ['CLINICAL', 'RX', 'ADVICE', 'REVIEW'][index]}',
+        );
+        assertPatientTab(tester, index);
+        expect(h.transport.binaryRequests, isEmpty);
+        await tester.pumpWidget(const SizedBox());
+        h.auth.dispose();
+      },
+    );
+  }
+  testWidgets(
+    'a new patient draft starts with fresh Clinical scroll even when returning to a prior registration',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, walkIn: true, size: const Size(320, 640));
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      for (final target in [('202', 1), ('203', 2), ('201', 0)]) {
+        final finder = find.byKey(
+          const PageStorageKey<String>('dynamic_clinical_scroll'),
+        );
+        final before = tester.widget<SingleChildScrollView>(finder).controller!;
+        await tester.drag(finder, const Offset(0, -180));
+        await tester.pumpAndSettle();
+        expect(before.offset, greaterThan(20));
+        await changePatient(tester, target.$1, target.$2);
+        assertPatientTab(tester, 0);
+        final after = tester.widget<SingleChildScrollView>(finder).controller!;
+        expect(after, isNot(same(before)));
+        expect(
+          after.offset,
+          closeTo(0, .001),
+          reason:
+              'A cleared patient draft must not restore another draft\'s PageStorage offset.',
+        );
+      }
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'cancel and same-patient selection retain Advice content, tab and scroll',
+    (tester) async {
+      final h = _Harness();
+      await _show(tester, h, walkIn: true, size: const Size(320, 640));
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      await _tap(tester, 'dy_builder_tab_ADVICE');
+      final draft =
+          tester
+              .widget<NativeDynamicAdviceTab>(
+                find.byType(NativeDynamicAdviceTab),
+              )
+              .draft;
+      for (var i = 0; i < 30; i++) {
+        draft.saveEntry(
+          DynamicAdviceType.advice,
+          DynamicAdviceEntry(text: 'Patient one advice $i'),
+        );
+      }
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dy_toggle_advice');
+      final finder = find.byKey(
+        const PageStorageKey<String>('dynamic_advice_scroll'),
+      );
+      final controller =
+          tester.widget<SingleChildScrollView>(finder).controller!;
+      await tester.drag(finder, const Offset(0, -210));
+      await tester.pumpAndSettle();
+      final offset = controller.offset;
+      expect(offset, greaterThan(20));
+      for (final action in ['cancel_sheet', 'cancel_change', 'same_patient']) {
+        await _tap(tester, 'dy_builder_patient');
+        await _tap(tester, 'dy_action_CHANGE PATIENT');
+        if (action == 'cancel_sheet') {
+          await _tap(tester, 'dy_action_CANCEL');
+        } else {
+          await _tap(
+            tester,
+            action == 'same_patient'
+                ? 'dy_patient_option_201_0'
+                : 'dy_patient_option_202_1',
+          );
+          await _tap(tester, 'dy_action_SELECT PATIENT');
+          if (action == 'cancel_change') {
+            await _tap(tester, 'dy_change_patient_cancel');
+          }
+        }
+        assertPatientTab(tester, 2);
+        expect(find.text('Walk-in Patient One'), findsOneWidget);
+        expect(draft.entries(DynamicAdviceType.advice), hasLength(30));
+        expect(
+          tester.widget<SingleChildScrollView>(finder).controller,
+          same(controller),
+        );
+        expect(controller.offset, closeTo(offset, 1));
+      }
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'repeated cross-tab patient changes clear old data and save only the final patient',
+    (tester) async {
+      final h = _Harness();
+      h.transport.onBytes = (_) async => dynamicSavedResponse();
+      await _show(tester, h, walkIn: true);
+      await _tap(tester, 'dy_patient_option_201_0');
+      await _tap(tester, 'dy_action_SELECT PATIENT');
+      for (final step in [(1, '202', 1), (2, '203', 2), (3, '201', 0)]) {
+        await _tap(tester, 'dy_builder_tab_RX');
+        final rx =
+            tester
+                .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab))
+                .draft;
+        rx.saveTreatmentPlan(
+          DynamicTreatmentPlanEntry(text: 'Old patient plan ${step.$1}'),
+        );
+        await tester.pumpAndSettle();
+        await _tap(
+          tester,
+          'dy_builder_tab_${const ['CLINICAL', 'RX', 'ADVICE', 'REVIEW'][step.$1]}',
+        );
+        await changePatient(tester, step.$2, step.$3);
+        assertPatientTab(tester, step.$1);
+        expect(rx.treatmentPlans, isEmpty);
+      }
+      await _review(tester, addPlan: true);
+      await _confirm(tester);
+      await _tap(tester, 'dy_action_GENERATE');
+      final sent = h.transport.binaryRequests.single;
+      expect(sent.headers['P_PAT_ID'], '101');
+      expect(sent.headers['P_PH_ID'], '201');
+      expect(sent.headers['P_AD_ID'], '');
+      expect(sent.headers['P_INSERT_TYPE'], '4');
+      final body = jsonDecode(utf8.decode(sent.body)) as Map;
+      expect(body['treatment_plans'], [
+        {'tpm_id': null, 'name': 'Local treatment plan'},
+      ]);
+      await _tap(tester, 'dy_save_ok');
+      await tester.pumpWidget(const SizedBox());
+      h.auth.dispose();
+    },
+  );
 }

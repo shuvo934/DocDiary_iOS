@@ -53,6 +53,7 @@ class DynamicPrescriptionClinicalScreen extends StatefulWidget {
 class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     with WidgetsBindingObserver {
   DynamicPrescriptionSeed? _selectedSeed;
+  int _patientDraftRevision = 0;
   DynamicPrescriptionSeed get _seed => _selectedSeed ?? widget.seed;
   DynamicPatientController? _patientPicker;
   bool _patientSelectionOpen = false;
@@ -481,6 +482,8 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         prescriptionType: selection.prescriptionType,
       );
       if (changing) {
+        // Returning to an earlier registration still starts a new draft.
+        ++_patientDraftRevision;
         _templates.clearAfterHistory();
         _history.close();
         _draft.replaceFromData(const {});
@@ -882,25 +885,24 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
           IgnorePointer(
             ignoring: !_ready,
             child: PageView(
-              key: ValueKey(
-                'dynamic_pages:${_seed.appointmentId}:${_seed.patientHistoryId}',
-              ),
+              // The pager belongs to the builder and retains the active tab.
+              key: const ValueKey('dynamic_prescription_pages'),
               controller: _pages,
               physics: _ready ? null : const NeverScrollableScrollPhysics(),
               allowImplicitScrolling: true,
               onPageChanged: (index) => _refresh(() => _selectedTab = index),
               children: [
                 NativeDynamicClinicalTab(
-                  key: ValueKey(
-                    'clinical:${_seed.appointmentId}:${_seed.patientHistoryId}',
+                  key: PageStorageKey(
+                    'clinical:${_seed.appointmentId}:${_seed.patientHistoryId}:$_patientDraftRevision',
                   ),
                   draft: _draft,
                   catalogue: _catalogue!,
                   loadObjectiveValues: _values,
                 ),
                 NativeDynamicRxTab(
-                  key: ValueKey(
-                    'rx:${_seed.appointmentId}:${_seed.patientHistoryId}',
+                  key: PageStorageKey(
+                    'rx:${_seed.appointmentId}:${_seed.patientHistoryId}:$_patientDraftRevision',
                   ),
                   draft: _rxDraft,
                   catalogue: _rxCatalogue!,
@@ -908,15 +910,15 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
                   durationRequired: widget.durationRequired,
                 ),
                 NativeDynamicAdviceTab(
-                  key: ValueKey(
-                    'advice:${_seed.appointmentId}:${_seed.patientHistoryId}',
+                  key: PageStorageKey(
+                    'advice:${_seed.appointmentId}:${_seed.patientHistoryId}:$_patientDraftRevision',
                   ),
                   draft: _adviceDraft,
                   catalogue: _adviceCatalogue!,
                 ),
                 NativeDynamicReviewTab(
-                  key: ValueKey(
-                    'review:${_seed.appointmentId}:${_seed.patientHistoryId}',
+                  key: PageStorageKey(
+                    'review:${_seed.appointmentId}:${_seed.patientHistoryId}:$_patientDraftRevision',
                   ),
                   review: _review,
                   onEdit: _selectTab,
