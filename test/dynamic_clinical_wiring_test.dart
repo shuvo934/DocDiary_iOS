@@ -40,6 +40,8 @@ import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_histor
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_builder_layout.dart';
 import 'dynamic_history_test_support.dart';
 import 'dynamic_walkin_test_support.dart';
+import 'dynamic_preview_test_support.dart';
+import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_preview_screen.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/native_dynamic_patient_selection_sheet.dart';
 
 class _Harness extends DoctorAppointmentHarness {
@@ -86,6 +88,11 @@ class _Harness extends DoctorAppointmentHarness {
       if (pendingPatientList != null) return pendingPatientList!.future;
       if (failPatients) throw const AppFailure('Patient lookup failed');
       return {'pat_list': walkInRows()};
+    }
+    if (endpoint == 'getPreviewData') {
+      final response = previewFixture();
+      (response['data'] as JsonMap)['rvm_id'] = uri.queryParameters['p_rvm_id'];
+      return response;
     }
     if (endpoint == 'getPrescriptionHistory') {
       if (pendingHistory != null) return pendingHistory!.future;
@@ -3176,6 +3183,142 @@ void main() {
       await _tap(tester, 'dy_save_ok');
       await tester.pumpWidget(const SizedBox());
       h.auth.dispose();
+    },
+  );
+  testWidgets(
+    'current preview uses saved RVM and returns to the same draft tab',
+    (tester) async {
+      final h = _Harness();
+      addTearDown(h.auth.dispose);
+      await _show(tester, h, existing: true);
+      await _tap(tester, 'dy_builder_tab_RX');
+      final rx =
+          tester
+              .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab).first)
+              .draft;
+      final snapshot = rx.toBody(medicineAllowed: true);
+      await _tap(tester, 'dy_builder_preview');
+      expect(find.byType(NativeDynamicPreviewScreen), findsOneWidget);
+      expect(
+        h.dynamicReads
+            .where((uri) => uri.path.endsWith('/getPreviewData'))
+            .single
+            .queryParameters,
+        {'p_rvm_id': '900'},
+      );
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pump();
+      expect(find.byType(NativeDynamicPreviewScreen), findsOneWidget);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      await _tap(tester, 'dy_preview_back');
+      expect(find.byType(NativeDynamicPreviewScreen), findsNothing);
+      expect(
+        tester
+            .widget<NativeDynamicBuilderLayout>(
+              find.byType(NativeDynamicBuilderLayout),
+            )
+            .selectedTab,
+        1,
+      );
+      expect(rx.toBody(medicineAllowed: true), snapshot);
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'History preview closes selection without loading/copying source data',
+    (tester) async {
+      final h = _Harness();
+      addTearDown(h.auth.dispose);
+      await _show(tester, h, existing: true);
+      await _tap(tester, 'dy_builder_tab_ADVICE');
+      final advice =
+          tester
+              .widget<NativeDynamicAdviceTab>(
+                find.byType(NativeDynamicAdviceTab).first,
+              )
+              .draft;
+      final snapshot = advice.toBody();
+      await _tap(tester, 'dy_builder_history');
+      expect(
+        tester
+            .widget<ElevatedButton>(find.byKey(const Key('dy_action_PREVIEW')))
+            .onPressed,
+        isNull,
+      );
+      await _tap(tester, 'dy_history_option_600_0');
+      await _tap(tester, 'dy_action_PREVIEW');
+      expect(find.byType(NativeDynamicHistorySheet), findsNothing);
+      expect(find.byType(NativeDynamicPreviewScreen), findsOneWidget);
+      expect(
+        h.dynamicReads
+            .where((uri) => uri.path.endsWith('/getPreviewData'))
+            .single
+            .queryParameters,
+        {'p_rvm_id': '600'},
+      );
+      expect(
+        h.dynamicReads.where(
+          (uri) => uri.path.endsWith('/loadPreviousPrescription'),
+        ),
+        isEmpty,
+      );
+      await _tap(tester, 'dy_preview_back');
+      expect(
+        tester
+            .widget<NativeDynamicBuilderLayout>(
+              find.byType(NativeDynamicBuilderLayout),
+            )
+            .selectedTab,
+        2,
+      );
+      expect(advice.toBody(), snapshot);
+      expect(
+        tester
+            .widget<NativeDynamicBuilderLayout>(
+              find.byType(NativeDynamicBuilderLayout),
+            )
+            .data['rvm_id'],
+        900,
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'older appointment opens the saved prescription directly in read-only Preview',
+    (tester) async {
+      final h = _Harness();
+      addTearDown(h.auth.dispose);
+      await _show(tester, h, timeline: true);
+      h.customRows = [
+        {
+          ...doctorAppointmentRow(day: '23-OCT-26', time: '09:00 AM'),
+          'rvm': '1',
+          'rvm_id': '900',
+        },
+      ];
+      await _tap(tester, 'doctor_appointment_date_23-OCT-26');
+      await _tap(tester, 'doctor_appointment_0_prescriptionPreview');
+      expect(find.byType(NativeDynamicPreviewScreen), findsOneWidget);
+      expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+      expect(
+        h.dynamicReads
+            .where((uri) => uri.path.endsWith('/getPreviewData'))
+            .single
+            .queryParameters,
+        {'p_rvm_id': '900'},
+      );
+      expect(
+        h.dynamicReads.where((uri) => uri.path.endsWith('/getPrescription')),
+        isEmpty,
+      );
+      expect(h.transport.binaryRequests, isEmpty);
+      await _tap(tester, 'dy_preview_back');
+      expect(find.byType(DoctorAppointmentScreen), findsOneWidget);
+      expect(find.byType(NativeDynamicPreviewScreen), findsNothing);
+      await tester.pumpWidget(const SizedBox());
     },
   );
 }

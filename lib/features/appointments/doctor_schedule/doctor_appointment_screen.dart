@@ -28,6 +28,8 @@ import 'native_doctor_appointment_layout.dart';
 import '../../dynamic_prescription/dynamic_prescription_clinical_screen.dart';
 import '../../dynamic_prescription/dynamic_prescription_repository.dart';
 import '../../dynamic_prescription/dynamic_prescription_seed.dart';
+import '../../dynamic_prescription/dynamic_prescription_preview_repository.dart';
+import '../../dynamic_prescription/native_dynamic_preview_screen.dart';
 
 class DoctorAppointmentScreen extends StatefulWidget {
   const DoctorAppointmentScreen({
@@ -337,6 +339,14 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
                   row!,
                   ownerDoctorId: profile.doctorId,
                 ),
+              )
+              : action == DoctorAppointmentAction.prescriptionPreview
+              ? NativeDynamicPreviewScreen(
+                auth: widget.auth,
+                repository: DynamicPrescriptionPreviewRepository(
+                  DynamicPrescriptionRepository(widget.repository),
+                ),
+                rvmId: route.extras['RVM_ID'] ?? '',
               )
               : action == DoctorAppointmentAction.dynamicPrescription ||
                   action == DoctorAppointmentAction.walkIn

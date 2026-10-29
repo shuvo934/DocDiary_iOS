@@ -31,6 +31,8 @@ import 'dynamic_history_models.dart';
 import 'native_dynamic_history_sheet.dart';
 import 'dynamic_patient_models.dart';
 import 'native_dynamic_patient_selection_sheet.dart';
+import 'dynamic_prescription_preview_repository.dart';
+import 'native_dynamic_preview_screen.dart';
 
 /// Today's native scheduled builder: shared drafts, native review and save.
 class DynamicPrescriptionClinicalScreen extends StatefulWidget {
@@ -82,6 +84,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
   );
   bool _templateSheetOpen = false;
   bool _historySheetOpen = false;
+  bool _previewOpen = false;
   late final _history = DynamicHistoryController(
     review: _review,
     templates: _templates,
@@ -226,7 +229,9 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     if (state != AppLifecycleState.resumed) {
       _foreground = false;
       ++_operation;
-      _closeSheets();
+      // The Preview route owns its iOS document actions and background guard.
+      // Inactive transitions from Save/Print/Share must not pop that route.
+      if (!_previewOpen) _closeSheets();
       _refresh(() {});
     } else if (!_foreground) {
       _foreground = true;
@@ -606,7 +611,18 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     if (!_ready || _saving || _historySheetOpen || _templateSheetOpen) return;
     _historySheetOpen = true;
     try {
-      final loaded = await showNativeDynamicHistorySheet(context, _history);
+      String? previewId;
+      final loaded = await showNativeDynamicHistorySheet(
+        context,
+        _history,
+        onPreview: (id) => previewId = id,
+      );
+      if (_ready && context.mounted && previewId != null) {
+        _historySheetOpen = false;
+        _history.close();
+        await _showPreview(context, previewId!);
+        return;
+      }
       if (!_ready || !context.mounted || loaded != true) return;
       _selectTab(0);
       _toast.show(
@@ -616,6 +632,36 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
     } finally {
       _historySheetOpen = false;
       _history.close();
+    }
+  }
+
+  Future<void> _showPreview(BuildContext context, String rvmId) async {
+    if (!_ready ||
+        _saving ||
+        _previewOpen ||
+        _historySheetOpen ||
+        _templateSheetOpen ||
+        _patientSelectionOpen ||
+        rvmId.trim().isEmpty) {
+      return;
+    }
+    _previewOpen = true;
+    FocusManager.instance.primaryFocus?.unfocus();
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder:
+              (_) => NativeDynamicPreviewScreen(
+                auth: widget.auth,
+                repository: DynamicPrescriptionPreviewRepository(
+                  widget.repository,
+                ),
+                rvmId: rvmId.trim(),
+              ),
+        ),
+      );
+    } finally {
+      _previewOpen = false;
     }
   }
 
@@ -981,6 +1027,9 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       onSave: () => unawaited(_save()),
       onTemplates: () => unawaited(_showTemplates(context)),
       onHistory: () => unawaited(_showHistory(context)),
+      onPreview:
+          () =>
+              unawaited(_showPreview(context, dynamicRxText(_data['rvm_id']))),
     );
     return Stack(
       children: [

@@ -158,7 +158,7 @@ void main() {
     f.dispose();
   });
   testWidgets(
-    'native rows/count/selection keep Preview disabled until the final Preview module',
+    'native rows/count/selection keep Preview disabled when no Preview handler is supplied',
     (tester) async {
       await _host(tester, c);
       expect(find.text('3 prescriptions found'), findsOneWidget);

@@ -9,8 +9,13 @@ import 'native_dynamic_rx_icons.dart';
 
 /// PrescriptionHistoryBottomSheet and the two native History XML layouts.
 class NativeDynamicHistorySheet extends StatefulWidget {
-  const NativeDynamicHistorySheet({super.key, required this.controller});
+  const NativeDynamicHistorySheet({
+    super.key,
+    required this.controller,
+    this.onPreview,
+  });
   final DynamicHistoryController controller;
+  final ValueChanged<String>? onPreview;
   @override
   State<NativeDynamicHistorySheet> createState() => _HistorySheetState();
 }
@@ -18,6 +23,7 @@ class NativeDynamicHistorySheet extends StatefulWidget {
 class _HistorySheetState extends State<NativeDynamicHistorySheet> {
   final _scroll = ScrollController();
   bool _confirming = false;
+  bool _resultDelivered = false;
   DynamicHistoryController get c => widget.controller;
   @override
   void initState() {
@@ -28,7 +34,7 @@ class _HistorySheetState extends State<NativeDynamicHistorySheet> {
   }
 
   Future<void> _load() async {
-    if (_confirming || !c.canLoad) return;
+    if (_confirming || _resultDelivered || !c.canLoad) return;
     if (c.hasData) {
       _confirming = true;
       bool? replace;
@@ -66,6 +72,7 @@ class _HistorySheetState extends State<NativeDynamicHistorySheet> {
     final loaded = await c.applySelected();
     if (!mounted) return;
     if (loaded) {
+      _resultDelivered = true;
       Navigator.pop(context, true);
     } else if (c.applyError.isNotEmpty) {
       await showDialog<void>(
@@ -86,6 +93,19 @@ class _HistorySheetState extends State<NativeDynamicHistorySheet> {
             ),
       );
     }
+  }
+
+  void _preview() {
+    if (_confirming ||
+        _resultDelivered ||
+        !c.canLoad ||
+        widget.onPreview == null) {
+      return;
+    }
+    _resultDelivered = true;
+    final id = c.selected!.rvmId;
+    Navigator.pop(context);
+    widget.onPreview!(id);
   }
 
   Widget _header(DynamicRxMetrics m) => ColoredBox(
@@ -457,14 +477,23 @@ class _HistorySheetState extends State<NativeDynamicHistorySheet> {
                 padding: EdgeInsets.fromLTRB(m.d(12), m.d(8), m.d(12), m.d(10)),
                 child: Row(
                   children: [
-                    // Preview/PDF is the final module step requested by the user.
-                    const Expanded(
+                    Expanded(
                       child: Opacity(
-                        opacity: .45,
+                        opacity:
+                            c.canLoad &&
+                                    !_confirming &&
+                                    widget.onPreview != null
+                                ? 1
+                                : .45,
                         child: NativeDynamicRxButton(
                           label: 'PREVIEW',
                           outlined: true,
-                          onPressed: null,
+                          onPressed:
+                              c.canLoad &&
+                                      !_confirming &&
+                                      widget.onPreview != null
+                                  ? _preview
+                                  : null,
                         ),
                       ),
                     ),
@@ -493,8 +522,9 @@ class _HistorySheetState extends State<NativeDynamicHistorySheet> {
 
 Future<bool?> showNativeDynamicHistorySheet(
   BuildContext context,
-  DynamicHistoryController controller,
-) => showModalBottomSheet<bool>(
+  DynamicHistoryController controller, {
+  ValueChanged<String>? onPreview,
+}) => showModalBottomSheet<bool>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
@@ -510,7 +540,10 @@ Future<bool?> showNativeDynamicHistorySheet(
             MediaQuery.sizeOf(context).height -
                 MediaQuery.paddingOf(context).top,
           ),
-          child: NativeDynamicHistorySheet(controller: controller),
+          child: NativeDynamicHistorySheet(
+            controller: controller,
+            onPreview: onPreview,
+          ),
         ),
       ),
 );

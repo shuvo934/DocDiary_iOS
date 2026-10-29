@@ -26,6 +26,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
     this.onSave,
     this.onTemplates,
     this.onHistory,
+    this.onPreview,
   });
   final DynamicPrescriptionSeed seed;
   final JsonMap data;
@@ -40,6 +41,7 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
   final VoidCallback? onSave;
   final VoidCallback? onTemplates;
   final VoidCallback? onHistory;
+  final VoidCallback? onPreview;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
@@ -130,9 +132,9 @@ class NativeDynamicBuilderLayout extends StatelessWidget {
                       IconButton(
                         key: const Key('dy_builder_preview'),
                         tooltip: 'Prescription Preview',
-                        onPressed: null,
+                        onPressed: enabled ? onPreview : null,
                         icon: Opacity(
-                          opacity: .45,
+                          opacity: enabled && onPreview != null ? 1 : .45,
                           child: NativeDynamicBuilderIcon(
                             DynamicBuilderGlyph.preview,
                             size: m.d(19),
