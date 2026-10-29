@@ -1583,7 +1583,7 @@ void main() {
   for (final existing in [false, true]) {
     for (final type in [DynamicAdviceType.reference, DynamicAdviceType.notes]) {
       testWidgets(
-        '${existing ? "UPDATE" : "GENERATE"} with Bangla ${type.label} shows a clear dialog, keeps the draft and allows English correction',
+        '${existing ? "UPDATE" : "GENERATE"} saves Bangla ${type.label} in JSON and preserves it for a subsequent edit',
         (tester) async {
           final h = _Harness();
           h.transport.onBytes = (_) async => dynamicSavedResponse();
@@ -1616,15 +1616,25 @@ void main() {
           final saveAction =
               existing ? 'dy_action_UPDATE' : 'dy_action_GENERATE';
           await _tap(tester, saveAction);
-          expect(find.byKey(const Key('dy_save_error')), findsOneWidget);
-          expect(find.textContaining('do not support Bangla'), findsOneWidget);
-          expect(find.textContaining('Your draft is kept'), findsOneWidget);
-          expect(h.transport.binaryRequests, isEmpty);
-          expect(draft.entries(type).single.text, 'বাংলা লেখা');
-          await _captureRx(
-            tester,
-            'unsupported_${type.name}_${existing ? "update" : "create"}',
+          expect(find.byKey(const Key('dy_save_success')), findsOneWidget);
+          expect(find.byKey(const Key('dy_save_error')), findsNothing);
+          expect(find.textContaining('do not support Bangla'), findsNothing);
+          expect(h.transport.binaryRequests, hasLength(1));
+          final bodyKey =
+              type == DynamicAdviceType.reference
+                  ? 'reference'
+                  : 'prescription_notes';
+          final first = h.transport.binaryRequests.single;
+          expect(nativeObject(utf8.decode(first.body))[bodyKey], 'বাংলা লেখা');
+          expect(first.headers.containsKey('P_REFERENCE'), isFalse);
+          expect(first.headers.containsKey('P_NOTES'), isFalse);
+          expect(first.headers['P_INSERT_TYPE'], '4');
+          expect(first.contentType, 'application/json; charset=utf-8');
+          expect(
+            first.uri.pathSegments.last,
+            existing ? 'updatePrescription' : 'insertPrescription',
           );
+          expect(draft.entries(type).single.text, 'বাংলা লেখা');
           await _tap(tester, 'dy_save_ok');
           await _tap(tester, 'dy_builder_tab_ADVICE');
           await _tap(tester, 'dy_add_${type.name}');
@@ -1639,28 +1649,25 @@ void main() {
           );
           await tester.enterText(
             find.byKey(const Key('dy_field_advice_entry')),
-            'English ${type.label}',
+            'সংশোধিত বাংলা ${type.label}\nদ্বিতীয় লাইন',
           );
           await _tap(tester, 'dy_action_UPDATE ${type.label.toUpperCase()}');
           await _review(tester);
           await _confirm(tester);
-          await _tap(tester, saveAction);
+          await _tap(tester, 'dy_action_UPDATE');
           expect(find.byKey(const Key('dy_save_success')), findsOneWidget);
-          expect(h.transport.binaryRequests, hasLength(1));
-          final sent = h.transport.binaryRequests.single;
+          expect(h.transport.binaryRequests, hasLength(2));
+          final sent = h.transport.binaryRequests.last;
           expect(
-            sent.headers[type == DynamicAdviceType.reference
-                ? 'P_REFERENCE'
-                : 'P_NOTES'],
-            'English ${type.label}',
+            nativeObject(utf8.decode(sent.body))[bodyKey],
+            'সংশোধিত বাংলা ${type.label}\nদ্বিতীয় লাইন',
           );
+          expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+          expect(sent.headers.containsKey('P_NOTES'), isFalse);
+          expect(sent.headers['P_RVM_ID'], existing ? '900' : '901');
           expect(sent.headers['P_INSERT_TYPE'], '4');
-          expect(
-            sent.uri.pathSegments.last,
-            existing ? 'updatePrescription' : 'insertPrescription',
-          );
-          // A preflight validation failure must not mark a create as uncertain
-          // or trigger recovery/another insert on the corrected manual save.
+          expect(sent.uri.pathSegments.last, 'updatePrescription');
+          // A successful Unicode save must not trigger uncertain-create recovery.
           expect(
             h.transport.requests.where(
               (request) => request.uri.path.endsWith('/getPrescription'),
@@ -2331,8 +2338,11 @@ void main() {
         expect(sent.headers['P_RVM_ID'], existing ? '900' : null);
         expect(sent.headers['P_TD_ID'], '');
         expect(sent.headers['P_TT_ID'], '');
-        expect(sent.headers['P_REFERENCE'], 'Previous reference');
-        expect(sent.headers['P_NOTES'], 'Previous notes');
+        expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+        expect(sent.headers.containsKey('P_NOTES'), isFalse);
+        final savedBody = nativeObject(utf8.decode(sent.body));
+        expect(savedBody['reference'], 'Previous reference');
+        expect(savedBody['prescription_notes'], 'Previous notes');
         expect(sent.headers['P_WEIGHT'], '66');
         expect(sent.headers['P_INSERT_TYPE'], '4');
         expect(

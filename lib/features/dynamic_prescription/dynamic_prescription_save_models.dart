@@ -83,8 +83,6 @@ class DynamicPrescriptionSaveRequest {
       'P_PH_ID': seed.patientHistoryId,
       'P_PAT_ID': seed.patientId,
       'P_AD_ID': seed.appointmentId,
-      'P_REFERENCE': advice.reference,
-      'P_NOTES': advice.notes,
       'P_TD_ID': dynamicRxText(data['td_id']),
       'P_TT_ID': dynamicRxText(data['tt_id']),
       if (id.isEmpty) 'P_PRESCRIPTION_TYPE': seed.prescriptionType,
@@ -105,6 +103,8 @@ class DynamicPrescriptionSaveRequest {
         ...clinical.toBody(),
         ...review.rx.toBody(medicineAllowed: review.medicineAllowed),
         ...advice.toBody(),
+        'reference': advice.reference,
+        'prescription_notes': advice.notes,
       }),
       headers: {
         for (final entry in headers.entries) entry.key: _header(entry.value),

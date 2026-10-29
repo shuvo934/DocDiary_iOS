@@ -1,0 +1,307 @@
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import '../../core/app_theme.dart';
+import '../dynamic_prescription/native_dynamic_rx_controls.dart';
+import 'patient_search_models.dart';
+
+const patientSearchText = Color(0xff6c6e6f);
+
+class NativePatientSearchShell extends StatelessWidget {
+  const NativePatientSearchShell({
+    super.key,
+    this.title = "Patient's Prescription",
+    required this.child,
+    required this.onBack,
+    this.compactHeader = false,
+  });
+  final String title;
+  final Widget child;
+  final VoidCallback? onBack;
+  final bool compactHeader;
+  @override
+  Widget build(BuildContext context) {
+    final m = DynamicRxMetrics(context);
+    return Scaffold(
+      backgroundColor: DocColors.primary,
+      body: SafeArea(
+        bottom: false,
+        child: LayoutBuilder(
+          builder:
+              (_, bounds) => Column(
+                children: [
+                  SizedBox(
+                    height:
+                        compactHeader
+                            ? 56
+                            : math.max(56, bounds.maxHeight * .09),
+                    child: Row(
+                      children: [
+                        SizedBox(width: m.d(12)),
+                        SizedBox(
+                          width: m.d(19),
+                          height: 48,
+                          child: IconButton(
+                            key: const Key('patient_search_back'),
+                            tooltip: 'Back',
+                            padding: EdgeInsets.zero,
+                            onPressed: onBack,
+                            icon: CustomPaint(
+                              size: Size.square(m.d(19)),
+                              painter: const _PatientSearchBackPainter(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: m.text(
+                              14,
+                              color: Colors.white,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: compactHeader ? m.d(4) : 5),
+                  Expanded(
+                    child: Container(
+                      key: const Key('patient_search_white_body'),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(30),
+                        ),
+                      ),
+                      child: SafeArea(
+                        top: false,
+                        // Native MaterialCardView reserves horizontal corner clearance.
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 9),
+                          child: child,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Original arrow_back.xml geometry (rather than a platform back icon).
+class _PatientSearchBackPainter extends CustomPainter {
+  const _PatientSearchBackPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 24, size.height / 24);
+    canvas.drawPath(
+      Path()
+        ..moveTo(11.67, 3.87)
+        ..lineTo(9.9, 2.1)
+        ..lineTo(0, 12)
+        ..lineTo(9.9, 21.9)
+        ..lineTo(11.67, 20.13)
+        ..lineTo(3.54, 12)
+        ..close(),
+      Paint()..color = Colors.white,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PatientSearchBackPainter old) => false;
+}
+
+class NativePatientSearchCard extends StatelessWidget {
+  const NativePatientSearchCard({
+    super.key,
+    required this.patient,
+    required this.dynamicMode,
+    required this.onPrescription,
+    required this.onProgress,
+    required this.onAppointments,
+  });
+  final PatientSearchRow patient;
+  final bool dynamicMode;
+  final VoidCallback? onPrescription, onProgress, onAppointments;
+  @override
+  Widget build(BuildContext context) {
+    final m = DynamicRxMetrics(context),
+        large = MediaQuery.textScalerOf(context).scale(14) > 21;
+    Widget button(String label, VoidCallback? onTap, String key) => SizedBox(
+      height: math.max(m.d(25), large ? 44 : 0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: OutlinedButton(
+          key: Key('${key}_${patient.historyId}'),
+          onPressed: onTap,
+          style: OutlinedButton.styleFrom(
+            minimumSize: Size.zero,
+            padding: EdgeInsets.symmetric(horizontal: m.d(12)),
+            foregroundColor: DocColors.greenSea,
+            backgroundColor: Colors.white,
+            side: const BorderSide(color: DocColors.greenSea),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(m.d(8)),
+            ),
+            textStyle: m.text(7, color: DocColors.greenSea, spacing: 1),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(label),
+        ),
+      ),
+    );
+    Widget pair(Widget left, Widget right) =>
+        large
+            ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                left,
+                Align(alignment: Alignment.centerRight, child: right),
+              ],
+            )
+            : Row(
+              children: [Expanded(child: left), SizedBox(width: m.d(7)), right],
+            );
+    final address = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (patient.area.isNotEmpty)
+          Text(
+            '(${patient.area})',
+            style: m.text(9, color: patientSearchText, weight: FontWeight.w500),
+          ),
+        if (dynamicMode && patient.year.isNotEmpty)
+          Text(
+            '(${patient.year})',
+            style: m.text(9, color: patientSearchText, weight: FontWeight.w500),
+          ),
+      ],
+    );
+    final progress = Row(
+      children: [
+        Text(
+          'HP ',
+          style: m.text(9, color: patientSearchText, weight: FontWeight.w600),
+        ),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(m.d(2)),
+            child: LinearProgressIndicator(
+              key: Key('patient_search_hp_${patient.historyId}'),
+              value: patient.progress / 10,
+              minHeight: m.d(4),
+              color: DocColors.greenSea,
+              backgroundColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
+    );
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: dynamicMode ? m.d(4) : 5,
+        vertical: dynamicMode ? m.d(11) : 15,
+      ),
+      child: Material(
+        key: Key('patient_search_card_${patient.historyId}'),
+        elevation: 1.5,
+        color: DocColors.clouds,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(m.d(8)),
+          side: const BorderSide(color: DocColors.greenSea),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: Key('patient_search_prescription_${patient.historyId}'),
+          onTap: onPrescription,
+          child: Padding(
+            padding: EdgeInsets.all(m.d(11)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                LayoutBuilder(
+                  builder:
+                      (_, bounds) => Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              patient.name,
+                              style: m.text(
+                                11,
+                                color: Colors.black,
+                                weight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          if (patient.area.isNotEmpty ||
+                              dynamicMode && patient.year.isNotEmpty) ...[
+                            SizedBox(width: m.d(7)),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: bounds.maxWidth * .4,
+                              ),
+                              child: address,
+                            ),
+                          ],
+                        ],
+                      ),
+                ),
+                pair(
+                  Text(
+                    patient.code,
+                    style: m.text(
+                      10,
+                      color: patientSearchText,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  button(
+                    'APPOINTMENT VIEW',
+                    onAppointments,
+                    'patient_search_appointments',
+                  ),
+                ),
+                if (patient.genderAge.isNotEmpty)
+                  Text(
+                    patient.genderAge,
+                    style: m.text(
+                      10,
+                      color: patientSearchText,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                if (patient.progress > 0)
+                  pair(
+                    progress,
+                    button(
+                      'VIEW PROGRESS',
+                      onProgress,
+                      'patient_search_progress',
+                    ),
+                  )
+                else
+                  Text(
+                    'No Progress Found',
+                    style: m.text(
+                      9,
+                      color: patientSearchText,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

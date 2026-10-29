@@ -161,7 +161,7 @@ void main() {
           data: {if (existing) 'rvm_id': '900', 'td_id': 701, 'tt_id': 702},
         );
     test(
-      'create sends exact native twenty headers, all fourteen arrays and UTF-8 JSON',
+      'create sends eighteen native headers, fourteen arrays and Reference/Notes in UTF-8 JSON',
       () async {
         h.transport.onBytes = (_) async => dynamicSavedResponse();
         final req = request();
@@ -181,8 +181,6 @@ void main() {
           'P_PH_ID': '11',
           'P_PAT_ID': '21',
           'P_AD_ID': '41',
-          'P_REFERENCE': 'Ref line 1  line 2',
-          'P_NOTES': 'Notes line 1 line 2',
           'P_TD_ID': '701',
           'P_TT_ID': '702',
           'P_PRESCRIPTION_TYPE': '1',
@@ -214,7 +212,13 @@ void main() {
           'advice',
           'followups',
           'special_alerts',
+          'reference',
+          'prescription_notes',
         });
+        expect(body['reference'], 'Ref line 1\r\nline 2');
+        expect(body['prescription_notes'], 'Notes line 1\nline 2');
+        expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+        expect(sent.headers.containsKey('P_NOTES'), isFalse);
         expect(body['complaints'], [
           {'cm_id': 1, 'name': 'নমুনা অভিযোগ'},
         ]);
@@ -259,9 +263,14 @@ void main() {
         expect(sent.uri.pathSegments.last, 'updatePrescription');
         expect(sent.headers['P_RVM_ID'], '900');
         expect(sent.headers['P_INSERT_TYPE'], '4');
-        expect(sent.headers, hasLength(19));
+        expect(sent.headers, hasLength(17));
         expect(sent.headers.containsKey('P_PATIENT_TYPE'), isFalse);
         expect(sent.headers.containsKey('P_PRESCRIPTION_TYPE'), isFalse);
+        expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+        expect(sent.headers.containsKey('P_NOTES'), isFalse);
+        final body = nativeObject(utf8.decode(sent.body));
+        expect(body['reference'], 'Ref line 1\r\nline 2');
+        expect(body['prescription_notes'], 'Notes line 1\nline 2');
         expect(receipt.rvmId, '900');
         expect(receipt.updating, isTrue);
       },
@@ -276,7 +285,11 @@ void main() {
           f.advice.entries(DynamicAdviceType.notes).single.localId,
         );
         expect(req.bodyJson, before);
-        expect(req.headers['P_NOTES'], 'Notes line 1 line 2');
+        final body = nativeObject(utf8.decode(req.body));
+        expect(body['reference'], 'Ref line 1\r\nline 2');
+        expect(body['prescription_notes'], 'Notes line 1\nline 2');
+        expect(req.headers.containsKey('P_REFERENCE'), isFalse);
+        expect(req.headers.containsKey('P_NOTES'), isFalse);
         expect(() => req.headers.clear(), throwsUnsupportedError);
         final bytes = req.body;
         bytes[0] = 0;
@@ -448,52 +461,83 @@ void main() {
         expect(h.transport.binaryRequests, isEmpty);
       },
     );
-    test(
-      'Unicode stays valid in JSON; unsupported raw header text is refused before any POST',
-      () async {
-        for (final type in [
-          DynamicAdviceType.reference,
-          DynamicAdviceType.notes,
-        ]) {
-          final entry = f.advice.entries(type).single;
-          for (final text in ['বাংলা নোট', 'Mixed বাংলা text', 'Notes 📝']) {
-            f.advice.saveEntry(
-              type,
-              DynamicAdviceEntry(localId: entry.localId, text: text),
-              updating: true,
-            );
-            f.review.confirm(true);
-            await expectLater(
-              h.repository.save(
+    for (final existing in [false, true]) {
+      for (final type in [
+        DynamicAdviceType.reference,
+        DynamicAdviceType.notes,
+      ]) {
+        test(
+          '${existing ? "UPDATE" : "INSERT"} sends ${type.label} as lossless Unicode JSON without text headers',
+          () async {
+            h.transport.onBytes = (_) async => dynamicSavedResponse();
+            final entry = f.advice.entries(type).single;
+            const values = [
+              'বাংলা নোট',
+              'Mixed বাংলা text',
+              'Notes 📝',
+              'ডা. রহমান "রেফারেন্স"\\নোট\r\nদ্বিতীয় লাইন\nশেষ লাইন',
+            ];
+            for (final text in values) {
+              f.advice.saveEntry(
+                type,
+                DynamicAdviceEntry(localId: entry.localId, text: text),
+                updating: true,
+              );
+              f.review.confirm(true);
+              await h.repository.save(
                 h.auth.session!,
                 h.auth.profile!,
-                h.seed(),
-                request(),
+                h.seed(existing: existing),
+                request(existing: existing),
                 isCurrent: () => true,
-              ),
-              throwsA(
-                isA<AppFailure>().having(
-                  (failure) => failure.message,
-                  'clear language message',
-                  allOf(
-                    contains('do not support Bangla'),
-                    contains('Your draft is kept'),
-                  ),
-                ),
-              ),
-            );
-            expect(f.advice.entries(type).single.text, text);
-            expect(h.transport.binaryRequests, isEmpty);
-            expect(h.repository.writing, isFalse);
+              );
+              final sent = h.transport.binaryRequests.last;
+              final body = nativeObject(utf8.decode(sent.body));
+              expect(
+                body[type == DynamicAdviceType.reference
+                    ? 'reference'
+                    : 'prescription_notes'],
+                text,
+              );
+              expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+              expect(sent.headers.containsKey('P_NOTES'), isFalse);
+              expect(sent.headers['P_INSERT_TYPE'], '4');
+              expect(sent.contentType, 'application/json; charset=utf-8');
+              expect(f.advice.entries(type).single.text, text);
+              expect(h.repository.writing, isFalse);
+            }
+            expect(h.transport.binaryRequests, hasLength(values.length));
+          },
+        );
+      }
+      test(
+        '${existing ? "UPDATE" : "INSERT"} includes empty body strings after deleting Reference and Notes',
+        () async {
+          h.transport.onBytes = (_) async => dynamicSavedResponse();
+          for (final type in [
+            DynamicAdviceType.reference,
+            DynamicAdviceType.notes,
+          ]) {
+            f.advice.deleteEntry(type, f.advice.entries(type).single.localId);
           }
-          f.advice.saveEntry(
-            type,
-            DynamicAdviceEntry(localId: entry.localId, text: 'English text'),
-            updating: true,
+          f.review.confirm(true);
+          await h.repository.save(
+            h.auth.session!,
+            h.auth.profile!,
+            h.seed(existing: existing),
+            request(existing: existing),
+            isCurrent: () => true,
           );
-        }
-      },
-    );
+          final sent = h.transport.binaryRequests.single;
+          final body = nativeObject(utf8.decode(sent.body));
+          expect(body['reference'], '');
+          expect(body['prescription_notes'], '');
+          expect(body.containsKey('notes'), isFalse);
+          expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+          expect(sent.headers.containsKey('P_NOTES'), isFalse);
+        },
+      );
+    }
     test(
       'lookup after an unconfirmed create uses the scheduled identities even for a new seed',
       () async {

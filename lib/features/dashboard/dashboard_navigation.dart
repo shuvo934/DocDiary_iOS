@@ -12,6 +12,7 @@ enum DashboardModule {
   doctorBlockTime,
   patientSearch,
   patientSearchPrescription,
+  patientAppointmentCalendar,
   adminPayments,
   adminPatients,
   adminAppointments,

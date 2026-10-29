@@ -453,10 +453,10 @@ void main() {
         'missing',
       );
       await t.pumpAndSettle();
-      expect(find.text('No Patient Found'), findsOneWidget);
+      expect(find.text("No Patient's Prescription Found"), findsOneWidget);
       await t.enterText(find.byKey(const Key('normal_patient_search')), 'p-11');
       await t.pumpAndSettle();
-      await tap(t, 'normal_patient_11');
+      await tap(t, 'patient_search_prescription_11');
       expect(find.byKey(const Key('rx_view_only')), findsOneWidget);
       expect(h.posts, isEmpty);
       t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);

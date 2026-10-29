@@ -187,7 +187,8 @@ class DynamicAdviceDraft extends ChangeNotifier {
   void replaceFromData(JsonMap data) =>
       replace(DynamicAdviceData.fromData(data));
 
-  /// Only the three native JSON arrays. Reference/Notes belong to save headers.
+  /// The three native Advice arrays. Save capture adds Reference/Notes strings
+  /// to the same JSON body using the endpoint's scalar keys.
   JsonMap toBody() => {
     for (final type in DynamicAdviceType.values.where((type) => !type.isSingle))
       type.bodyKey: entries(

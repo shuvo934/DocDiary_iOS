@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:docdiary_ios/core/failure.dart';
+import 'package:docdiary_ios/core/native_json.dart';
 import 'package:docdiary_ios/features/auth/profile_repository.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/dynamic_patient_models.dart';
 import 'package:docdiary_ios/features/dynamic_prescription/dynamic_prescription_seed.dart';
@@ -176,7 +178,12 @@ void main() {
             expect(sent.headers['P_PH_ID'], '201');
             expect(sent.headers['P_AD_ID'], '');
             expect(sent.headers['P_INSERT_TYPE'], '4');
-            expect(sent.headers.length, updating ? 19 : 20);
+            expect(sent.headers.length, updating ? 17 : 18);
+            expect(sent.headers.containsKey('P_REFERENCE'), isFalse);
+            expect(sent.headers.containsKey('P_NOTES'), isFalse);
+            final body = nativeObject(utf8.decode(sent.body));
+            expect(body['reference'], 'Ref line 1\r\nline 2');
+            expect(body['prescription_notes'], 'Notes line 1\nline 2');
             expect(sent.headers['P_PATIENT_TYPE'], updating ? null : '2');
             expect(sent.headers['P_PRESCRIPTION_TYPE'], updating ? null : type);
             expect(

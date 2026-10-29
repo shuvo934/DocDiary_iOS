@@ -221,18 +221,6 @@ class DynamicPrescriptionRepository {
         kind: FailureKind.invalidData,
       );
     }
-    // dart:io's HTTP header format cannot carry Unicode text. Never silently
-    // replace characters or invent an encoding the native endpoint cannot read.
-    if (request.headers.values.any(
-      (value) => RegExp(r'[^\x09\x20-\x7e]').hasMatch(value),
-    )) {
-      throw const AppFailure(
-        'Reference and Notes currently do not support Bangla or other non-English characters. '
-        'Please use English text in these two fields and try again.\n\n'
-        'The prescription has not been saved. Your draft is kept.',
-        kind: FailureKind.invalidData,
-      );
-    }
     _writing = true;
     try {
       // Native Volley has zero POST retries. Never automatically resend this body.
