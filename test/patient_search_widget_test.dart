@@ -24,7 +24,10 @@ import 'dynamic_preview_test_support.dart';
 
 Future<void> _tap(WidgetTester t, String key, {bool settle = true}) async {
   final finder = find.byKey(Key(key));
-  if (finder.hitTestable().evaluate().isEmpty) await t.ensureVisible(finder);
+  if (finder.hitTestable().evaluate().isEmpty) {
+    await t.ensureVisible(finder);
+    await t.pumpAndSettle();
+  }
   await t.tap(finder);
   if (settle) {
     await t.pumpAndSettle();
@@ -701,6 +704,124 @@ void main() {
         ),
         isEmpty,
       );
+      await _finish(t);
+    },
+  );
+  testWidgets(
+    'calendar week spacing stays fixed when the available screen height changes',
+    (t) async {
+      final h = PatientSearchHarness();
+      await _host(t, h);
+      await _tap(t, 'patient_search_appointments_11');
+      final a = find.byKey(const Key('patient_calendar_day_10_2026_10_3'));
+      final b = find.byKey(const Key('patient_calendar_day_10_2026_10_10'));
+      final before = t.getCenter(b).dy - t.getCenter(a).dy;
+      t.view.physicalSize = const Size(393, 1024);
+      await t.pumpAndSettle();
+      expect(t.getCenter(b).dy - t.getCenter(a).dy, closeTo(before, .01));
+      expect(find.text('Sat'), findsNothing);
+      expect(find.text('Fri'), findsNothing);
+      expect(t.takeException(), isNull);
+      await _finish(t);
+    },
+  );
+  testWidgets(
+    'native day sheet centers schedule, keeps visit left and aligns doctor details',
+    (t) async {
+      final h = PatientSearchHarness();
+      h.now = DateTime(2026, 10, 29, 18, 35);
+      h.calendarRecords = [
+        {
+          ...patientCalendarRow(day: '25-OCT-26', time: '09:30 AM'),
+          'pfn_fee_name': 'Speech & Language Therapy Service Charge',
+          'doc_name': 'Sample Therapist A',
+          'depts_name': 'Assessment',
+          'deptd_name': 'Speech & Language Therapy Department',
+        },
+        {
+          ...patientCalendarRow(day: '25-OCT-26', time: '05:00 PM'),
+          'doc_name': 'Sample Therapist B',
+          'depts_name': 'Communication Group',
+          'deptd_name': 'Speech & Language Therapy Department',
+        },
+      ];
+      await _host(t, h);
+      await _tap(t, 'patient_search_appointments_11');
+      await _capture(t, 'patient_appointment_calendar');
+      await _tap(t, 'patient_calendar_day_10_2026_10_25');
+      final card = t.getRect(
+        find.byKey(const Key('patient_calendar_appointment_0')),
+      );
+      final time = t.getRect(
+        find.byKey(const Key('patient_calendar_schedule_time_0')),
+      );
+      final type = t.getRect(
+        find.byKey(const Key('patient_calendar_schedule_type_0')),
+      );
+      final visit = t.getRect(
+        find.byKey(const Key('patient_calendar_visit_type_0')),
+      );
+      final status = t.getRect(
+        find.byKey(const Key('patient_calendar_status_0')),
+      );
+      expect(time.center.dx, closeTo(card.center.dx, .01));
+      expect(type.center.dx, closeTo(time.center.dx, .01));
+      expect(visit.right, lessThan(time.left));
+      expect(status.left, greaterThan(time.right));
+      final doctorX =
+          t.getTopLeft(find.byKey(const Key('patient_calendar_doctor_0'))).dx;
+      expect(
+        t.getTopLeft(find.byKey(const Key('patient_calendar_depts_name_0'))).dx,
+        closeTo(doctorX, .01),
+      );
+      expect(
+        t.getTopLeft(find.byKey(const Key('patient_calendar_deptd_name_0'))).dx,
+        closeTo(doctorX, .01),
+      );
+      await _capture(t, 'patient_appointment_day');
+      expect(h.posts, isEmpty);
+      await _finish(t);
+    },
+  );
+  testWidgets(
+    'large-text landscape calendar and day sheet keep their full contents reachable',
+    (t) async {
+      final h = PatientSearchHarness();
+      h.calendarRecords = List.generate(
+        8,
+        (i) => {
+          ...patientCalendarRow(),
+          'doc_name': 'Sample Therapist ${i + 1}',
+        },
+      );
+      await _host(t, h, size: const Size(852, 393), scale: 1.8);
+      await _tap(t, 'patient_search_appointments_11');
+      final calendarScroll =
+          find
+              .descendant(
+                of: find.byKey(const Key('patient_calendar_scroll')),
+                matching: find.byType(Scrollable),
+              )
+              .first;
+      await t.scrollUntilVisible(
+        find.byKey(const Key('patient_calendar_day_10_2026_10_24')),
+        160,
+        scrollable: calendarScroll,
+      );
+      await _tap(t, 'patient_calendar_day_10_2026_10_24');
+      final scroll = find.descendant(
+        of: find.byKey(const Key('patient_calendar_day_scroll')),
+        matching: find.byType(Scrollable),
+      );
+      await t.scrollUntilVisible(
+        find.byKey(const Key('patient_calendar_appointment_7')),
+        300,
+        scrollable: scroll,
+      );
+      await t.ensureVisible(find.byKey(const Key('patient_calendar_doctor_7')));
+      await t.pumpAndSettle();
+      expect(find.text('Sample Therapist 8').hitTestable(), findsOneWidget);
+      expect(t.takeException(), isNull);
       await _finish(t);
     },
   );

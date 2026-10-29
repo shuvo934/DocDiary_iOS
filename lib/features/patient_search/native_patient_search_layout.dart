@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/app_theme.dart';
+import '../appointments/doctor_schedule/native_appointment_timeline_card.dart';
 import '../dynamic_prescription/native_dynamic_rx_controls.dart';
 import 'patient_search_models.dart';
 
@@ -134,29 +135,14 @@ class NativePatientSearchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
         large = MediaQuery.textScalerOf(context).scale(14) > 21;
-    Widget button(String label, VoidCallback? onTap, String key) => SizedBox(
-      height: math.max(m.d(25), large ? 44 : 0),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: OutlinedButton(
+    Widget button(String label, VoidCallback? onTap, String key) =>
+        AppointmentOutlineButton(
           key: Key('${key}_${patient.historyId}'),
-          onPressed: onTap,
-          style: OutlinedButton.styleFrom(
-            minimumSize: Size.zero,
-            padding: EdgeInsets.symmetric(horizontal: m.d(12)),
-            foregroundColor: DocColors.greenSea,
-            backgroundColor: Colors.white,
-            side: const BorderSide(color: DocColors.greenSea),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(m.d(8)),
-            ),
-            textStyle: m.text(7, color: DocColors.greenSea, spacing: 1),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(label),
-        ),
-      ),
-    );
+          label: label,
+          sdp: appointmentScale(context),
+          enabled: onTap != null,
+          onPressed: onTap ?? () {},
+        );
     Widget pair(Widget left, Widget right) =>
         large
             ? Column(
@@ -289,12 +275,15 @@ class NativePatientSearchCard extends StatelessWidget {
                     ),
                   )
                 else
-                  Text(
-                    'No Progress Found',
-                    style: m.text(
-                      9,
-                      color: patientSearchText,
-                      weight: FontWeight.w600,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3.0),
+                    child: Text(
+                      'No Progress Found',
+                      style: m.text(
+                        9,
+                        color: patientSearchText,
+                        weight: FontWeight.w600,
+                      ),
                     ),
                   ),
               ],
