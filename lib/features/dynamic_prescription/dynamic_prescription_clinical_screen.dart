@@ -449,6 +449,7 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
       if (!patient.valid) return;
       final changing =
           _seed.hasPatient && _seed.patientHistoryId != patient.historyId;
+      final typeChanged = _seed.prescriptionType != selection.prescriptionType;
       if (changing && _history.hasData) {
         if (!inner.mounted) return;
         final clear = await _dialogs.show<bool>(
@@ -496,8 +497,11 @@ class _ClinicalScreenState extends State<DynamicPrescriptionClinicalScreen>
         _adviceDraft.replaceFromData(const {});
         _data = const {};
       }
-      _review.reset();
-      _baseline = _snapshot;
+      if (changing || typeChanged) _review.reset();
+      // Reselecting the same patient is not a save. Keep the original dirty
+      // baseline; only a different registration starts a fresh, empty draft.
+      // The first required selection receives its baseline in _load().
+      if (changing) _baseline = _snapshot;
       _refresh(() {});
       if (!_initialized) await _load();
     } finally {

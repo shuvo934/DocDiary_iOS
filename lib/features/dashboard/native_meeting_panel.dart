@@ -93,7 +93,7 @@ class NativeMeetingPanel extends StatelessWidget {
                             child: Text(
                               upcoming
                                   ? 'Next Meeting'
-                                  : 'No Upcoming Meeting Available',
+                                  : 'No Upcoming Meeting\nAvailable',
                               style: _meetingText(
                                 'Poppins',
                                 12 * sdp,

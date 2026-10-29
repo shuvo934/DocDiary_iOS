@@ -2709,6 +2709,89 @@ void main() {
       h.auth.dispose();
     },
   );
+  for (final changeType in [false, true]) {
+    testWidgets(
+      'Walk-in reselecting the same patient keeps unsaved tracking with type change $changeType',
+      (tester) async {
+        final h = _Harness();
+        addTearDown(h.auth.dispose);
+        await _show(tester, h, walkIn: true);
+        await _tap(tester, 'dy_patient_option_201_0');
+        await _tap(tester, 'dy_action_SELECT PATIENT');
+        await _review(tester, addPlan: true);
+        await _confirm(tester);
+        await _tap(tester, 'dy_builder_patient');
+        await _tap(tester, 'dy_action_CHANGE PATIENT');
+        if (changeType) {
+          await _tap(tester, 'dy_dropdown_patient_type');
+          await _tap(tester, 'dy_option_patient_type_1_1');
+        }
+        await _tap(tester, 'dy_patient_option_201_0');
+        await _tap(tester, 'dy_action_SELECT PATIENT');
+        expect(find.byKey(const Key('dy_change_patient_dialog')), findsNothing);
+        await _tap(tester, 'dy_builder_back');
+        expect(find.byKey(const Key('dy_unsaved')), findsOneWidget);
+        await _tap(tester, 'dy_keep_editing');
+        expect(
+          tester
+              .widget<Checkbox>(find.byKey(const Key('dy_review_confirm')))
+              .value,
+          !changeType,
+        );
+        await _tap(tester, 'dy_builder_tab_RX');
+        expect(
+          tester
+              .widget<NativeDynamicRxTab>(find.byType(NativeDynamicRxTab))
+              .draft
+              .treatmentPlans
+              .single
+              .text,
+          'Local treatment plan',
+        );
+        expect(h.transport.binaryRequests, isEmpty);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+  testWidgets('Walk-in changing only Indoor/Outdoor remains an unsaved edit', (
+    tester,
+  ) async {
+    final h = _Harness();
+    addTearDown(h.auth.dispose);
+    await _show(tester, h, walkIn: true);
+    await _tap(tester, 'dy_patient_option_201_0');
+    await _tap(tester, 'dy_action_SELECT PATIENT');
+    await _tap(tester, 'dy_builder_patient');
+    await _tap(tester, 'dy_action_CHANGE PATIENT');
+    await _tap(tester, 'dy_dropdown_patient_type');
+    await _tap(tester, 'dy_option_patient_type_1_1');
+    await _tap(tester, 'dy_patient_option_201_0');
+    await _tap(tester, 'dy_action_SELECT PATIENT');
+    await _tap(tester, 'dy_builder_back');
+    expect(find.byKey(const Key('dy_unsaved')), findsOneWidget);
+    await _tap(tester, 'dy_discard');
+    expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+    expect(h.transport.binaryRequests, isEmpty);
+    await tester.pumpWidget(const SizedBox());
+  });
+  testWidgets('Walk-in reselecting an unchanged empty patient remains clean', (
+    tester,
+  ) async {
+    final h = _Harness();
+    addTearDown(h.auth.dispose);
+    await _show(tester, h, walkIn: true);
+    await _tap(tester, 'dy_patient_option_201_0');
+    await _tap(tester, 'dy_action_SELECT PATIENT');
+    await _tap(tester, 'dy_builder_patient');
+    await _tap(tester, 'dy_action_CHANGE PATIENT');
+    await _tap(tester, 'dy_patient_option_201_0');
+    await _tap(tester, 'dy_action_SELECT PATIENT');
+    await _tap(tester, 'dy_builder_back');
+    expect(find.byKey(const Key('dy_unsaved')), findsNothing);
+    expect(find.byType(DynamicPrescriptionClinicalScreen), findsNothing);
+    expect(h.transport.binaryRequests, isEmpty);
+    await tester.pumpWidget(const SizedBox());
+  });
   testWidgets(
     'Walk-in selecting the same patient retains entered content and changes Indoor/Outdoor only after SELECT',
     (tester) async {

@@ -266,7 +266,7 @@ void main() {
       await show(t, h);
       await tap(t, 'rx_add_complain');
       await tap(t, 'rx_save');
-      expect(toasts.messages, contains('Please provide Complain.'));
+      expect(toasts.messages, contains('Please Write Complain'));
       expect(h.posts, isEmpty);
       await finish(t);
     },

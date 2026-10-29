@@ -195,7 +195,7 @@ void main() {
       expect(reads, 2);
       await _advance(tester, h, const Duration(seconds: 1));
       expect(reads, 3);
-      expect(find.text('No Upcoming Meeting Available'), findsOneWidget);
+      expect(find.text('No Upcoming Meeting\nAvailable'), findsOneWidget);
       expect(
         find.byKey(const Key('dashboard_meeting_countdown')),
         findsNothing,
@@ -380,7 +380,7 @@ void main() {
         find.textContaining('Example schedule connection failure'),
         findsOneWidget,
       );
-      expect(find.text('No Upcoming Meeting Available'), findsNothing);
+      expect(find.text('No Upcoming Meeting\nAvailable'), findsNothing);
       await _advance(tester, h, const Duration(seconds: 20));
       expect(reads, 2);
       await tester.ensureVisible(
@@ -389,7 +389,7 @@ void main() {
       await tester.tap(find.byKey(const Key('dashboard_error_retry')));
       await tester.pumpAndSettle();
       expect(reads, 3);
-      expect(find.text('No Upcoming Meeting Available'), findsOneWidget);
+      expect(find.text('No Upcoming Meeting\nAvailable'), findsOneWidget);
       expect(h.posts.length, writes);
       await _finish(tester);
     },
@@ -479,7 +479,7 @@ void main() {
     await h.signIn();
     await _show(tester, h);
     await _advance(tester, h, const Duration(seconds: 20));
-    expect(find.text('No Upcoming Meeting Available'), findsOneWidget);
+    expect(find.text('No Upcoming Meeting\nAvailable'), findsOneWidget);
     expect(find.byKey(const Key('dashboard_meeting_countdown')), findsNothing);
     expect(_reads(h), 1);
     await _finish(tester);

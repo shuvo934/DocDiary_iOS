@@ -52,7 +52,7 @@ void main() {
       expect(find.text('REPORT MANAGER'), findsOneWidget);
       expect(find.text('ALL APPOINTMENT'), findsOneWidget);
       expect(find.text('UNIT APPOINTMENT'), findsNothing);
-      expect(find.text('No Upcoming Meeting Available'), findsOneWidget);
+      expect(find.text('No Upcoming Meeting\nAvailable'), findsOneWidget);
       expect(find.text('TOTAL SCHEDULE'), findsOneWidget);
       expect(find.byType(ChoiceChip), findsNothing);
       for (final route in ['profile', 'appointment', 'leave', 'patients']) {

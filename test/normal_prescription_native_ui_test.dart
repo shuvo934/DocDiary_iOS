@@ -331,7 +331,7 @@ void main() {
     await support.tap(t, 'rx_save');
     expect(find.byKey(const Key('rx_confirm_yes')), findsNothing);
     expect(h.posts, isEmpty);
-    expect(toasts.messages, contains('Please provide Complain.'));
+    expect(toasts.messages, contains('Invalid Complain'));
     await support.finish(t);
   });
   uiCase(
