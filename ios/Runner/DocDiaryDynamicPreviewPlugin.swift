@@ -92,6 +92,46 @@ private final class DynamicPreviewView: NSObject, FlutterPlatformView, WKNavigat
     return "\(phase). Please retry. Error: \(diagnostic.domain)/\(diagnostic.code)."
   }
 
+  // Android aliases Arial to its Roboto sans-serif family. iOS has a different
+  // Arial face and can autosize wide text blocks independently. Keep the native
+  // HTML's sizes/weights, using the Android font and disabling text inflation.
+  // The bundled data asset includes the font's source and Apache 2.0 notice.
+  private static let typographyStyle: String? = {
+    guard let data = NSDataAsset(name: "DocDiaryPreviewAndroidRoboto")?.data,
+          let asset = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let encoded = asset["fontBase64"] as? String,
+          let font = Data(base64Encoded: encoded), !font.isEmpty else { return nil }
+    let source = "url('data:font/woff2;base64,\(font.base64EncodedString())') format('woff2')"
+    return """
+    <style id="docdiary-ios-typography">
+    @font-face{font-family:'DocDiaryAndroidSans';src:\(source);font-weight:100 900;font-style:normal;font-display:block;}
+    @font-face{font-family:'DocDiaryAndroidSans';src:\(source);font-weight:100 900;font-style:italic;font-display:block;}
+    html,body{-webkit-text-size-adjust:none!important;text-size-adjust:none!important;}
+    body,.facility-name,.rx-title{font-family:'DocDiaryAndroidSans',Arial,'Noto Sans Bengali',sans-serif!important;}
+    </style>
+    """
+  }()
+
+  private static func applyingTypography(to source: String, style: String) -> String {
+    if let position = source.range(of: "</head>", options: [.caseInsensitive, .backwards]) {
+      return String(source[..<position.lowerBound]) + style + String(source[position.lowerBound...])
+    }
+    return style + source
+  }
+
+  private static let fontsReadyScript = #"""
+  const requests = [
+    '400 12px "DocDiaryAndroidSans"',
+    '700 12px "DocDiaryAndroidSans"',
+    '800 12px "DocDiaryAndroidSans"',
+    '900 21px "DocDiaryAndroidSans"',
+    'italic 400 10px "DocDiaryAndroidSans"'
+  ];
+  const faces = await Promise.all(requests.map(value => document.fonts.load(value, 'Prescription')));
+  await document.fonts.ready;
+  return faces.every(group => group.length > 0 && group.every(face => face.status === 'loaded'));
+  """#
+
   private static func configuration() -> WKWebViewConfiguration {
     let value = WKWebViewConfiguration()
     value.websiteDataStore = .nonPersistent()
@@ -137,8 +177,11 @@ private final class DynamicPreviewView: NSObject, FlutterPlatformView, WKNavigat
             let source = arguments["html"] as? String, !source.isEmpty else {
         result(FlutterError(code: "html", message: "Prescription HTML is empty.", details: nil)); return
       }
+      guard let style = Self.typographyStyle else {
+        result(FlutterError(code: "font", message: "Prescription font is missing. Stop and rebuild the iOS app after installing the Preview typography fix.", details: nil)); return
+      }
       cancelWork()
-      html = source
+      html = Self.applyingTypography(to: source, style: style)
       let name = (arguments["documentName"] as? String ?? "Prescription")
         .replacingOccurrences(of: "[^A-Za-z0-9_-]+", with: "_", options: .regularExpression)
       documentName = name.isEmpty ? "Prescription" : String(name.prefix(150))
@@ -156,7 +199,7 @@ private final class DynamicPreviewView: NSObject, FlutterPlatformView, WKNavigat
           owner.channel.invokeMethod("error", arguments: Self.setupFailure("Prescription preview setup failed", error: error)); return
         }
         owner.web.configuration.userContentController.add(rule)
-        owner.web.loadHTMLString(source, baseURL: nil)
+        owner.web.loadHTMLString(owner.html, baseURL: nil)
       }
       result(nil)
     case "measure": measure(result)
@@ -217,6 +260,22 @@ private final class DynamicPreviewView: NSObject, FlutterPlatformView, WKNavigat
       (url == nil || url?.absoluteString == "about:blank") ? .allow : .cancel)
   }
   func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    let token = generation
+    // Measure and export only after the bundled regular/heavy/italic faces are
+    // loaded. The app-owned script runs in the isolated client world; page
+    // JavaScript remains disabled. Both renderers pass through this gate.
+    webView.callAsyncJavaScript(Self.fontsReadyScript, arguments: [:], in: nil, in: .defaultClient) { [weak self, weak webView] response in
+      guard let owner = self, let view = webView, owner.active(token),
+            view === owner.web || view === owner.pdfWeb else { return }
+      do {
+        guard let loaded = try response.get() as? Bool, loaded else {
+          owner.renderFailed(view, error: NSError(domain: "DocDiaryPreviewFont", code: 1)); return
+        }
+        owner.documentReady(view)
+      } catch { owner.renderFailed(view, error: error) }
+    }
+  }
+  private func documentReady(_ webView: WKWebView) {
     if webView === web {
       guard !disposed else { return }
       ready = true
