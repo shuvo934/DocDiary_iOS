@@ -56,6 +56,7 @@ class NativeAllAppointmentLayout extends StatelessWidget {
       title: 'All Appointment',
       keyPrefix: 'all_appointment',
       controlsMargin: 0,
+      compactHeader: true,
       leadingFilter: Padding(
         padding: EdgeInsets.fromLTRB(4 * sdp, 0, 4 * sdp, 5 * sdp),
         child: IntrinsicHeight(

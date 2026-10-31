@@ -49,6 +49,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
     this.unitEnabled = true,
     this.doctorEnabled = true,
     this.controlsMargin = 5,
+    this.compactHeader = false,
     this.emptyMessage = 'No Doctor/Therapist Found',
     this.onCall,
     this.busy = false,
@@ -71,7 +72,9 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
   final String title, keyPrefix, emptyMessage;
   final String? unitLabel;
   final Widget? leadingFilter;
-  final bool unitEnabled, doctorEnabled;
+  final bool unitEnabled, doctorEnabled, compactHeader;
+
+  /// Outer filter padding also affects the width available to field text.
   final double controlsMargin;
   final ValueChanged<UnitAppointmentSlot>? onCall;
   Key _key(String suffix) => Key('${keyPrefix}_$suffix');
@@ -247,15 +250,18 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: math.max(
-                    52,
-                    (media.size.height - media.padding.vertical) * .09,
-                  ),
+                  minHeight:
+                      compactHeader
+                          ? 52
+                          : math.max(
+                            52,
+                            (media.size.height - media.padding.vertical) * .09,
+                          ),
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: 12 * sdp,
-                    vertical: 6,
+                    vertical: compactHeader ? 4 : 6,
                   ),
                   child: Row(
                     children: [
