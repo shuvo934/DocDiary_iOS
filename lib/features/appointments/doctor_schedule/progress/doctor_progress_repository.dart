@@ -5,6 +5,7 @@ import '../../../../core/native_json.dart';
 import '../../../../core/transport.dart';
 import '../../../auth/auth_models.dart';
 import '../../../auth/profile_repository.dart';
+import '../../../patient_search/patient_view_access.dart';
 import '../doctor_appointment_models.dart';
 import '../doctor_appointment_repository.dart';
 import '../history/doctor_appointment_history_models.dart';
@@ -20,7 +21,11 @@ class DoctorProgressRepository {
     DoctorProgressSeed seed,
     bool Function() current,
   ) {
-    appointments.guard(session, profile, current);
+    if (seed.appointment == null) {
+      guardPatientViewAccess(appointments, session, profile, current);
+    } else {
+      appointments.guard(session, profile, current);
+    }
     if (!seed.valid ||
         (seed.appointment != null && seed.ownerDoctorId != profile.doctorId)) {
       throw const AppFailure(
@@ -118,6 +123,7 @@ class DoctorProgressRepository {
     DoctorProgressDraft draft, {
     required bool Function() isCurrent,
   }) async {
+    appointments.guard(session, profile, isCurrent);
     guard(session, profile, seed, isCurrent);
     if (!draft.valid) {
       throw const AppFailure(

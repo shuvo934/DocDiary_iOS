@@ -73,7 +73,8 @@ class _DoctorProgressScreenState extends State<DoctorProgressScreen>
     final session = widget.auth.session;
     if (session == null ||
         widget.auth.profile == null ||
-        session.account.role != AccountRole.doctor ||
+        (widget.seed.appointment != null &&
+            session.account.role != AccountRole.doctor) ||
         !widget.seed.valid) {
       _invalid = true;
       _busy = false;

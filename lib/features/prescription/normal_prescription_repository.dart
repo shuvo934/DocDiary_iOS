@@ -2,6 +2,7 @@ import '../../core/native_dates.dart';
 import '../../core/native_json.dart';
 import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
+import '../patient_search/patient_view_access.dart';
 import '../appointments/doctor_schedule/doctor_appointment_models.dart';
 import '../appointments/doctor_schedule/doctor_appointment_repository.dart';
 import 'normal_prescription_models.dart';
@@ -18,7 +19,11 @@ class NormalPrescriptionRepository {
     bool Function() current, {
     bool write = false,
   }) {
-    appointments.guard(session, profile, current);
+    if (seed.readOnly && !write) {
+      guardPatientViewAccess(appointments, session, profile, current);
+    } else {
+      appointments.guard(session, profile, current);
+    }
     rxRequire(
       seed.valid,
       'The patient for this prescription is no longer valid.',

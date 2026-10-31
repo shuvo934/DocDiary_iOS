@@ -1,6 +1,8 @@
 import '../patient_search/normal_patient_search_screen.dart';
 import '../patient_search/patient_search_screen.dart';
 import '../patient_search/patient_search_repository.dart';
+import '../patient_search/admin_patient_search_screen.dart';
+import '../patient_search/admin_patient_search_repository.dart';
 import '../prescription/normal_prescription_repository.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -702,6 +704,17 @@ class _DashboardScreenState extends State<DashboardScreen>
             ? PatientSearchScreen(
               auth: widget.auth,
               repository: PatientSearchRepository(
+                DoctorAppointmentRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+              ),
+              destinationBuilder: widget.services.destinationBuilder,
+            )
+            : route.module == DashboardModule.adminPatients
+            ? AdminPatientSearchScreen(
+              auth: widget.auth,
+              repository: AdminPatientSearchRepository(
                 DoctorAppointmentRepository(
                   widget.repository.transport,
                   now: widget.repository.now,

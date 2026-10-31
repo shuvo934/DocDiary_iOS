@@ -7,6 +7,7 @@ import '../dynamic_prescription/dynamic_history_models.dart';
 import '../prescription/normal_prescription_models.dart';
 import '../prescription/normal_prescription_repository.dart';
 import 'patient_search_models.dart';
+import 'patient_view_access.dart';
 
 class PatientSearchRepository {
   const PatientSearchRepository(this.appointments);
@@ -26,7 +27,7 @@ class PatientSearchRepository {
     Map<String, String> query,
     bool Function() current,
   ) async {
-    guard(session, profile, current);
+    guardPatientViewAccess(appointments, session, profile, current);
     final data = await appointments.transport
         .get(apiEndpoint(session.center.baseUri, path, query))
         .timeout(
@@ -38,7 +39,7 @@ class PatientSearchRepository {
                     kind: FailureKind.network,
                   ),
         );
-    guard(session, profile, current);
+    guardPatientViewAccess(appointments, session, profile, current);
     return data;
   }
 
@@ -97,10 +98,12 @@ class PatientSearchRepository {
     PatientSearchRow patient, {
     required bool Function() isCurrent,
   }) async {
-    guard(session, profile, isCurrent);
+    guardPatientViewAccess(appointments, session, profile, isCurrent);
     rxRequire(
-      PatientSearchMode.forProfile(profile) ==
-          PatientSearchMode.dynamicPrescription,
+      profile.isDoctor
+          ? PatientSearchMode.forProfile(profile) ==
+              PatientSearchMode.dynamicPrescription
+          : profile.value('presc_active') == '1',
       'Dynamic prescription history is not available for this account.',
     );
     rxRequire(
@@ -111,7 +114,10 @@ class PatientSearchRepository {
         await _get(session, profile, 'dynamic_presc/getPrescriptionHistory', {
           'p_ph_id': patient.historyId,
           'p_pat_id': patient.id,
-          'p_doc_id': profile.value('all_presc') == '1' ? '' : profile.doctorId,
+          'p_doc_id':
+              !profile.isDoctor || profile.value('all_presc') == '1'
+                  ? ''
+                  : profile.doctorId,
         }, isCurrent);
     final items = data['items'];
     rxRequire(items is List<Object?>, 'Prescription history data not found');

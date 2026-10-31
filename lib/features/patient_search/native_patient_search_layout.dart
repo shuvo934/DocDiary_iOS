@@ -127,10 +127,11 @@ class NativePatientSearchCard extends StatelessWidget {
     required this.onPrescription,
     required this.onProgress,
     required this.onAppointments,
+    this.onCall,
   });
   final PatientSearchRow patient;
   final bool dynamicMode;
-  final VoidCallback? onPrescription, onProgress, onAppointments;
+  final VoidCallback? onPrescription, onProgress, onAppointments, onCall;
   @override
   Widget build(BuildContext context) {
     final m = DynamicRxMetrics(context),
@@ -228,6 +229,18 @@ class NativePatientSearchCard extends StatelessWidget {
                               ),
                             ),
                           ),
+                          if (onCall != null)
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: m.d(8)),
+                              child: _PatientCallButton(
+                                key: Key(
+                                  'patient_search_call_${patient.historyId}',
+                                ),
+                                label: 'Call ${patient.name}',
+                                onPressed: onCall!,
+                                radius: m.d(8),
+                              ),
+                            ),
                           if (patient.area.isNotEmpty ||
                               dynamicMode && patient.year.isNotEmpty) ...[
                             SizedBox(width: m.d(7)),
@@ -293,4 +306,82 @@ class NativePatientSearchCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// phone_24.xml, with the native 32dp button and 6dp Material insets.
+class _PatientCallButton extends StatelessWidget {
+  const _PatientCallButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    required this.radius,
+  });
+  final String label;
+  final VoidCallback onPressed;
+  final double radius;
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: label,
+    button: true,
+    child: ExcludeSemantics(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onPressed,
+        child: SizedBox(
+          width: 48,
+          height: 32,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: OutlinedButton(
+              onPressed: onPressed,
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                minimumSize: Size.zero,
+                padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                side: const BorderSide(color: DocColors.greenSea),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(radius),
+                ),
+              ),
+              child: const CustomPaint(
+                size: Size.square(15),
+                painter: _PatientCallPainter(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _PatientCallPainter extends CustomPainter {
+  const _PatientCallPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 24, size.height / 24);
+    final path =
+        Path()
+          ..moveTo(6.62, 10.79)
+          ..relativeCubicTo(1.44, 2.83, 3.76, 5.14, 6.59, 6.59)
+          ..relativeLineTo(2.2, -2.2)
+          ..relativeCubicTo(.27, -.27, .67, -.36, 1.02, -.24)
+          ..relativeCubicTo(1.12, .37, 2.33, .57, 3.57, .57)
+          ..relativeCubicTo(.55, 0, 1, .45, 1, 1)
+          ..lineTo(21, 20)
+          ..relativeCubicTo(0, .55, -.45, 1, -1, 1)
+          ..relativeCubicTo(-9.39, 0, -17, -7.61, -17, -17)
+          ..relativeCubicTo(0, -.55, .45, -1, 1, -1)
+          ..relativeLineTo(3.5, 0)
+          ..relativeCubicTo(.55, 0, 1, .45, 1, 1)
+          ..relativeCubicTo(0, 1.25, .2, 2.45, .57, 3.57)
+          ..relativeCubicTo(.11, .35, .03, .74, -.25, 1.02)
+          ..relativeLineTo(-2.2, 2.2)
+          ..close();
+    canvas.drawPath(path, Paint()..color = DocColors.greenSea);
+  }
+
+  @override
+  bool shouldRepaint(_PatientCallPainter oldDelegate) => false;
 }

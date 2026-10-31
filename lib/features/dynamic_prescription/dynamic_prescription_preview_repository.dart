@@ -2,6 +2,7 @@ import '../../core/failure.dart';
 import '../../core/native_json.dart';
 import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
+import '../patient_search/patient_view_access.dart';
 import 'dynamic_prescription_repository.dart';
 import 'dynamic_prescription_preview_models.dart';
 
@@ -10,14 +11,37 @@ class DynamicPrescriptionPreviewRepository {
   const DynamicPrescriptionPreviewRepository(this.prescriptions);
   final DynamicPrescriptionRepository prescriptions;
 
+  void guard(
+    AuthSession session,
+    AccountProfile profile,
+    bool Function() isCurrent,
+  ) {
+    if (profile.isDoctor) {
+      prescriptions.clinical.guard(session, profile, isCurrent);
+      return;
+    }
+    guardPatientViewAccess(
+      prescriptions.appointments,
+      session,
+      profile,
+      isCurrent,
+    );
+    if (profile.value('presc_active') != '1') {
+      throw const AppFailure(
+        'Dynamic prescription is not available for this account.',
+        kind: FailureKind.denied,
+      );
+    }
+  }
+
   Future<DynamicPrescriptionPreviewData> load(
     AuthSession session,
     AccountProfile profile,
     String rvmId, {
     required bool Function() isCurrent,
   }) async {
-    void guard() => prescriptions.clinical.guard(session, profile, isCurrent);
-    guard();
+    void check() => guard(session, profile, isCurrent);
+    check();
     final id = rvmId.trim();
     if (id.isEmpty) {
       throw const AppFailure('Prescription ID was not provided.');
@@ -40,7 +64,7 @@ class DynamicPrescriptionPreviewRepository {
                       kind: FailureKind.network,
                     ),
           );
-      guard();
+      check();
       final data = DynamicPrescriptionPreviewData.fromResponse(response);
       if (data.rvmId != id) {
         throw const AppFailure(
@@ -50,7 +74,7 @@ class DynamicPrescriptionPreviewRepository {
       }
       return data;
     } catch (_) {
-      guard();
+      check();
       rethrow;
     }
   }

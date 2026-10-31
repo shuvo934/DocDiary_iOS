@@ -196,11 +196,7 @@ class _PreviewScreenState extends State<NativeDynamicPreviewScreen>
         recordLogin: false,
         isCurrent: () => _alive(operation),
       );
-      widget.repository.prescriptions.clinical.guard(
-        _session,
-        profile,
-        () => _alive(operation),
-      );
+      widget.repository.guard(_session, profile, () => _alive(operation));
       final done = await _platform.perform(action);
       if (mounted &&
           _alive(operation) &&
