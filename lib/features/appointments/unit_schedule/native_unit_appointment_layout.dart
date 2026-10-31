@@ -42,6 +42,15 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
     required this.onDate,
     required this.onMonth,
     required this.scroll,
+    this.title = 'Unit Appointment',
+    this.keyPrefix = 'unit_appointment',
+    this.leadingFilter,
+    this.unitLabel,
+    this.unitEnabled = true,
+    this.doctorEnabled = true,
+    this.controlsMargin = 5,
+    this.emptyMessage = 'No Doctor/Therapist Found',
+    this.onCall,
     this.busy = false,
     this.enabled = true,
     this.message,
@@ -59,6 +68,13 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
   final ValueChanged<DateTime> onDate;
   final ValueChanged<int> onMonth;
   final ScrollController scroll;
+  final String title, keyPrefix, emptyMessage;
+  final String? unitLabel;
+  final Widget? leadingFilter;
+  final bool unitEnabled, doctorEnabled;
+  final double controlsMargin;
+  final ValueChanged<UnitAppointmentSlot>? onCall;
+  Key _key(String suffix) => Key('${keyPrefix}_$suffix');
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context), sdp = appointmentScale(context);
@@ -86,9 +102,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                 : const Color(0xffb2bec3),
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
-          key: Key(
-            delta < 0 ? 'unit_appointment_previous' : 'unit_appointment_next',
-          ),
+          key: _key(delta < 0 ? 'previous' : 'next'),
           onTap:
               active && window.canMove(selected, delta)
                   ? () => onMonth(delta)
@@ -107,56 +121,44 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(
-              5 * sdp + 8.8,
-              8 * sdp + 8.8,
-              5 * sdp + 8.8,
+              controlsMargin * sdp + 8.8,
+              (controlsMargin + 3) * sdp + 8.8,
+              controlsMargin * sdp + 8.8,
               0,
             ),
             child: Column(
               children: [
+                if (leadingFilter != null) leadingFilter!,
                 fieldRow(
-                  _UnitField(
-                    fieldKey: const Key('unit_appointment_unit'),
-                    label: unit == null ? 'Select Unit' : 'Unit',
+                  NativeScheduleSelectionField(
+                    fieldKey: _key('unit'),
+                    label: unitLabel ?? (unit == null ? 'Select Unit' : 'Unit'),
                     value: unit?.name ?? '',
                     sdp: sdp,
-                    onTap: active && units.isNotEmpty ? onUnit : null,
+                    enabled: unitEnabled,
+                    onTap:
+                        active && unitEnabled && units.isNotEmpty
+                            ? onUnit
+                            : null,
                   ),
-                  Material(
-                    color: DocColors.primary,
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(color: DocColors.greenSea),
-                    ),
-                    child: InkWell(
-                      key: const Key('unit_appointment_totals'),
-                      borderRadius: BorderRadius.circular(10),
-                      onTap: active ? onStats : null,
-                      child: Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Center(
-                          child: _UnitIcon(
-                            _UnitGlyph.clock,
-                            size: 17 * sdp,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
+                  NativeScheduleTotalsButton(
+                    tapKey: _key('totals'),
+                    sdp: sdp,
+                    onTap: active ? onStats : null,
                   ),
                 ),
                 fieldRow(
-                  _UnitField(
-                    fieldKey: const Key('unit_appointment_doctor'),
+                  NativeScheduleSelectionField(
+                    fieldKey: _key('doctor'),
                     label:
                         doctor == null
                             ? 'Select Doctor/Therapist'
                             : 'Doctor/Therapist',
                     value: doctor?.name ?? '',
                     sdp: sdp,
+                    enabled: doctorEnabled,
                     onTap:
-                        active && hasDoctors && doctorCount > 0
+                        active && doctorEnabled && hasDoctors && doctorCount > 0
                             ? onDoctor
                             : null,
                   ),
@@ -180,7 +182,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                             ),
                             Text(
                               hasDoctors ? '  $doctorCount' : '',
-                              key: const Key('unit_appointment_doctor_count'),
+                              key: _key('doctor_count'),
                               style: unitAppointmentText(
                                 8,
                                 sdp,
@@ -205,7 +207,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                           padding: EdgeInsets.all(5 * sdp),
                           child: Text(
                             DoctorAppointmentWindow.label(selected),
-                            key: const Key('unit_appointment_month'),
+                            key: _key('month'),
                             textAlign: TextAlign.center,
                             style: unitAppointmentText(
                               12,
@@ -258,7 +260,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                   child: Row(
                     children: [
                       IconButton(
-                        key: const Key('unit_appointment_back'),
+                        key: _key('back'),
                         tooltip: 'Back',
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
@@ -275,7 +277,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          'Unit Appointment',
+                          title,
                           style: unitAppointmentText(
                             14,
                             sdp,
@@ -301,7 +303,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                     child: Stack(
                       children: [
                         CustomScrollView(
-                          key: const Key('unit_appointment_scroll'),
+                          key: _key('scroll'),
                           controller: scroll,
                           slivers: [
                             if (media.size.height - media.padding.vertical >
@@ -316,7 +318,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                                   padding: const EdgeInsets.all(24),
                                   child: Text(
                                     message!,
-                                    key: const Key('unit_appointment_message'),
+                                    key: _key('message'),
                                     textAlign: TextAlign.center,
                                     style: unitAppointmentText(
                                       12,
@@ -331,8 +333,8 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.only(top: 10),
                                   child: Text(
-                                    'No Doctor/Therapist Found',
-                                    key: const Key('unit_appointment_empty'),
+                                    emptyMessage,
+                                    key: _key('empty'),
                                     textAlign: TextAlign.center,
                                     style: unitAppointmentText(
                                       12,
@@ -355,6 +357,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                                       index: index,
                                       now: now,
                                       sdp: sdp,
+                                      onCall: onCall,
                                     ),
                                     childCount: rows.length,
                                   ),
@@ -363,12 +366,12 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                           ],
                         ),
                         if (busy)
-                          const Positioned.fill(
+                          Positioned.fill(
                             child: ColoredBox(
-                              color: Color(0xeeffffff),
+                              color: const Color(0xeeffffff),
                               child: Center(
                                 child: CircularProgressIndicator(
-                                  key: Key('unit_appointment_loading'),
+                                  key: _key('loading'),
                                 ),
                               ),
                             ),
@@ -386,18 +389,22 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
   }
 }
 
-class _UnitField extends StatelessWidget {
-  const _UnitField({
+/// Shared native readonly fields; AllAppointment adds a department row.
+class NativeScheduleSelectionField extends StatelessWidget {
+  const NativeScheduleSelectionField({
+    super.key,
     required this.fieldKey,
     required this.label,
     required this.value,
     required this.sdp,
     required this.onTap,
+    this.enabled = true,
   });
   final Key fieldKey;
   final String label, value;
   final double sdp;
   final ValueChanged<Rect>? onTap;
+  final bool enabled;
   @override
   Widget build(BuildContext context) => Builder(
     builder:
@@ -413,7 +420,7 @@ class _UnitField extends StatelessWidget {
             key: fieldKey,
             borderRadius: BorderRadius.circular(10),
             onTap:
-                onTap == null
+                !enabled || onTap == null
                     ? null
                     : () {
                       final box = context.findRenderObject()! as RenderBox;
@@ -424,6 +431,7 @@ class _UnitField extends StatelessWidget {
               child: InputDecorator(
                 isEmpty: value.isEmpty,
                 decoration: InputDecoration(
+                  enabled: enabled,
                   labelText: label,
                   labelStyle: unitAppointmentText(10, sdp, family: 'Roboto'),
                   floatingLabelStyle: unitAppointmentText(
@@ -450,13 +458,49 @@ class _UnitField extends StatelessWidget {
                     9,
                     sdp,
                     family: 'OpenSans',
-                    color: Colors.black,
+                    color: enabled ? Colors.black : DocColors.muted,
                   ),
                 ),
               ),
             ),
           ),
         ),
+  );
+}
+
+class NativeScheduleTotalsButton extends StatelessWidget {
+  const NativeScheduleTotalsButton({
+    super.key,
+    required this.tapKey,
+    required this.sdp,
+    required this.onTap,
+  });
+  final Key tapKey;
+  final double sdp;
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) => Material(
+    color: DocColors.primary,
+    elevation: 1,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+      side: const BorderSide(color: DocColors.greenSea),
+    ),
+    child: InkWell(
+      key: tapKey,
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(7),
+        child: Center(
+          child: _UnitIcon(
+            _UnitGlyph.clock,
+            size: 17 * sdp,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    ),
   );
 }
 
@@ -468,11 +512,13 @@ class _UnitDoctorCard extends StatelessWidget {
     required this.index,
     required this.now,
     required this.sdp,
+    this.onCall,
   });
   final UnitAppointmentDoctor doctor;
   final int index;
   final DateTime now;
   final double sdp;
+  final ValueChanged<UnitAppointmentSlot>? onCall;
   @override
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(5 * sdp, 5 * sdp, 5 * sdp, 12 * sdp),
@@ -542,6 +588,7 @@ class _UnitDoctorCard extends StatelessWidget {
                         index: index,
                         now: now,
                         sdp: sdp,
+                        onCall: onCall,
                       ),
             ),
             if (doctor.schedules.isEmpty)
@@ -564,8 +611,9 @@ class _UnitSlotMeasure {
     DateTime now,
     double sdp,
     TextScaler scaler,
-    TextDirection direction,
-  ) {
+    TextDirection direction, {
+    bool callable = false,
+  }) {
     final white = slot.completed(now), booked = slot.booked;
     final normal = white ? Colors.white : const Color(0xff6c6e6f);
     styles = [
@@ -602,7 +650,7 @@ class _UnitSlotMeasure {
       color: normal,
     );
     message = slot.message(now);
-    double widest = 0;
+    double widest = 0, timeWidth = 0;
     for (var i = 0; i < texts.length; i++) {
       final painter = TextPainter(
         text: TextSpan(
@@ -613,6 +661,7 @@ class _UnitSlotMeasure {
         textScaler: scaler,
       )..layout();
       widest = math.max(widest, painter.width);
+      if (i == 0) timeWidth = painter.width;
       heights.add(painter.height);
       painter.dispose();
     }
@@ -623,6 +672,8 @@ class _UnitSlotMeasure {
     )..layout();
     widest = math.max(widest, painter.width);
     painter.dispose();
+    showCall = callable;
+    if (callable) widest = math.max(widest, timeWidth + 36 * sdp);
     padding = 8 * sdp + (1 - math.cos(math.pi / 4)) * 8 * sdp;
     width = widest.ceilToDouble() + 2 * padding + 10 * sdp;
     height = heights.reduce((a, b) => a + b) + 5 + 2 * padding + 10 * sdp;
@@ -640,6 +691,7 @@ class _UnitSlotMeasure {
   late final String message;
   late final double width, height, padding, elevation;
   late final Color background;
+  late final bool showCall;
   final heights = <double>[];
 }
 
@@ -649,11 +701,13 @@ class _UnitScheduleStrip extends StatefulWidget {
     required this.index,
     required this.now,
     required this.sdp,
+    this.onCall,
   });
   final UnitAppointmentDoctor doctor;
   final int index;
   final DateTime now;
   final double sdp;
+  final ValueChanged<UnitAppointmentSlot>? onCall;
   @override
   State<_UnitScheduleStrip> createState() => _UnitScheduleStripState();
 }
@@ -680,7 +734,10 @@ class _UnitScheduleStripState extends State<_UnitScheduleStrip> {
           slot.message(old.now) != slot.message(widget.now),
     );
     _measure(
-      force: changedDoctor || changedTime,
+      force:
+          changedDoctor ||
+          changedTime ||
+          (old.onCall == null) != (widget.onCall == null),
       preservePosition: !changedDoctor && changedTime,
     );
   }
@@ -699,7 +756,17 @@ class _UnitScheduleStripState extends State<_UnitScheduleStrip> {
     _direction = direction;
     _measures = [
       for (final slot in widget.doctor.schedules)
-        _UnitSlotMeasure(slot, widget.now, widget.sdp, scaler, direction),
+        _UnitSlotMeasure(
+          slot,
+          widget.now,
+          widget.sdp,
+          scaler,
+          direction,
+          callable:
+              widget.onCall != null &&
+              slot.booked &&
+              slot.value('pat_cell').isNotEmpty,
+        ),
     ];
     final index = widget.doctor.initialScheduleIndex(widget.now);
     final offset = _measures.take(index).fold(0.0, (sum, m) => sum + m.width);
@@ -774,6 +841,38 @@ class _UnitScheduleStripState extends State<_UnitScheduleStrip> {
                         ),
                       ),
                     ),
+                  if (m.showCall)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Semantics(
+                        button: true,
+                        label:
+                            'Call ${widget.doctor.schedules[index].value('pat_name')}',
+                        child: Tooltip(
+                          message: 'Call',
+                          child: InkResponse(
+                            key: Key(
+                              'unit_slot_call_${widget.doctor.id}_${widget.index}_$index',
+                            ),
+                            onTap:
+                                () => widget.onCall?.call(
+                                  widget.doctor.schedules[index],
+                                ),
+                            child: _UnitIcon(
+                              _UnitGlyph.phone,
+                              size: 14 * widget.sdp,
+                              color:
+                                  widget.doctor.schedules[index].completed(
+                                        widget.now,
+                                      )
+                                      ? Colors.white
+                                      : DocColors.greenSea,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -784,7 +883,7 @@ class _UnitScheduleStripState extends State<_UnitScheduleStrip> {
   );
 }
 
-enum _UnitGlyph { clock, person, back }
+enum _UnitGlyph { clock, person, back, phone }
 
 class _UnitIcon extends StatelessWidget {
   const _UnitIcon(this.glyph, {required this.size, required this.color});
@@ -845,6 +944,23 @@ class _UnitIconPainter extends CustomPainter {
         p.lineTo(9.9, 21.9);
         p.lineTo(11.67, 20.13);
         p.lineTo(3.54, 12);
+        p.close();
+      case _UnitGlyph.phone:
+        p.moveTo(6.62, 10.79);
+        p.cubicTo(8.06, 13.62, 10.38, 15.93, 13.21, 17.38);
+        p.lineTo(15.41, 15.18);
+        p.cubicTo(15.68, 14.91, 16.08, 14.82, 16.43, 14.94);
+        p.cubicTo(17.55, 15.31, 18.76, 15.51, 20, 15.51);
+        p.cubicTo(20.55, 15.51, 21, 15.96, 21, 16.51);
+        p.lineTo(21, 20);
+        p.cubicTo(21, 20.55, 20.55, 21, 20, 21);
+        p.cubicTo(10.61, 21, 3, 13.39, 3, 4);
+        p.cubicTo(3, 3.45, 3.45, 3, 4, 3);
+        p.lineTo(7.5, 3);
+        p.cubicTo(8.05, 3, 8.5, 3.45, 8.5, 4);
+        p.cubicTo(8.5, 5.25, 8.7, 6.45, 9.07, 7.57);
+        p.cubicTo(9.18, 7.92, 9.10, 8.31, 8.82, 8.59);
+        p.lineTo(6.62, 10.79);
         p.close();
     }
     canvas.drawPath(p, Paint()..color = color);

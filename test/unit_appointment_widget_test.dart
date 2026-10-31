@@ -228,6 +228,45 @@ void main() {
     },
   );
   testWidgets(
+    'prefilled unit consistently uses Unit label and keeps the enlarged label fonts',
+    (t) async {
+      final h = UnitAppointmentHarness();
+      await host(t, h);
+      InputDecorator field() => t.widget(
+        find.descendant(
+          of: find.byKey(const Key('unit_appointment_unit')),
+          matching: find.byType(InputDecorator),
+        ),
+      );
+      expect(field().decoration.labelText, 'Unit');
+      expect(
+        field().decoration.floatingLabelStyle!.fontSize,
+        greaterThan(field().decoration.labelStyle!.fontSize!),
+      );
+      final size = field().decoration.labelStyle!.fontSize;
+      await tap(t, 'unit_appointment_unit');
+      await tap(t, 'doctor_history_choice_unit_1');
+      expect(field().decoration.labelText, 'Unit');
+      expect(field().decoration.labelStyle!.fontSize, size);
+      await finish(t);
+    },
+  );
+  testWidgets(
+    'a unit that has not been selected retains the Select Unit prompt',
+    (t) async {
+      final h = UnitAppointmentHarness()..unitRows = [];
+      await host(t, h);
+      final field = t.widget<InputDecorator>(
+        find.descendant(
+          of: find.byKey(const Key('unit_appointment_unit')),
+          matching: find.byType(InputDecorator),
+        ),
+      );
+      expect(field.decoration.labelText, 'Select Unit');
+      await finish(t);
+    },
+  );
+  testWidgets(
     'readonly unit and doctor popups use existing native choices without opening keyboard',
     (t) async {
       final h = UnitAppointmentHarness();
