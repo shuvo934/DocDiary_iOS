@@ -3,6 +3,8 @@ import '../patient_search/patient_search_screen.dart';
 import '../patient_search/patient_search_repository.dart';
 import '../patient_search/admin_patient_search_screen.dart';
 import '../patient_search/admin_patient_search_repository.dart';
+import '../appointments/unit_schedule/unit_appointment_repository.dart';
+import '../appointments/unit_schedule/unit_appointment_screen.dart';
 import '../prescription/normal_prescription_repository.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -721,6 +723,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               destinationBuilder: widget.services.destinationBuilder,
+            )
+            : route.module == DashboardModule.unitAppointments
+            ? UnitAppointmentScreen(
+              auth: widget.auth,
+              repository: UnitAppointmentRepository(
+                DoctorAppointmentRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+              ),
             )
             : route.module == DashboardModule.doctorBlockTime
             ? DoctorBlockTimeScreen(
