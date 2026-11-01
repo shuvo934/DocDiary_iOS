@@ -7,6 +7,8 @@ import '../appointments/unit_schedule/unit_appointment_repository.dart';
 import '../appointments/unit_schedule/unit_appointment_screen.dart';
 import '../appointments/all_schedule/all_appointment_repository.dart';
 import '../appointments/all_schedule/all_appointment_screen.dart';
+import '../appointments/admin_modify/admin_appointment_repository.dart';
+import '../appointments/admin_modify/admin_appointment_screen.dart';
 import '../prescription/normal_prescription_repository.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -692,6 +694,16 @@ class _DashboardScreenState extends State<DashboardScreen>
                 now: widget.repository.now,
               ),
               destinationBuilder: widget.services.destinationBuilder,
+            )
+            : route.module == DashboardModule.adminAppointments
+            ? AdminAppointmentScreen(
+              auth: widget.auth,
+              repository: AdminAppointmentRepository(
+                DoctorAppointmentRepository(
+                  widget.repository.transport,
+                  now: widget.repository.now,
+                ),
+              ),
             )
             : route.module == DashboardModule.patientSearch
             ? NormalPatientSearchScreen(
