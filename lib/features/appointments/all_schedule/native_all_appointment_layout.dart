@@ -92,7 +92,6 @@ class NativeAllAppointmentLayout extends StatelessWidget {
       now: now,
       units: units,
       unit: unit,
-      // unitLabel: 'Unit',
       unitEnabled: department != null,
       doctor: doctor,
       doctorEnabled: unit != null && hasDoctors,

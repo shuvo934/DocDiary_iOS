@@ -45,7 +45,6 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
     this.title = 'Unit Appointment',
     this.keyPrefix = 'unit_appointment',
     this.leadingFilter,
-    this.unitLabel,
     this.unitEnabled = true,
     this.doctorEnabled = true,
     this.controlsMargin = 5,
@@ -70,7 +69,6 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
   final ValueChanged<int> onMonth;
   final ScrollController scroll;
   final String title, keyPrefix, emptyMessage;
-  final String? unitLabel;
   final Widget? leadingFilter;
   final bool unitEnabled, doctorEnabled, compactHeader;
 
