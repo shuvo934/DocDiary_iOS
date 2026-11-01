@@ -13,6 +13,11 @@ import UIKit
       DocDiaryDynamicPreviewPlugin.register(with: previewRegistrar)
     }
     // END DOCDIARY DYNAMIC PREVIEW
+    // BEGIN DOCDIARY REPORT PDF
+    if let reportRegistrar = registrar(forPlugin: "DocDiaryReportPdfPlugin") {
+      DocDiaryReportPdfPlugin.register(with: reportRegistrar)
+    }
+    // END DOCDIARY REPORT PDF
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

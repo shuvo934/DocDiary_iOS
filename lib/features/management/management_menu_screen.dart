@@ -12,6 +12,8 @@ import '../hr/hr_dashboard_repository.dart';
 import '../hr/hr_dashboard_screen.dart';
 import '../reports/native_report_manager_layout.dart';
 import '../reports/report_manager_menu.dart';
+import '../reports/report_manager_repository.dart';
+import '../reports/report_parameters_screen.dart';
 import 'management_access.dart';
 import 'native_management_portal_layout.dart';
 
@@ -238,13 +240,22 @@ class _ManagementMenuScreenState extends State<ManagementMenuScreen>
         !nativeReportManagerItems(_session.center.baseUri).contains(item)) {
       return;
     }
-    final page = widget.destinationBuilder?.call(
-      context,
-      DashboardRoute(
-        DashboardModule.reportParameters,
-        extras: {'R_TYPE': item.nativeType},
-      ),
-    );
+    final page =
+        widget.destinationBuilder?.call(
+          context,
+          DashboardRoute(
+            DashboardModule.reportParameters,
+            extras: {'R_TYPE': item.nativeType},
+          ),
+        ) ??
+        ReportParametersScreen(
+          auth: widget.auth,
+          repository: ReportManagerRepository(
+            widget.auth.profiles.transport,
+            now: widget.auth.profiles.now,
+          ),
+          item: item,
+        );
     await _openPage(page, item.title);
   }
 

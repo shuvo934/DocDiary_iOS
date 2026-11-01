@@ -23,9 +23,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'support.dart';
+import 'report_manager_test_support.dart';
+import 'package:docdiary_ios/features/reports/report_parameters_screen.dart';
 
 Harness _admin({String role = '1', String module = '1'}) =>
-    Harness()
+    ReportHarness(admin: true, special: false)
       ..loginResponse = adminLogin()
       ..adminData.addAll({
         'all_access_flag': role,
@@ -444,7 +446,9 @@ void main() {
     await _finish(t);
   });
 
-  _case('deferred destination availability dialog closes cleanly', (t) async {
+  _case('deferred Accounts closes cleanly and Reports opens its native form', (
+    t,
+  ) async {
     final h = _admin();
     await _show(t, h);
     await _tap(t, 'dashboard_nav_management');
@@ -455,7 +459,8 @@ void main() {
     expect(find.byKey(const Key('management_accounts')), findsOneWidget);
     await _tap(t, 'management_reports');
     await _tap(t, 'report_manager_select_1');
-    expect(find.byKey(const Key('management_unavailable')), findsOneWidget);
+    expect(find.byKey(const Key('management_unavailable')), findsNothing);
+    expect(find.byType(ReportParametersScreen), findsOneWidget);
     await _finish(t);
   });
 
@@ -627,12 +632,13 @@ void main() {
     await _tap(t, 'dashboard_nav_management');
     await _tap(t, 'management_reports');
     await _tap(t, 'report_manager_select_1');
-    expect(find.byKey(const Key('management_unavailable')), findsOneWidget);
+    await _tap(t, 'report_filter_department');
+    expect(find.byKey(const Key('report_parameter_dialog')), findsOneWidget);
     await h.auth.logout();
     await t.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);
     expect(find.byType(NativeReportManagerLayout), findsNothing);
-    expect(find.byKey(const Key('management_unavailable')), findsNothing);
+    expect(find.byKey(const Key('report_parameter_dialog')), findsNothing);
     await _finish(t);
   });
 

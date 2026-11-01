@@ -35,11 +35,12 @@ class DashboardMenuItem {
 /// Visibility comes from DocDashboard.updateInterface/updateAdminInterface.
 List<DashboardMenuItem> nativeDashboardMenu(AccountProfile profile) {
   if (profile.isDoctor) {
-    return const [
-      DashboardMenuItem(DashboardDestination.profile, 'Profile'),
-      DashboardMenuItem(DashboardDestination.appointment, 'Appointment'),
-      DashboardMenuItem(DashboardDestination.leave, 'Block Time'),
-      DashboardMenuItem(DashboardDestination.patients, 'Patient'),
+    return [
+      const DashboardMenuItem(DashboardDestination.profile, 'Profile'),
+      const DashboardMenuItem(DashboardDestination.appointment, 'Appointment'),
+      const DashboardMenuItem(DashboardDestination.leave, 'Block Time'),
+      if (profile.value('pat_pres_view') == '1')
+        const DashboardMenuItem(DashboardDestination.patients, 'Patient'),
     ];
   }
   final managementAccess = ManagementAccess(profile);

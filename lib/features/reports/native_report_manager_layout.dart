@@ -7,7 +7,7 @@ import '../../core/app_theme.dart';
 import 'report_manager_menu.dart';
 
 /// The native ReportManager menu only chooses a report; it has no API request.
-/// ReportView owns parameters and results and is connected in the next step.
+/// ReportParametersScreen owns the native ReportView parameters and results.
 class NativeReportManagerLayout extends StatelessWidget {
   const NativeReportManagerLayout({
     super.key,

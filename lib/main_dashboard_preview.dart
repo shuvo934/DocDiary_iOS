@@ -219,6 +219,7 @@ class _DashboardPreviewTransport implements Transport, BinaryTransport {
               'doc_app_first_login_flag': '1',
               'exp_date': _expiry,
               'doc_manager_flag': role == 'doctor' ? '1' : '0',
+              'pat_pres_view': '1',
               'doc_deptd_head_flag': role == 'unit' ? '1' : '0',
             },
           ],

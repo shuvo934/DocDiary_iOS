@@ -177,6 +177,7 @@ JsonMap doctorProfile() => {
   'exp_date': '15-JAN-27',
   'presc_active': '1',
   'can_prescribe': '1',
+  'pat_pres_view': '1',
 };
 
 JsonMap adminProfile() => {
