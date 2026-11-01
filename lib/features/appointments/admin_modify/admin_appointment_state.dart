@@ -62,7 +62,7 @@ abstract class AdminAppointmentState<T extends StatefulWidget> extends State<T>
   Future<R?> showOwned<R>(
     Widget child, {
     bool dismissible = false,
-    Color barrierColor = Colors.black54,
+    Color barrierColor = const Color(0xcc000000),
   }) async {
     try {
       return await dialogs.show<R>(

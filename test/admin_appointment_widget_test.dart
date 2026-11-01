@@ -777,4 +777,288 @@ void main() {
     );
     await _finish(t);
   });
+  _case('native form insets, disabled fills and user label edits survive', (
+    t,
+  ) async {
+    final h = AdminAppointmentHarness();
+    await _host(t, h);
+    final patient = t.getRect(
+      find.byKey(const Key('admin_appointment_patient')),
+    );
+    expect(patient.left, inInclusiveRange(12, 16));
+    expect(393 - patient.right, inInclusiveRange(12, 16));
+    final unit = find.descendant(
+      of: find.byKey(const Key('admin_appointment_unit')),
+      matching: find.byType(InputDecorator),
+    );
+    final decoration = t.widget<InputDecorator>(unit).decoration;
+    expect(decoration.fillColor, const Color(0xfff5f5f5));
+    expect(
+      decoration.floatingLabelStyle!.fontSize,
+      closeTo(11.5 * 1.3 - 1, .01),
+    );
+    expect(
+      t.getSize(find.byKey(const Key('admin_appointment_unit'))).height,
+      closeTo(56, .01),
+    );
+    final viewAll = t.widget<Text>(find.text('VIEW ALL'));
+    expect(viewAll.style!.fontWeight, FontWeight.bold);
+    expect(
+      find.ancestor(
+        of: find.text('VIEW ALL'),
+        matching: find.byWidgetPredicate(
+          (w) => w is Padding && w.padding == const EdgeInsets.only(bottom: 2),
+        ),
+      ),
+      findsOneWidget,
+    );
+    await _capture(t, '00_add_initial_clean');
+    await _finish(t);
+  });
+
+  _case('long service stays on one line beside a centered equal-height Qty', (
+    t,
+  ) async {
+    final h = AdminAppointmentHarness();
+    h.services.first['pfn_fee_name'] =
+        'Example Speech and Language Therapy Service Charge';
+    await _host(t, h);
+    await _patient(t);
+    final service = find.byKey(const Key('admin_appointment_service'));
+    final quantity = find.byKey(const Key('admin_appointment_quantity'));
+    final a = t.getRect(service), b = t.getRect(quantity);
+    expect(a.top, b.top);
+    expect(a.height, b.height);
+    expect(a.height, closeTo(56, .01));
+    final text = t.widget<Text>(
+      find.descendant(
+        of: service,
+        matching: find.text(h.services.first['pfn_fee_name'] as String),
+      ),
+    );
+    expect(text.maxLines, 1);
+    expect(text.overflow, TextOverflow.ellipsis);
+    expect(text.style!.fontWeight, FontWeight.w700);
+    final qty = t.widget<Text>(
+      find.descendant(of: quantity, matching: find.text('3')),
+    );
+    expect(qty.textAlign, TextAlign.center);
+    final add = t.widget<TextButton>(
+      find.byKey(const Key('admin_appointment_add_schedule')),
+    );
+    final shape = add.style!.shape!.resolve({})! as RoundedRectangleBorder;
+    expect(shape.borderRadius, BorderRadius.circular(13));
+    expect(
+      t.getSize(find.byKey(const Key('admin_appointment_add_schedule'))).width,
+      greaterThan(130),
+    );
+    await _capture(t, '11_long_service_and_qty');
+    await _finish(t);
+  });
+
+  _case(
+    'cancel Time Schedule fills the form and keeps native colors and bold times',
+    (t) async {
+      final h = AdminAppointmentHarness();
+      await _host(t, h);
+      await _tap(t, 'admin_appointment_tab_cancel');
+      await _capture(t, '16_cancel_initial');
+      await _patient(t);
+      final date = t.getRect(find.byKey(const Key('admin_appointment_date')));
+      final card = find.byType(NativeAdminTakenTimes);
+      final bounds = t.getRect(card);
+      expect(bounds.left, closeTo(date.left, .01));
+      expect(bounds.right, closeTo(date.right, .01));
+      expect(
+        t
+            .widget<Material>(
+              find.descendant(of: card, matching: find.byType(Material)).first,
+            )
+            .color,
+        DocColors.clouds,
+      );
+      final time = t.widget<Text>(
+        find.descendant(of: card, matching: find.text('09:00 AM')),
+      );
+      expect(time.style!.fontFamily, 'Poppins');
+      expect(time.style!.fontWeight, FontWeight.w700);
+      expect(time.style!.color, Colors.black);
+      await _finish(t);
+    },
+  );
+
+  _case(
+    'empty and selected schedule editor keep Add fixed above the safe area',
+    (t) async {
+      final h = AdminAppointmentHarness();
+      await _host(t, h);
+      await _patient(t);
+      await _tap(t, 'admin_appointment_add_schedule');
+      final commit = find.byKey(const Key('admin_schedule_commit'));
+      final bottom = t.getRect(commit);
+      expect(bottom.bottom, closeTo(852 - 34 - 20, .01));
+      expect(
+        find.ancestor(of: commit, matching: find.byType(SingleChildScrollView)),
+        findsNothing,
+      );
+      final timeInput = find.descendant(
+        of: find.byKey(const Key('admin_schedule_time')),
+        matching: find.byType(InputDecorator),
+      );
+      expect(
+        t.widget<InputDecorator>(timeInput).decoration.fillColor,
+        const Color(0xfff5f5f5),
+      );
+      await _capture(t, '12_schedule_editor_empty');
+      await _tap(t, 'admin_schedule_date');
+      t
+          .widget<CalendarDatePicker>(find.byType(CalendarDatePicker))
+          .onDateChanged(DateTime(2026, 11, 2));
+      await t.pump();
+      await t.tap(find.text('OK'));
+      await t.pumpAndSettle();
+      await _tap(t, 'admin_schedule_time');
+      await _tap(t, 'doctor_history_choice_unit_0');
+      expect(t.getRect(commit), bottom);
+      expect(
+        t.widget<InputDecorator>(timeInput).decoration.fillColor,
+        Colors.white,
+      );
+      await _capture(t, '13_schedule_editor_selected');
+      await _finish(t);
+    },
+  );
+
+  for (final size in [const Size(320, 568), const Size(852, 393)]) {
+    _case('schedule editor footer stays reachable with long content at $size', (
+      t,
+    ) async {
+      final h = AdminAppointmentHarness();
+      h.taken = [
+        for (var i = 0; i < 20; i++) {'schedule': '10:00 AM'},
+      ];
+      await _host(t, h, size: size, textScale: 1.4);
+      await _patient(t);
+      await _tap(t, 'admin_appointment_add_schedule');
+      final commit = find.byKey(const Key('admin_schedule_commit'));
+      expect(commit.hitTestable(), findsOneWidget);
+      final bottom = t.getRect(commit);
+      await _tap(t, 'admin_schedule_date');
+      t
+          .widget<CalendarDatePicker>(find.byType(CalendarDatePicker))
+          .onDateChanged(DateTime(2026, 11, 2));
+      await t.pump();
+      await t.tap(find.text('OK'));
+      await t.pumpAndSettle();
+      expect(t.getRect(commit), bottom);
+      expect(commit.hitTestable(), findsOneWidget);
+      await t.drag(
+        find.byKey(const PageStorageKey('admin_schedule_scroll')),
+        const Offset(0, -240),
+      );
+      await t.pumpAndSettle();
+      expect(t.getRect(commit), bottom);
+      expect(t.takeException(), isNull);
+      await _finish(t);
+    });
+  }
+
+  _case('patient dialog uses native margins, raised search and rounded table', (
+    t,
+  ) async {
+    final h = AdminAppointmentHarness();
+    h.patients = [
+      for (var i = 0; i < 3; i++)
+        {
+          ...h.patients.first,
+          'ph_id': '${111 + i}',
+          'ph_sub_code': '26.01.00000${i + 1}.01',
+          'pat_code': '26.01.00000${i + 1}',
+          'pat_name':
+              i == 1
+                  ? 'Example Patient With Longer Name'
+                  : 'Example Patient ${i + 1}',
+        },
+    ];
+    await _host(t, h);
+    await _tap(t, 'admin_appointment_patient');
+    final dialog = t.widget<Dialog>(
+      find.byKey(const Key('admin_appointment_picker')),
+    );
+    expect(dialog.insetPadding!.horizontal, 48);
+    final query = t.getRect(
+      find.byKey(const Key('admin_appointment_picker_query_surface')),
+    );
+    final queryInput =
+        t
+            .widget<TextField>(
+              find.byKey(const Key('admin_appointment_picker_query')),
+            )
+            .decoration!;
+    expect(queryInput.focusedBorder, InputBorder.none);
+    expect(queryInput.floatingLabelStyle!.fontSize, closeTo(11 * 1.3 - 1, .01));
+    final search = t.getRect(
+      find.byKey(const Key('admin_appointment_picker_search_surface')),
+    );
+    expect(query.height, greaterThanOrEqualTo(54));
+    expect(search.width, closeTo(search.height, .01));
+    final surface = t.widget<Material>(
+      find.byKey(const Key('admin_appointment_picker_search_surface')),
+    );
+    expect(surface.color, DocColors.primary);
+    expect(surface.elevation, greaterThan(0));
+    final table = t.widget<Material>(
+      find.byKey(const Key('admin_appointment_picker_table')),
+    );
+    expect(table.clipBehavior, Clip.antiAlias);
+    expect(table.borderRadius, BorderRadius.circular(13));
+    expect(table.elevation, greaterThan(0));
+    final latest = t.widget<Text>(
+      find.text('Latest 50 Patients Available for Schedule'),
+    );
+    expect(latest.style!.color, DocColors.primary);
+    final rowText = t.widget<Text>(find.text('Example Patient 1'));
+    expect(rowText.style!.fontWeight, FontWeight.w700);
+    expect(rowText.style!.fontVariations!.single.value, 700);
+    await _capture(t, '14_patient_dialog_native_proportions');
+    await _tap(t, 'admin_appointment_picker_cancel');
+    await _finish(t);
+  });
+
+  _case(
+    'patient dialog scrolls 50 rows and remains usable above an open keyboard',
+    (t) async {
+      final h = AdminAppointmentHarness();
+      h.patients = [
+        for (var i = 0; i < 50; i++)
+          {
+            ...h.patients.first,
+            'ph_id': '${111 + i}',
+            'pat_name': 'Example Patient ${i + 1}',
+          },
+      ];
+      await _host(t, h);
+      await _tap(t, 'admin_appointment_patient');
+      final cancel = find.byKey(const Key('admin_appointment_picker_cancel'));
+      expect(cancel.hitTestable(), findsOneWidget);
+      await t.drag(
+        find.byKey(const Key('admin_appointment_picker_list')),
+        const Offset(0, -400),
+      );
+      await t.pumpAndSettle();
+      expect(cancel.hitTestable(), findsOneWidget);
+      await t.tap(find.byKey(const Key('admin_appointment_picker_query')));
+      t.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await t.pumpAndSettle();
+      expect(
+        find.byKey(const Key('admin_appointment_picker_compact_scroll')),
+        findsOneWidget,
+      );
+      expect(cancel.hitTestable(), findsOneWidget);
+      await _capture(t, '15_patient_dialog_keyboard');
+      await _tap(t, 'admin_appointment_picker_cancel');
+      expect(h.appointmentPosts, isEmpty);
+      await _finish(t);
+    },
+  );
 }

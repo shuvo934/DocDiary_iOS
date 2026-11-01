@@ -23,6 +23,12 @@ TextStyle adminAppointmentText(
   fontFamilyFallback: const ['DocDiaryBengali'],
   fontSize: math.max(8, size * scale - 1),
   fontWeight: weight,
+  // OpenSans is a variable font registered at its regular weight. Select its
+  // native bold axis explicitly instead of relying on synthetic font matching.
+  fontVariations:
+      family == 'OpenSans'
+          ? [FontVariation('wght', weight.value.toDouble())]
+          : null,
   color: color,
   height: 1.4,
 );
@@ -64,6 +70,10 @@ class NativeAdminAppointmentShell extends StatelessWidget {
                       tooltip: editor ? 'Close' : 'Back',
                       onPressed: onBack,
                       padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 40,
+                      ),
                       icon:
                           editor
                               ? NativeReportIcon(
@@ -91,7 +101,7 @@ class NativeAdminAppointmentShell extends StatelessWidget {
                     ),
                     if (!editor)
                       Padding(
-                        padding: EdgeInsets.only(left: 4 * s),
+                        padding: EdgeInsets.only(left: 4 * s, right: 4 * s),
                         child: TextButton(
                           key: const Key('admin_appointment_view_all'),
                           onPressed: onAll,
@@ -99,6 +109,7 @@ class NativeAdminAppointmentShell extends StatelessWidget {
                             backgroundColor: const Color(0xfffda000),
                             foregroundColor: Colors.white,
                             minimumSize: const Size(64, 36),
+                            elevation: 1,
                             padding: EdgeInsets.symmetric(horizontal: 12 * s),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12 * s),
@@ -114,7 +125,7 @@ class NativeAdminAppointmentShell extends StatelessWidget {
                                 family: 'RussoOne',
                                 color: Colors.white,
                                 weight: FontWeight.bold,
-                              ),
+                              ).copyWith(letterSpacing: 1.25),
                             ),
                           ),
                         ),
@@ -144,7 +155,14 @@ class NativeAdminAppointmentShell extends StatelessWidget {
                               top: Radius.circular(30),
                             ),
                   ),
-                  child: child,
+                  child:
+                      editor
+                          ? child
+                          : Padding(
+                            // MaterialCardView's native rounded-corner content inset.
+                            padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                            child: child,
+                          ),
                 ),
               ),
             ],
@@ -167,20 +185,28 @@ class NativeAdminAppointmentField extends StatelessWidget {
     this.search = false,
     this.calendar = false,
     this.dropdown = true,
+    this.boldLabel = false,
+    this.center = false,
+    this.multiline = false,
   });
   final String label, value;
   final VoidCallback? onTap;
-  final bool enabled, search, calendar, dropdown;
+  final bool enabled, search, calendar, dropdown, boldLabel, center, multiline;
   @override
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context),
         radius = BorderRadius.circular(10);
+    final fill = enabled || calendar ? Colors.white : const Color(0xfff5f5f5);
+    final labelWeight =
+        boldLabel || calendar || search ? FontWeight.w700 : FontWeight.w400;
+    final labelColor =
+        enabled || calendar ? const Color(0xff6c6e6f) : const Color(0xff999999);
     return Semantics(
       button: onTap != null,
       enabled: enabled,
       label: '$label${value.isEmpty ? '' : ': $value'}',
       child: Material(
-        color: Colors.white,
+        color: fill,
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: radius,
@@ -193,27 +219,34 @@ class NativeAdminAppointmentField extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 56),
             child: InputDecorator(
               isEmpty: value.isEmpty,
+              textAlign: center ? TextAlign.center : TextAlign.start,
               decoration: InputDecoration(
                 enabled: enabled,
+                floatingLabelAlignment:
+                    center
+                        ? FloatingLabelAlignment.center
+                        : FloatingLabelAlignment.start,
                 labelText: label,
                 labelStyle: adminAppointmentText(
                   11,
                   s,
                   family: 'Roboto',
-                  color: const Color(0xff7e8284),
+                  color: labelColor,
+                  weight: labelWeight,
                 ),
                 floatingLabelStyle: adminAppointmentText(
                   11.5,
                   s,
                   family: 'Roboto',
-                  color: const Color(0xff7e8284),
+                  color: labelColor,
+                  weight: labelWeight,
                 ),
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: 12 * s,
                   vertical: 10 * s,
                 ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: fill,
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
@@ -227,7 +260,7 @@ class NativeAdminAppointmentField extends StatelessWidget {
                           child: NativeReportIcon(
                             ReportGlyph.calendar,
                             size: 24,
-                            color: DocColors.primary,
+                            color: const Color(0xfffda000),
                           ),
                         )
                         : null,
@@ -238,12 +271,15 @@ class NativeAdminAppointmentField extends StatelessWidget {
                           color:
                               enabled
                                   ? const Color(0xff6c6e6f)
-                                  : const Color(0xffb2bec3),
+                                  : const Color(0xff999999),
                         )
                         : null,
               ),
               child: Text(
                 value,
+                textAlign: center ? TextAlign.center : TextAlign.start,
+                maxLines: multiline ? null : 1,
+                overflow: multiline ? TextOverflow.clip : TextOverflow.ellipsis,
                 style: adminAppointmentText(
                   11,
                   s,
@@ -264,12 +300,15 @@ class NativeAdminAppointmentButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.fontSize = 13,
   });
   final String label;
   final VoidCallback? onPressed;
+  final double fontSize;
   @override
   Widget build(BuildContext context) => Material(
     color: Colors.transparent,
+    elevation: 2,
     borderRadius: BorderRadius.circular(10),
     clipBehavior: Clip.antiAlias,
     child: Ink(
@@ -288,11 +327,11 @@ class NativeAdminAppointmentButton extends StatelessWidget {
               child: Text(
                 label,
                 style: adminAppointmentText(
-                  13,
+                  fontSize,
                   adminAppointmentScale(context),
                   weight: FontWeight.w700,
                   color: Colors.white,
-                ),
+                ).copyWith(letterSpacing: 1.25),
               ),
             ),
           ),
@@ -310,12 +349,13 @@ class NativeAdminAppointmentTableRow extends StatelessWidget {
     this.header = false,
     this.onTap,
     this.fontSize = 8,
+    this.headerFontSize = 9,
   });
   final List<String> cells;
   final List<int> weights;
   final bool header;
   final VoidCallback? onTap;
-  final double fontSize;
+  final double fontSize, headerFontSize;
   @override
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context);
@@ -342,12 +382,18 @@ class NativeAdminAppointmentTableRow extends StatelessWidget {
                         cells[i],
                         textAlign: TextAlign.center,
                         style: adminAppointmentText(
-                          header ? 9 : fontSize,
+                          header ? headerFontSize : fontSize,
                           s,
                           family: header ? 'PatuaOne' : 'OpenSans',
                           weight: header ? FontWeight.w400 : FontWeight.w700,
                           color:
                               header ? Colors.white : const Color(0xff6c6e6f),
+                        ).copyWith(
+                          fontSize: math.max(
+                            8,
+                            (header ? headerFontSize : fontSize) * s,
+                          ),
+                          height: header ? 1.3 : 1.4,
                         ),
                       ),
                     ),
@@ -373,34 +419,36 @@ class NativeAdminTakenTimes extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context);
     return Material(
-      elevation: 1,
+      elevation: 2,
       borderRadius: BorderRadius.circular(10),
-      color: Colors.white,
-      child: Padding(
-        padding: EdgeInsets.all(4 * s),
+      color: DocColors.clouds,
+      child: SizedBox(
+        width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: adminAppointmentText(
-                11,
-                s,
-                weight: FontWeight.w700,
-                color: DocColors.greenSea,
+            Padding(
+              padding: EdgeInsets.fromLTRB(4 * s, 7 * s, 4 * s, 5 * s),
+              child: Text(
+                label,
+                style: adminAppointmentText(
+                  11,
+                  s,
+                  weight: FontWeight.w700,
+                  color: DocColors.greenSea,
+                ),
               ),
             ),
             for (final row in times)
               Padding(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.fromLTRB(10 * s, 4 * s, 10 * s, 4 * s),
                 child: Text(
                   row,
                   style: adminAppointmentText(
-                    9,
+                    10,
                     s,
-                    family: 'OpenSans',
                     weight: FontWeight.w700,
-                    color: const Color(0xff6c6e6f),
+                    color: Colors.black,
                   ),
                 ),
               ),

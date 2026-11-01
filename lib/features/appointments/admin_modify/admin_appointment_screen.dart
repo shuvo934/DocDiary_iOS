@@ -516,6 +516,14 @@ class _AdminAppointmentScreenState
                   value: value,
                   enabled: enabled && active,
                   search: search,
+                  center: key == 'quantity',
+                  multiline: const ['patient', 'doctor', 'unit'].contains(key),
+                  boldLabel: const [
+                    'doctor',
+                    'unit',
+                    'payment',
+                    'quantity',
+                  ].contains(key),
                   dropdown: dropdown,
                   onTap:
                       onOption == null
@@ -529,13 +537,15 @@ class _AdminAppointmentScreenState
           ),
           if (_errors[key] != null)
             Padding(
-              padding: EdgeInsets.fromLTRB(4 * s, 2, 3 * s, 3 * s),
+              padding: EdgeInsets.fromLTRB(4 * s, 4, 3 * s, 2 * s),
               child: Text(
                 _errors[key]!,
                 style: adminAppointmentText(
                   10,
                   s,
-                  color: const Color(0xffff4444),
+                  color: Colors.red,
+                  family: 'Roboto',
+                  weight: FontWeight.w600,
                 ),
               ),
             ),
@@ -618,6 +628,7 @@ class _AdminAppointmentScreenState
                         child: Padding(
                           padding: EdgeInsets.only(top: 6 * s, bottom: 5),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               field(
                                 'patient',
@@ -700,7 +711,12 @@ class _AdminAppointmentScreenState
                                 ),
                                 if (draft.cancellation != null)
                                   Padding(
-                                    padding: EdgeInsets.all(4 * s),
+                                    padding: EdgeInsets.fromLTRB(
+                                      4 * s,
+                                      8 * s,
+                                      4 * s,
+                                      4 * s,
+                                    ),
                                     child: NativeAdminTakenTimes(
                                       label: 'Time Schedule:',
                                       times: draft.cancellation!.times,
@@ -729,6 +745,7 @@ class _AdminAppointmentScreenState
                                           ],
                                           weights: [5, 4, 1],
                                           header: true,
+                                          headerFontSize: 11,
                                         ),
                                         for (final entry
                                             in draft.schedules.asMap().entries)
@@ -742,7 +759,12 @@ class _AdminAppointmentScreenState
                                           Align(
                                             alignment: Alignment.centerRight,
                                             child: Padding(
-                                              padding: EdgeInsets.all(4 * s),
+                                              padding: EdgeInsets.fromLTRB(
+                                                4 * s,
+                                                4 * s,
+                                                4 * s,
+                                                2,
+                                              ),
                                               child: TextButton(
                                                 key: const Key(
                                                   'admin_appointment_add_schedule',
@@ -757,20 +779,33 @@ class _AdminAppointmentScreenState
                                                   backgroundColor:
                                                       DocColors.primary,
                                                   foregroundColor: Colors.white,
+                                                  elevation: 2,
+                                                  minimumSize: const Size(
+                                                    88,
+                                                    36,
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 6,
+                                                      ),
                                                   shape: RoundedRectangleBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                          6,
+                                                          10 * s,
                                                         ),
                                                   ),
                                                 ),
                                                 child: Text(
                                                   'ADD SCHEDULE',
                                                   style: adminAppointmentText(
-                                                    9,
+                                                    12,
                                                     s,
                                                     family: 'PatuaOne',
+                                                    weight: FontWeight.w700,
                                                     color: Colors.white,
+                                                  ).copyWith(
+                                                    letterSpacing: 1.25,
                                                   ),
                                                 ),
                                               ),

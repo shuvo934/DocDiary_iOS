@@ -210,7 +210,9 @@ class _ScheduleState extends AdminAppointmentState<AdminScheduleScreen> {
                 style: adminAppointmentText(
                   10,
                   s,
-                  color: const Color(0xffff4444),
+                  color: Colors.red,
+                  family: 'Roboto',
+                  weight: FontWeight.w600,
                 ),
               ),
             );
@@ -227,97 +229,109 @@ class _ScheduleState extends AdminAppointmentState<AdminScheduleScreen> {
                     key: Key('admin_appointment_loading'),
                   ),
                 )
-                : SingleChildScrollView(
-                  key: const PageStorageKey('admin_schedule_scroll'),
-                  padding: EdgeInsets.all(4 * s),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          4 * s,
-                          8 * s,
-                          4 * s,
-                          4 * s,
-                        ),
-                        child: NativeAdminAppointmentField(
-                          key: const Key('admin_schedule_date'),
-                          label: 'Appointment Date',
-                          value: _day?.label ?? '',
-                          calendar: true,
-                          enabled: ready && !editing && _days.isNotEmpty,
-                          onTap: () => unawaited(_chooseDate()),
-                        ),
-                      ),
-                      warning(_dateError),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          4 * s,
-                          8 * s,
-                          4 * s,
-                          4 * s,
-                        ),
-                        child: Builder(
-                          builder:
-                              (fieldContext) => NativeAdminAppointmentField(
-                                key: const Key('admin_schedule_time'),
-                                label: 'Appointment Time',
-                                value: _time?.label ?? '',
-                                enabled:
-                                    ready &&
-                                    _timeLoaded &&
-                                    _times.isNotEmpty &&
-                                    _taken.isEmpty,
-                                onTap: () {
-                                  final box =
-                                      fieldContext.findRenderObject()!
-                                          as RenderBox;
-                                  unawaited(
-                                    _chooseTime(
-                                      box.localToGlobal(Offset.zero) & box.size,
-                                    ),
-                                  );
-                                },
+                : Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        key: const PageStorageKey('admin_schedule_scroll'),
+                        padding: EdgeInsets.all(4 * s),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                4 * s,
+                                8 * s,
+                                4 * s,
+                                4 * s,
                               ),
+                              child: NativeAdminAppointmentField(
+                                key: const Key('admin_schedule_date'),
+                                label: 'Appointment Date',
+                                value: _day?.label ?? '',
+                                calendar: true,
+                                enabled: ready && !editing && _days.isNotEmpty,
+                                onTap: () => unawaited(_chooseDate()),
+                              ),
+                            ),
+                            warning(_dateError),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                4 * s,
+                                8 * s,
+                                4 * s,
+                                4 * s,
+                              ),
+                              child: Builder(
+                                builder:
+                                    (fieldContext) =>
+                                        NativeAdminAppointmentField(
+                                          key: const Key('admin_schedule_time'),
+                                          label: 'Appointment Time',
+                                          value: _time?.label ?? '',
+                                          enabled:
+                                              ready &&
+                                              _timeLoaded &&
+                                              _times.isNotEmpty &&
+                                              _taken.isEmpty,
+                                          onTap: () {
+                                            final box =
+                                                fieldContext.findRenderObject()!
+                                                    as RenderBox;
+                                            unawaited(
+                                              _chooseTime(
+                                                box.localToGlobal(Offset.zero) &
+                                                    box.size,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                              ),
+                            ),
+                            warning(_timeError),
+                            if (_taken.isNotEmpty)
+                              Padding(
+                                padding: EdgeInsets.all(4 * s),
+                                child: NativeAdminTakenTimes(
+                                  label: 'Taken Schedule:',
+                                  times: _taken,
+                                ),
+                              ),
+                            if (error != null && !busy)
+                              Padding(
+                                padding: EdgeInsets.all(4 * s),
+                                child: TextButton(
+                                  key: const Key('admin_schedule_retry'),
+                                  onPressed:
+                                      ready
+                                          ? () => unawaited(
+                                            run(
+                                              _day == null
+                                                  ? refresh
+                                                  : _loadTimes,
+                                            ),
+                                          )
+                                          : null,
+                                  child: const Text('Retry'),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      warning(_timeError),
-                      if (_taken.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.all(4 * s),
-                          child: NativeAdminTakenTimes(
-                            label: 'Taken Schedule:',
-                            times: _taken,
-                          ),
-                        ),
-                      if (error != null && !busy)
-                        Padding(
-                          padding: EdgeInsets.all(4 * s),
-                          child: TextButton(
-                            key: const Key('admin_schedule_retry'),
-                            onPressed:
-                                ready
-                                    ? () => unawaited(
-                                      run(_day == null ? refresh : _loadTimes),
-                                    )
-                                    : null,
-                            child: const Text('Retry'),
-                          ),
-                        ),
-                      SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: NativeAdminAppointmentButton(
-                            key: const Key('admin_schedule_commit'),
-                            label: editing ? 'UPDATE SCHEDULE' : 'ADD SCHEDULE',
-                            onPressed:
-                                ready ? () => unawaited(_commit()) : null,
-                          ),
+                    ),
+                    SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: NativeAdminAppointmentButton(
+                          key: const Key('admin_schedule_commit'),
+                          fontSize: 14,
+                          label: editing ? 'UPDATE SCHEDULE' : 'ADD SCHEDULE',
+                          onPressed: ready ? () => unawaited(_commit()) : null,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
       ),
     );
