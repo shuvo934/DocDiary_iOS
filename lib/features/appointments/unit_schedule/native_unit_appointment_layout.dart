@@ -135,7 +135,7 @@ class NativeUnitAppointmentLayout extends StatelessWidget {
                 fieldRow(
                   NativeScheduleSelectionField(
                     fieldKey: _key('unit'),
-                    label: unitLabel ?? (unit == null ? 'Select Unit' : 'Unit'),
+                    label: unit == null ? 'Select Unit' : 'Unit',
                     value: unit?.name ?? '',
                     sdp: sdp,
                     enabled: unitEnabled,
@@ -416,7 +416,7 @@ class NativeScheduleSelectionField extends StatelessWidget {
     builder:
         (context) => Material(
           elevation: 1,
-          color: Colors.white,
+          color: enabled ? Colors.white : const Color(0xfff5f5f5),
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -450,7 +450,7 @@ class NativeScheduleSelectionField extends StatelessWidget {
                     color: Color(0xff6c6e6f),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: enabled ? Colors.white : const Color(0xfff5f5f5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 12,

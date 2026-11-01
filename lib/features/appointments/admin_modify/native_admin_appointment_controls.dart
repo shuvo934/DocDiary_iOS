@@ -196,11 +196,11 @@ class NativeAdminAppointmentField extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context),
         radius = BorderRadius.circular(10);
-    final fill = enabled || calendar ? Colors.white : const Color(0xfff5f5f5);
+    final fill = enabled ? Colors.white : const Color(0xfff5f5f5);
     final labelWeight =
         boldLabel || calendar || search ? FontWeight.w700 : FontWeight.w400;
     final labelColor =
-        enabled || calendar ? const Color(0xff6c6e6f) : const Color(0xff999999);
+        enabled ? const Color(0xff6c6e6f) : const Color(0xff999999);
     return Semantics(
       button: onTap != null,
       enabled: enabled,

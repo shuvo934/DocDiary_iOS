@@ -337,7 +337,7 @@ class _PickerState extends AdminAppointmentState<NativeAdminAppointmentPicker> {
           ),
         if (_patient && _search.isEmpty && !busy && current && foreground)
           Padding(
-            padding: EdgeInsets.fromLTRB(4 * s, 8 * s, 4 * s, 0),
+            padding: EdgeInsets.fromLTRB(6 * s, 8 * s, 4 * s, 0),
             child: Text(
               widget.cancel
                   ? 'Latest 50 Patients Available for Cancel Schedule'

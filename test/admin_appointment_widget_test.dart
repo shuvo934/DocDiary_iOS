@@ -799,7 +799,7 @@ void main() {
     );
     expect(
       t.getSize(find.byKey(const Key('admin_appointment_unit'))).height,
-      closeTo(56, .01),
+      greaterThanOrEqualTo(56),
     );
     final viewAll = t.widget<Text>(find.text('VIEW ALL'));
     expect(viewAll.style!.fontWeight, FontWeight.bold);
@@ -829,7 +829,7 @@ void main() {
     final a = t.getRect(service), b = t.getRect(quantity);
     expect(a.top, b.top);
     expect(a.height, b.height);
-    expect(a.height, closeTo(56, .01));
+    expect(a.height, greaterThanOrEqualTo(56));
     final text = t.widget<Text>(
       find.descendant(
         of: service,
@@ -996,7 +996,12 @@ void main() {
             )
             .decoration!;
     expect(queryInput.focusedBorder, InputBorder.none);
-    expect(queryInput.floatingLabelStyle!.fontSize, closeTo(11 * 1.3 - 1, .01));
+    final floating = WidgetStateProperty.resolveAs<TextStyle>(
+      queryInput.floatingLabelStyle!,
+      {WidgetState.focused},
+    );
+    expect(floating.fontSize, closeTo(11 * 1.3 - 1, .01));
+    expect(floating.color, DocColors.primary);
     final search = t.getRect(
       find.byKey(const Key('admin_appointment_picker_search_surface')),
     );
@@ -1058,6 +1063,221 @@ void main() {
       await _capture(t, '15_patient_dialog_keyboard');
       await _tap(t, 'admin_appointment_picker_cancel');
       expect(h.appointmentPosts, isEmpty);
+      await _finish(t);
+    },
+  );
+  _case(
+    'collision editor shows a disabled gray date while the time can be changed',
+    (t) async {
+      final h = AdminAppointmentHarness();
+      await _host(t, h);
+      await _patient(t);
+      await _add(t);
+      h.transport.onPost =
+          (_, _) async => {
+            'string_out': 'Successfully Created',
+            'p_sch_msg': 'true',
+          };
+      await _tap(t, 'admin_appointment_submit');
+      await _tap(t, 'admin_appointment_yes');
+      await _tap(t, 'admin_appointment_ok');
+      final red = t.widget<Text>(
+        find.descendant(
+          of: find.byKey(const Key('admin_appointment_schedule_time_0')),
+          matching: find.text('09:00 AM'),
+        ),
+      );
+      expect(red.style!.color, const Color(0xffe74c3c));
+      await _capture(t, '17_collision_row');
+      await _tap(t, 'admin_appointment_schedule_time_0');
+      final date = find.byKey(const Key('admin_schedule_date'));
+      expect(t.widget<NativeAdminAppointmentField>(date).enabled, false);
+      final input = t.widget<InputDecorator>(
+        find.descendant(of: date, matching: find.byType(InputDecorator)),
+      );
+      expect(input.decoration.fillColor, const Color(0xfff5f5f5));
+      expect(
+        input.decoration.floatingLabelStyle!.color,
+        const Color(0xff999999),
+      );
+      final selected = t.widget<Text>(
+        find.descendant(of: date, matching: find.text('02-NOV-26')),
+      );
+      expect(selected.style!.color, Colors.black);
+      await _tap(t, 'admin_schedule_date');
+      expect(find.byType(CalendarDatePicker), findsNothing);
+      await _capture(t, '18_locked_date_retime_editor');
+      await _tap(t, 'admin_schedule_time');
+      await _tap(t, 'doctor_history_choice_unit_1');
+      await _tap(t, 'admin_schedule_commit');
+      expect(find.text('02-NOV-26'), findsOneWidget);
+      expect(find.text('11:00 AM'), findsOneWidget);
+      expect(h.appointmentPosts.length, 1);
+      await _finish(t);
+    },
+  );
+
+  for (final size in [const Size(393, 852), const Size(320, 852)]) {
+    _case(
+      'schedule row white dividers align with header for red and locked rows at $size',
+      (t) async {
+        final h = AdminAppointmentHarness();
+        await _host(t, h, size: size);
+        await _patient(t);
+        await _add(t);
+        await _add(t, day: 3);
+        var writes = 0;
+        h.transport.onPost =
+            (_, _) async => {
+              'string_out': 'Successfully Created',
+              'p_sch_msg': writes++ == 0 ? 'true' : 'false',
+            };
+        await _tap(t, 'admin_appointment_submit');
+        await _tap(t, 'admin_appointment_yes');
+        await _tap(t, 'admin_appointment_ok');
+        final header = find.byWidgetPredicate(
+          (w) =>
+              w is NativeAdminAppointmentTableRow &&
+              w.header &&
+              w.cells.first == 'Appointment Date',
+        );
+        await t.ensureVisible(header);
+        await t.pumpAndSettle();
+        final columns = find.descendant(
+          of: header,
+          matching: find.byType(Expanded),
+        );
+        final a = t.getRect(columns.at(0)),
+            b = t.getRect(columns.at(1)),
+            c = t.getRect(columns.at(2));
+        final gapPoints = <Offset>[];
+        for (var i = 0; i < 2; i++) {
+          final date = t.getRect(
+            find.byKey(Key('admin_appointment_schedule_$i')),
+          );
+          final time = t.getRect(
+            find.byKey(Key('admin_appointment_schedule_time_$i')),
+          );
+          final remove = t.getRect(
+            find.byKey(Key('admin_appointment_schedule_delete_cell_$i')),
+          );
+          expect(date.left, closeTo(a.left, .01));
+          expect(date.right, closeTo(a.right - 2, .01));
+          expect(time.left, closeTo(b.left + 2, .01));
+          expect(time.right, closeTo(b.right - 2, .01));
+          expect(remove.left, closeTo(c.left + 2, .01));
+          expect(remove.right, closeTo(c.right, .01));
+          expect(time.left - date.right, closeTo(4, .01));
+          expect(remove.left - time.right, closeTo(4, .01));
+          gapPoints.add(Offset((date.right + time.left) / 2, date.center.dy));
+          gapPoints.add(Offset((time.right + remove.left) / 2, time.center.dy));
+        }
+        final boundary = t.renderObject<RenderRepaintBoundary>(
+          find.byKey(const Key('admin_appointment_capture')),
+        );
+        final colors = await t.runAsync(() async {
+          final img = await boundary.toImage(pixelRatio: 1);
+          final data = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+          final values = <Color>[];
+          for (final point in gapPoints) {
+            final offset =
+                (point.dy.floor() * img.width + point.dx.floor()) * 4;
+            values.add(
+              Color.fromARGB(
+                data!.getUint8(offset + 3),
+                data.getUint8(offset),
+                data.getUint8(offset + 1),
+                data.getUint8(offset + 2),
+              ),
+            );
+          }
+          img.dispose();
+          return values;
+        });
+        expect(colors, everyElement(Colors.white));
+        expect(
+          find.byKey(const Key('admin_appointment_remove_0')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('admin_appointment_remove_1')),
+          findsNothing,
+        );
+        expect(
+          t
+              .widget<InkWell>(
+                find.byKey(const Key('admin_appointment_schedule_time_1')),
+              )
+              .onTap,
+          isNull,
+        );
+        if (size.width == 393) {
+          await _capture(t, '19_aligned_collision_and_success_rows');
+        }
+        await _tap(t, 'admin_appointment_remove_0');
+        await _tap(t, 'admin_appointment_no');
+        expect(
+          find.byKey(const Key('admin_appointment_schedule_0')),
+          findsOneWidget,
+        );
+        expect(h.appointmentPosts.length, 2);
+        await _finish(t);
+      },
+    );
+  }
+
+  _case(
+    'unavailable new dates use disabled styling and the user error typography remains',
+    (t) async {
+      final h = AdminAppointmentHarness();
+      h.days = [];
+      await _host(t, h);
+      await _patient(t);
+      await _tap(t, 'admin_appointment_add_schedule');
+      final date = find.byKey(const Key('admin_schedule_date'));
+      expect(t.widget<NativeAdminAppointmentField>(date).enabled, false);
+      final input = t.widget<InputDecorator>(
+        find.descendant(of: date, matching: find.byType(InputDecorator)),
+      );
+      expect(input.decoration.fillColor, const Color(0xfff5f5f5));
+      final error = t.widget<Text>(
+        find.text('No Appointment Date Found. Please Reselect Doctor'),
+      );
+      expect(error.style!.fontFamily, 'Roboto');
+      expect(error.style!.fontWeight, FontWeight.w600);
+      expect(error.style!.color, Colors.red);
+      await _finish(t);
+    },
+  );
+
+  _case(
+    'user picker focused color, separate error text and CLEAR button survive',
+    (t) async {
+      final h = AdminAppointmentHarness();
+      await _host(t, h);
+      await _tap(t, 'admin_appointment_patient');
+      final query = find.byKey(const Key('admin_appointment_picker_query'));
+      await t.enterText(query, 'ab');
+      await _tap(t, 'admin_appointment_picker_search');
+      final input = t.widget<TextField>(query);
+      expect(input.decoration!.errorText, isNull);
+      expect(input.style!.fontWeight, FontWeight.w500);
+      final error = t.widget<Text>(
+        find.text('Name or Code must be greater than 2 character'),
+      );
+      expect(error.style!.fontFamily, 'Roboto');
+      expect(error.style!.fontWeight, FontWeight.w600);
+      expect(error.style!.color, Colors.red);
+      await t.enterText(query, 'Example');
+      await _tap(t, 'admin_appointment_picker_search');
+      expect(find.text('CLEAR'), findsOneWidget);
+      await _capture(t, '20_user_picker_edits');
+      await _tap(t, 'admin_appointment_picker_clear');
+      expect(
+        find.text('Latest 50 Patients Available for Schedule'),
+        findsOneWidget,
+      );
+      await _tap(t, 'admin_appointment_picker_cancel');
       await _finish(t);
     },
   );

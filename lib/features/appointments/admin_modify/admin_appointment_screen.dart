@@ -522,7 +522,9 @@ class _AdminAppointmentScreenState
                     'doctor',
                     'unit',
                     'payment',
+                    'service',
                     'quantity',
+                    'date',
                   ].contains(key),
                   dropdown: dropdown,
                   onTap:
@@ -838,73 +840,73 @@ class _AdminAppointmentScreenState
     );
   }
 
-  Widget _scheduleRow(int index, AdminSchedule row, double s, bool active) =>
-      Padding(
-        padding: const EdgeInsets.only(top: 1),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                flex: 9,
-                child: Material(
-                  color: DocColors.clouds,
-                  child: InkWell(
-                    key: Key('admin_appointment_schedule_$index'),
-                    onTap:
-                        active && !row.locked
-                            ? () => unawaited(_schedule(index))
-                            : null,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Text(
-                              row.day.label,
-                              textAlign: TextAlign.center,
-                              style: adminAppointmentText(
-                                9,
-                                s,
-                                family: 'OpenSans',
-                                weight: FontWeight.w700,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          flex: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Text(
-                              row.time.label,
-                              textAlign: TextAlign.center,
-                              style: adminAppointmentText(
-                                9,
-                                s,
-                                family: 'OpenSans',
-                                weight: FontWeight.w700,
-                                color:
-                                    row.submitted
-                                        ? row.duplicate
-                                            ? const Color(0xffe74c3c)
-                                            : DocColors.greenSea
-                                        : Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+  Widget _scheduleRow(int index, AdminSchedule row, double s, bool active) {
+    final edit =
+        active && !row.locked ? () => unawaited(_schedule(index)) : null;
+    Widget cell(String text, {required Key key, required Color color}) =>
+        Material(
+          color: DocColors.clouds,
+          child: InkWell(
+            key: key,
+            onTap: edit,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Center(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: adminAppointmentText(
+                    9.5,
+                    s,
+                    family: 'OpenSans',
+                    weight: FontWeight.w700,
+                    color: color,
                   ),
                 ),
               ),
-              const SizedBox(width: 4),
-              Expanded(
+            ),
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.only(top: 1),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Keep the same 5:4:1 columns and half-gutters as the header.
+            // The gutter is outside each colored surface, so it stays white.
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 2),
+                child: cell(
+                  row.day.label,
+                  key: Key('admin_appointment_schedule_$index'),
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: cell(
+                  row.time.label,
+                  key: Key('admin_appointment_schedule_time_$index'),
+                  color:
+                      row.submitted
+                          ? row.duplicate
+                              ? const Color(0xffe74c3c)
+                              : DocColors.greenSea
+                          : Colors.black54,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 2),
                 child: ColoredBox(
+                  key: Key('admin_appointment_schedule_delete_cell_$index'),
                   color: DocColors.clouds,
                   child:
                       row.locked
@@ -927,8 +929,10 @@ class _AdminAppointmentScreenState
                           ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
