@@ -6,6 +6,7 @@ import '../../core/failure.dart';
 import '../auth/auth_controller.dart';
 import '../auth/profile_repository.dart';
 import 'native_report_controls.dart';
+import 'native_report_actions.dart';
 import 'native_report_icons.dart';
 import 'native_report_pdf_platform.dart';
 import 'report_manager_menu.dart';
@@ -38,7 +39,7 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
   late final _platform = widget.platform ?? IosReportPdfPlatform();
   ReportPdfTransport? _download;
   Uint8List? _bytes;
-  bool _pdfReady = false, _paging = false, _saving = false;
+  bool _pdfReady = false, _paging = false, _saving = false, _zooming = false;
   int _page = 0, _count = 0;
   @override
   AuthController get auth => widget.auth;
@@ -47,10 +48,10 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
   @override
   ReportManagerItem get item => widget.request.item;
   @override
-  bool get isForegroundAction => _paging || _saving;
+  bool get isForegroundAction => _paging || _saving || _zooming;
   @override
   ReportTask get refreshOnResume => loadReport;
-  bool get _active => ready && _pdfReady && !_paging && !_saving;
+  bool get _active => ready && _pdfReady && !isForegroundAction;
   bool get _visible =>
       current && foreground && (ModalRoute.of(context)?.isCurrent ?? false);
   @override
@@ -189,6 +190,35 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
     }
   }
 
+  Future<void> _zoom(bool zoomIn) async {
+    if (!_active) return;
+    final bytes = _bytes;
+    setState(() {
+      _zooming = true;
+    });
+    try {
+      await _platform.zoom(zoomIn);
+    } catch (_) {
+      if (current && foreground && identical(bytes, _bytes)) {
+        await runReportTask(
+          loadReport,
+          failure: const AppFailure(
+            'The report zoom could not be changed. Please try again.',
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _zooming = false;
+        });
+      }
+      if (_visible && _bytes == null && error == null) {
+        unawaited(runReportTask(loadReport));
+      }
+    }
+  }
+
   void _renderError(Uint8List bytes, String _) {
     if (!current || !foreground || !identical(bytes, _bytes)) return;
     setState(() {
@@ -215,35 +245,12 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
   @override
   Widget build(BuildContext context) {
     final bytes = _bytes, scale = reportScale(context);
-    Widget navigation(bool forward) => Padding(
-      padding: EdgeInsets.fromLTRB(
-        (forward ? 12 : 0) * scale,
-        4 * scale,
-        4 * scale,
-        4 * scale,
-      ),
-      child: Material(
-        color: DocColors.primary,
-        elevation: 1.5,
-        borderRadius: BorderRadius.circular(15 * scale),
-        child: IconButton(
-          key: Key(forward ? 'report_pdf_next' : 'report_pdf_previous'),
-          tooltip: forward ? 'Next page' : 'Previous page',
-          onPressed:
-              _active && (forward ? _page + 1 < _count : _page > 0)
-                  ? () => unawaited(_pageTo(_page + (forward ? 1 : -1)))
-                  : null,
-          icon: Opacity(
-            opacity:
-                _active && (forward ? _page + 1 < _count : _page > 0) ? 1 : .4,
-            child: NativeReportIcon(
-              forward ? ReportGlyph.forward : ReportGlyph.back,
-              size: 24,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
+    Widget navigation(bool forward) => NativeReportPageButton(
+      forward: forward,
+      onPressed:
+          _active && (forward ? _page + 1 < _count : _page > 0)
+              ? () => unawaited(_pageTo(_page + (forward ? 1 : -1)))
+              : null,
     );
     return PopScope(
       canPop: !busy && !isForegroundAction && !dialogs.isOpen,
@@ -285,9 +292,30 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
                       ),
                     ),
                     if (_pdfReady)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [navigation(false), navigation(true)],
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4 * scale),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            NativeReportZoomButton(
+                              zoomIn: false,
+                              onPressed:
+                                  _active
+                                      ? () => unawaited(_zoom(false))
+                                      : null,
+                            ),
+                            const SizedBox(width: 12),
+                            navigation(false),
+                            const SizedBox(width: 8),
+                            navigation(true),
+                            const SizedBox(width: 12),
+                            NativeReportZoomButton(
+                              zoomIn: true,
+                              onPressed:
+                                  _active ? () => unawaited(_zoom(true)) : null,
+                            ),
+                          ],
+                        ),
                       ),
                   ],
                 ),

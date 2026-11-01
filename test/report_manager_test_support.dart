@@ -214,11 +214,16 @@ class FakeReportPdfTransport implements ReportPdfTransport {
 class FakeReportPdfPlatform implements ReportPdfPlatform {
   Uint8List? _loaded;
   ValueChanged<String>? error;
+  ValueChanged<int>? loaded;
+  int pageCount = 3;
+  bool autoLoad = true;
   final pages = <int>[];
+  final zooms = <bool>[];
   int saves = 0, suspends = 0, disposals = 0;
   Completer<bool>? saving;
   Future<int> Function(int)? onPage;
   Future<bool> Function()? onSave;
+  Future<void> Function(bool)? onZoom;
   @override
   Widget buildView({
     required Uint8List bytes,
@@ -227,9 +232,14 @@ class FakeReportPdfPlatform implements ReportPdfPlatform {
     required ValueChanged<String> onError,
   }) {
     error = onError;
+    loaded = onLoaded;
     if (!identical(bytes, _loaded)) {
       _loaded = bytes;
-      WidgetsBinding.instance.addPostFrameCallback((_) => onLoaded(3));
+      if (autoLoad) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => onLoaded(pageCount),
+        );
+      }
     }
     return ColoredBox(
       key: const Key('synthetic_report_pdf_page'),
@@ -247,6 +257,12 @@ class FakeReportPdfPlatform implements ReportPdfPlatform {
   Future<int> page(int index) async {
     pages.add(index);
     return onPage == null ? index : onPage!(index);
+  }
+
+  @override
+  Future<void> zoom(bool zoomIn) async {
+    zooms.add(zoomIn);
+    await onZoom?.call(zoomIn);
   }
 
   @override

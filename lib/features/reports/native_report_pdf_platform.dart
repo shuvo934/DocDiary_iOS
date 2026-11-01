@@ -11,6 +11,7 @@ abstract interface class ReportPdfPlatform {
     required ValueChanged<String> onError,
   });
   Future<int> page(int index);
+  Future<void> zoom(bool zoomIn);
   Future<bool> save();
   Future<void> suspend();
   void dispose();
@@ -81,6 +82,10 @@ class IosReportPdfPlatform implements ReportPdfPlatform {
   @override
   Future<bool> save() async =>
       await _active.invokeMethod<bool>('save') ?? false;
+  @override
+  Future<void> zoom(bool zoomIn) async => await _active
+      .invokeMethod<void>('zoom', {'factor': zoomIn ? 1.25 : .8})
+      .timeout(const Duration(seconds: 20));
   @override
   Future<void> suspend() async {
     ++_generation;

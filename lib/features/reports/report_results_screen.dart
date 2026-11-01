@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../core/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../auth/profile_repository.dart';
 import 'native_report_controls.dart';
+import 'native_report_actions.dart';
 import 'native_report_table.dart';
 import 'report_manager_menu.dart';
 import 'report_manager_models.dart';
@@ -66,8 +66,7 @@ class _ReportResultsState extends ReportScreenState<ReportResultsScreen> {
       onClose: () => unawaited(closeReport()),
       action:
           session != null && reportHasPdf(session!.center.baseUri)
-              ? TextButton(
-                key: const Key('report_pdf_view'),
+              ? NativeReportPdfButton(
                 onPressed:
                     ready && _table != null
                         ? () => unawaited(
@@ -81,21 +80,6 @@ class _ReportResultsState extends ReportScreenState<ReportResultsScreen> {
                           ),
                         )
                         : null,
-                style: TextButton.styleFrom(
-                  backgroundColor: DocColors.primary,
-                  disabledBackgroundColor: const Color(0xffb2bec3),
-                  foregroundColor: Colors.white,
-                  shape: const StadiumBorder(),
-                ),
-                child: Text(
-                  'PDF VIEW',
-                  style: reportText(
-                    9,
-                    reportScale(context),
-                    family: 'PatuaOne',
-                    color: Colors.white,
-                  ),
-                ),
               )
               : null,
       child:

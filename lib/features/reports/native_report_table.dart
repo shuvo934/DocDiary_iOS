@@ -54,7 +54,8 @@ class NativeReportTable extends StatelessWidget {
                 ],
               ),
             ),
-        Expanded(
+        Flexible(
+          fit: FlexFit.loose,
           child: Padding(
             padding: EdgeInsets.fromLTRB(
               4 * scale,
@@ -80,48 +81,53 @@ class NativeReportTable extends StatelessWidget {
                   final content = SizedBox(
                     width: width,
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         _row(context, table.headers, widths, header: true),
                         Container(width: width, height: 1, color: Colors.black),
-                        Expanded(
+                        Flexible(
+                          fit: FlexFit.loose,
                           child: ListView.separated(
                             key: const Key('report_table_vertical'),
+                            shrinkWrap: true,
                             padding: EdgeInsets.zero,
-                            itemCount: table.rows.length,
+                            itemCount: table.rows.length + 1,
                             separatorBuilder:
-                                (_, _) => const SizedBox(
-                                  height: 1,
-                                  child: ColoredBox(color: Color(0xff95a5a6)),
-                                ),
-                            itemBuilder:
-                                (context, index) => Column(
-                                  children: [
-                                    _row(
-                                      context,
-                                      table.rows[index].cells,
-                                      widths,
-                                      rowKey: Key('report_table_row_$index'),
-                                    ),
-                                    if (table.rows[index].groupEnd)
-                                      const SizedBox(
-                                        height: 1,
-                                        width: double.infinity,
-                                        child: ColoredBox(color: Colors.black),
-                                      ),
+                                (_, index) =>
+                                    index + 1 == table.rows.length
+                                        ? const SizedBox.shrink()
+                                        : SizedBox(
+                                          height: 1,
+                                          child: ColoredBox(
+                                            color:
+                                                table.rows[index].groupEnd
+                                                    ? Colors.black
+                                                    : const Color(0xff95a5a6),
+                                          ),
+                                        ),
+                            itemBuilder: (context, index) {
+                              if (index == table.rows.length) {
+                                return _row(
+                                  context,
+                                  [table.footerLabel, ...table.totals],
+                                  [
+                                    widths
+                                        .take(table.footerSpan)
+                                        .fold<double>(0, (a, b) => a + b),
+                                    ...widths.skip(table.footerSpan),
                                   ],
-                                ),
+                                  footer: true,
+                                  rowKey: const Key('report_table_total'),
+                                );
+                              }
+                              return _row(
+                                context,
+                                table.rows[index].cells,
+                                widths,
+                                rowKey: Key('report_table_row_$index'),
+                              );
+                            },
                           ),
-                        ),
-                        _row(
-                          context,
-                          [table.footerLabel, ...table.totals],
-                          [
-                            widths
-                                .take(table.footerSpan)
-                                .fold<double>(0, (a, b) => a + b),
-                            ...widths.skip(table.footerSpan),
-                          ],
-                          footer: true,
                         ),
                       ],
                     ),
@@ -179,15 +185,20 @@ class NativeReportTable extends StatelessWidget {
                             )
                             : BorderSide.none,
                     top:
-                        footer
+                        footer && table.rows.isNotEmpty
                             ? const BorderSide(color: Colors.black)
                             : BorderSide.none,
                   ),
                 ),
-                child: Center(
+                child: Align(
+                  alignment:
+                      footer && i == 0
+                          ? Alignment.centerLeft
+                          : Alignment.center,
                   child: Text(
                     cells[i],
-                    textAlign: TextAlign.center,
+                    textAlign:
+                        footer && i == 0 ? TextAlign.left : TextAlign.center,
                     style: reportText(
                       footer
                           ? table.item == ReportManagerItem.paymentSummary
