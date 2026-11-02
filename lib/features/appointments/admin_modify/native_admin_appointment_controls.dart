@@ -323,7 +323,7 @@ class NativeAdminAppointmentButton extends StatelessWidget {
         ),
       ),
       child: InkWell(
-        onTap: onPressed,
+        onTap: enabled ? onPressed : null,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 48),
           child: Padding(
