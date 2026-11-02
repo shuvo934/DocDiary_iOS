@@ -37,10 +37,12 @@ int? paymentCents(String text) {
   return value <= BigInt.from(paymentMaxCents) ? value.toInt() : null;
 }
 
-String paymentMoney(int cents, {bool fixed = false}) =>
-    !fixed && cents % 100 == 0
-        ? '${cents ~/ 100}'
-        : '${cents ~/ 100}.${(cents % 100).toString().padLeft(2, '0')}';
+String paymentMoney(int cents, {bool fixed = false}) {
+  final magnitude = cents.abs(), sign = cents < 0 ? '-' : '';
+  return !fixed && magnitude % 100 == 0
+      ? '$sign${magnitude ~/ 100}'
+      : '$sign${magnitude ~/ 100}.${(magnitude % 100).toString().padLeft(2, '0')}';
+}
 
 String? paymentQuantityError(String value) {
   if (value.isEmpty) return 'Please Provide Quantity';
@@ -161,14 +163,19 @@ class PaymentServiceLine {
 }
 
 class PaymentAllocation {
-  PaymentAllocation(this.method, this.cents) {
+  PaymentAllocation(this.method, this.cents, {this.savedId = ''}) {
     paymentRequire(
       cents > 0 && cents <= paymentMaxCents,
       'Please Provide Amount',
     );
+    paymentRequire(
+      savedId.isEmpty || paymentId(savedId),
+      'Invalid saved payment method.',
+    );
   }
   final PaymentChoice method;
   final int cents;
+  final String savedId;
 }
 
 class PaymentQuote {
@@ -188,13 +195,24 @@ class PaymentQuote {
 }
 
 class PaymentConfirmation {
-  PaymentConfirmation(this.quote, List<PaymentAllocation> allocations)
-    : allocations = List.unmodifiable(allocations) {
+  PaymentConfirmation(
+    this.quote,
+    List<PaymentAllocation> allocations, {
+    List<PaymentAllocation> saved = const [],
+  }) : allocations = List.unmodifiable(allocations) {
     final keys = allocations.map((row) => row.method.key).toSet();
     paymentRequire(
       keys.length == allocations.length &&
           allocations.every(
-            (a) => quote.methods.any((m) => m.key == a.method.key),
+            (a) =>
+                a.savedId.isEmpty
+                    ? quote.methods.any((m) => m.key == a.method.key)
+                    : saved.any(
+                      (original) =>
+                          original.savedId == a.savedId &&
+                          original.method.key == a.method.key &&
+                          original.cents == a.cents,
+                    ),
           ) &&
           allocations.fold<int>(0, (n, a) => n + a.cents) == quote.grandTotal,
       'Please provide full payment information',

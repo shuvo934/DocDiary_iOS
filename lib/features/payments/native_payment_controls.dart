@@ -251,9 +251,11 @@ class NativePaymentPatientDetails extends StatelessWidget {
     super.key,
     required this.patient,
     required this.date,
+    this.prescriptionCode,
   });
   final PaymentChoice patient;
   final String date;
+  final String? prescriptionCode;
   @override
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context);
@@ -295,6 +297,10 @@ class NativePaymentPatientDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (prescriptionCode != null) ...[
+          cell('Prescription Code:', prescriptionCode!),
+          const SizedBox(height: 4),
+        ],
         cell('Patient Name:', patient.name),
         const SizedBox(height: 4),
         pair('Patient Code:', patient.value('pat_code'), 'Payment Date:', date),
@@ -487,7 +493,7 @@ class NativePaymentServices extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    flex: 72,
+                    flex: 75,
                     child: Text(
                       'Total Amount',
                       style: adminAppointmentText(
@@ -499,13 +505,14 @@ class NativePaymentServices extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    flex: 20,
+                    flex: 17,
                     child: Center(
                       child: Text(
                         paymentMoney(
                           lines.fold<int>(0, (n, l) => n + l.amount),
                         ),
                         key: const Key('payment_total'),
+                        textAlign: TextAlign.center,
                         style: adminAppointmentText(
                           11,
                           s,

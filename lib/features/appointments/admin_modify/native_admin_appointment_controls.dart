@@ -301,10 +301,12 @@ class NativeAdminAppointmentButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.fontSize = 13,
+    this.enabled = true,
   });
   final String label;
   final VoidCallback? onPressed;
   final double fontSize;
+  final bool enabled;
   @override
   Widget build(BuildContext context) => Material(
     color: Colors.transparent,
@@ -312,9 +314,12 @@ class NativeAdminAppointmentButton extends StatelessWidget {
     borderRadius: BorderRadius.circular(10),
     clipBehavior: Clip.antiAlias,
     child: Ink(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [DocColors.primary, DocColors.greenSea],
+          colors:
+              enabled
+                  ? [DocColors.primary, DocColors.greenSea]
+                  : [Color(0xffb2bec3), Color(0xffb2bec3)],
         ),
       ),
       child: InkWell(

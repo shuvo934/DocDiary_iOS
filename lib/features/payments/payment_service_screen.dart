@@ -6,6 +6,8 @@ import 'payment_models.dart';
 import 'payment_repository.dart';
 import 'payment_state.dart';
 import 'native_payment_controls.dart';
+import 'payment_update_models.dart';
+import 'native_payment_update_controls.dart';
 
 class PaymentServiceScreen extends StatefulWidget {
   const PaymentServiceScreen({
@@ -15,12 +17,14 @@ class PaymentServiceScreen extends StatefulWidget {
     required this.patient,
     required this.lines,
     this.editing,
+    this.updateRow,
   });
   final AuthController auth;
   final PaymentRepository repository;
   final PaymentChoice patient;
   final List<PaymentServiceLine> lines;
   final PaymentServiceLine? editing;
+  final PaymentUpdateLine? updateRow;
   @override
   State<PaymentServiceScreen> createState() => _ServiceState();
 }
@@ -61,6 +65,23 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
     AccountProfile profile,
     bool Function() isCurrent,
   ) async {
+    if (widget.updateRow != null) {
+      if (!_loaded && widget.updateRow!.canChangeUnit) {
+        final units = await repository.units(
+          session!,
+          profile,
+          _service!,
+          isCurrent: isCurrent,
+        );
+        if (!isCurrent()) return;
+        setState(() => _units = units);
+      }
+      if (isCurrent() && _unit != null && _rate == null) {
+        await _rateForUnit(profile, isCurrent);
+      }
+      _loaded = true;
+      return;
+    }
     if (_loaded) {
       if (_service != null && _units.isEmpty) {
         await _unitsForService(profile, isCurrent);
@@ -143,6 +164,10 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
   }
 
   Future<void> _pick(BuildContext field, bool service) async {
+    if (widget.updateRow != null &&
+        (service || !widget.updateRow!.canChangeUnit)) {
+      return;
+    }
     final choice = await choose(field, service ? _services : _units);
     if (!ready || choice == null) return;
     if (service) {
@@ -168,11 +193,20 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
   }
 
   int? get _amount {
-    if (_rate == null || paymentQuantityError(_quantity.text) != null) {
+    if (_rate == null || _quantityError(_quantity.text) != null) {
       return null;
     }
     final n = BigInt.from(_rate!.cents) * BigInt.parse(_quantity.text);
     return n <= BigInt.from(paymentMaxCents) ? n.toInt() : null;
+  }
+
+  String? _quantityError(String value) {
+    final error = paymentQuantityError(value);
+    if (error != null) return error;
+    final used = widget.updateRow?.used ?? 0;
+    return int.parse(value) < used
+        ? 'You can not provide quantity less than $used.'
+        : null;
   }
 
   Future<void> _commit() async {
@@ -186,8 +220,8 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
         _errors['unit'] = 'Please Select Unit';
       } else if (_rate == null) {
         _errors['rate'] = 'Invalid Rate. Select Unit Again';
-      } else if (paymentQuantityError(_quantity.text) != null) {
-        _errors['quantity'] = paymentQuantityError(_quantity.text)!;
+      } else if (_quantityError(_quantity.text) != null) {
+        _errors['quantity'] = _quantityError(_quantity.text)!;
       } else if (_amount == null) {
         _errors['quantity'] = 'Invalid Quantity';
       }
@@ -286,12 +320,16 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
                                 'Service',
                                 _service?.name ?? '',
                                 service: true,
+                                enabled: widget.updateRow == null,
                               ),
                               field(
                                 'unit',
                                 'Unit',
                                 _unit?.name ?? '',
-                                enabled: _service != null && _units.isNotEmpty,
+                                enabled:
+                                    _service != null &&
+                                    _units.isNotEmpty &&
+                                    (widget.updateRow?.canChangeUnit ?? true),
                               ),
                               field(
                                 'rate',
@@ -306,7 +344,7 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
                                 controller: _quantity,
                                 onChanged:
                                     (value) => setState(() {
-                                      final e = paymentQuantityError(value);
+                                      final e = _quantityError(value);
                                       if (e == null) {
                                         _errors.remove('quantity');
                                       } else {
@@ -323,6 +361,15 @@ class _ServiceState extends PaymentState<PaymentServiceScreen> {
                                 enabled: false,
                                 dropdown: false,
                               ),
+                              if (widget.updateRow != null)
+                                NativePaymentQuantitySummary(
+                                  row: widget.updateRow!,
+                                  available:
+                                      _quantityError(_quantity.text) == null
+                                          ? int.parse(_quantity.text) -
+                                              widget.updateRow!.used
+                                          : 0,
+                                ),
                             ],
                           ),
                         ),

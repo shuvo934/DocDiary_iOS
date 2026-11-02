@@ -11,6 +11,7 @@ import '../auth/profile_repository.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
 import 'payment_models.dart';
 import 'payment_repository.dart';
+import 'payment_update_models.dart';
 
 typedef PaymentTask =
     Future<void> Function(AccountProfile profile, bool Function() isCurrent);
@@ -238,9 +239,17 @@ abstract class PaymentState<T extends StatefulWidget> extends State<T>
     }
     final uncertain = failure is PaymentWriteUncertain;
     final settingsChanged = failure is PaymentSettingsChanged;
+    final scheduleBlocked = failure is PaymentScheduleBlocked;
+    final recordChanged = failure is PaymentRecordChanged;
     final message =
         unavailable
-            ? 'Payment is not available for this account.'
+            ? failure is PaymentUpdateUnavailable
+                ? 'Payment update is not available for this account.'
+                : 'Payment is not available for this account.'
+            : scheduleBlocked
+            ? paymentScheduleWarning
+            : recordChanged
+            ? 'Payment details changed. Please reselect the payment and try again.'
             : uncertain
             ? 'The payment result could not be confirmed. Please check Payment records with your accounts team before trying again.'
             : settingsChanged
@@ -255,7 +264,11 @@ abstract class PaymentState<T extends StatefulWidget> extends State<T>
       AlertDialog(
         key: const Key('payment_error'),
         title: Text(
-          unavailable ? 'Not available' : 'Error!',
+          unavailable
+              ? 'Not available'
+              : scheduleBlocked
+              ? 'Warning!'
+              : 'Error!',
           style: dashboardDialogText(20),
         ),
         content: SingleChildScrollView(
@@ -265,9 +278,19 @@ abstract class PaymentState<T extends StatefulWidget> extends State<T>
           TextButton(
             key: const Key('payment_error_cancel'),
             onPressed: () => Navigator.pop(context, false),
-            child: Text(unavailable ? 'CLOSE' : 'Cancel'),
+            child: Text(
+              unavailable
+                  ? 'CLOSE'
+                  : scheduleBlocked
+                  ? 'OK'
+                  : 'Cancel',
+            ),
           ),
-          if (!unavailable && !uncertain && !settingsChanged)
+          if (!unavailable &&
+              !uncertain &&
+              !settingsChanged &&
+              !scheduleBlocked &&
+              !recordChanged)
             TextButton(
               key: const Key('payment_error_retry'),
               onPressed: () => Navigator.pop(context, true),

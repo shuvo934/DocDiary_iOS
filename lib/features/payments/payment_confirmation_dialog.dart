@@ -16,10 +16,12 @@ class PaymentConfirmationDialog extends StatefulWidget {
     required this.auth,
     required this.repository,
     required this.lines,
+    this.initialAllocations = const [],
   });
   final AuthController auth;
   final PaymentRepository repository;
   final List<PaymentServiceLine> lines;
+  final List<PaymentAllocation> initialAllocations;
   @override
   State<PaymentConfirmationDialog> createState() => _ConfirmationState();
 }
@@ -35,6 +37,12 @@ class _ConfirmationState extends PaymentState<PaymentConfirmationDialog> {
   final _saved = <PaymentAllocation>[];
   String? _amountError;
   bool _answered = false;
+  @override
+  void initState() {
+    super.initState();
+    _saved.addAll(widget.initialAllocations);
+  }
+
   @override
   void clearPayment() {
     _quote = null;
@@ -151,7 +159,10 @@ class _ConfirmationState extends PaymentState<PaymentConfirmationDialog> {
     }
     _answered = true;
     FocusScope.of(context).unfocus();
-    Navigator.pop(context, PaymentConfirmation(_quote!, _saved));
+    Navigator.pop(
+      context,
+      PaymentConfirmation(_quote!, _saved, saved: widget.initialAllocations),
+    );
   }
 
   void _cancel() {
@@ -337,7 +348,10 @@ class _ConfirmationState extends PaymentState<PaymentConfirmationDialog> {
                           Expanded(
                             flex: 25,
                             child: NativePaymentNumber(
-                              paymentMoney(_saved[i].cents, fixed: true),
+                              paymentMoney(
+                                _saved[i].cents,
+                                fixed: _saved[i].savedId.isEmpty,
+                              ),
                               style: adminAppointmentText(
                                 9.5,
                                 s,
