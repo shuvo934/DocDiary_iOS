@@ -8,6 +8,8 @@ import '../auth/auth_models.dart';
 import '../auth/profile_repository.dart';
 import '../dashboard/dashboard_navigation.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
+import '../accounts/accounts_dashboard_screen.dart';
+import '../accounts/accounts_dashboard_repository.dart';
 import '../hr/hr_dashboard_repository.dart';
 import '../hr/hr_dashboard_screen.dart';
 import '../reports/native_report_manager_layout.dart';
@@ -218,6 +220,15 @@ class _ManagementMenuScreenState extends State<ManagementMenuScreen>
             ? HrDashboardScreen(
               auth: widget.auth,
               repository: HrDashboardRepository(
+                widget.auth.profiles.transport,
+                now: widget.auth.profiles.now,
+              ),
+              destinationBuilder: widget.destinationBuilder,
+            )
+            : destination == ManagementDestination.accounts
+            ? AccountsDashboardScreen(
+              auth: widget.auth,
+              repository: AccountsDashboardRepository(
                 widget.auth.profiles.transport,
                 now: widget.auth.profiles.now,
               ),

@@ -446,17 +446,17 @@ void main() {
     await _finish(t);
   });
 
-  _case('deferred Accounts closes cleanly and Reports opens its native form', (
+  _case('deferred Analytics closes cleanly and Reports opens its native form', (
     t,
   ) async {
     final h = _admin();
     await _show(t, h);
     await _tap(t, 'dashboard_nav_management');
-    await _tap(t, 'management_accounts');
+    await _tap(t, 'management_analytics');
     expect(find.byKey(const Key('management_unavailable')), findsOneWidget);
     await t.tap(find.text('Close'));
     await t.pumpAndSettle();
-    expect(find.byKey(const Key('management_accounts')), findsOneWidget);
+    expect(find.byKey(const Key('management_analytics')), findsOneWidget);
     await _tap(t, 'management_reports');
     await _tap(t, 'report_manager_select_1');
     expect(find.byKey(const Key('management_unavailable')), findsNothing);
