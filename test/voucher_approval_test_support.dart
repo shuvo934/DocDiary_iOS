@@ -94,8 +94,9 @@ class ApprovalHarness extends AccountsHarness {
       'getVoucherSelectListBySearch',
       'getVoucherDetails',
       'getVoucherReport',
-    ].contains(endpoint))
+    ].contains(endpoint)) {
       return respondAccounts(uri);
+    }
     final custom = await onApprovalGet?.call(uri);
     if (custom != null) return custom;
     if (endpoint == 'getVoucherSelectListHundred' ||
@@ -158,8 +159,9 @@ class ApprovalHarness extends AccountsHarness {
   }
 
   Future<JsonMap> respondPost(Uri uri, Map<String, String> headers) async {
-    if (uri.pathSegments.last != 'updateVoucher')
+    if (uri.pathSegments.last != 'updateVoucher') {
       return {'string_out': 'Successfully Created'};
+    }
     final custom = await onApprovalPost?.call(uri, headers);
     if (custom != null) return custom;
     applyUpdate(headers);

@@ -16,6 +16,8 @@ import 'voucher_transaction/voucher_repository.dart';
 import 'voucher_approval/voucher_approval_models.dart';
 import 'voucher_approval/voucher_approval_repository.dart';
 import 'voucher_approval/voucher_approval_screen.dart';
+import 'account_ledger/account_ledger_screen.dart';
+import 'account_ledger/ledger_repository.dart';
 
 class AccountsDashboardScreen extends StatefulWidget {
   const AccountsDashboardScreen({
@@ -275,6 +277,21 @@ class _AccountsState extends State<AccountsDashboardScreen>
                     VoucherApprovalKind.debit,
                   _ => VoucherApprovalKind.journal,
                 },
+              )
+              : const [
+                AccountsDestination.accountLedger,
+                AccountsDestination.patientLedger,
+              ].contains(destination)
+              ? AccountLedgerScreen(
+                auth: widget.auth,
+                repository: LedgerRepository(
+                  widget.auth.profiles.transport,
+                  now: widget.auth.profiles.now,
+                ),
+                patientLedger: destination == AccountsDestination.patientLedger,
+                firstDate: route.extras['FIRST_DATE'] ?? '',
+                lastDate: route.extras['LAST_DATE'] ?? '',
+                accountId: route.extras['AD_ID'] ?? '',
               )
               : null);
       if (page == null) {

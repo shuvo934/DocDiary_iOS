@@ -9,7 +9,6 @@ import 'package:docdiary_ios/app.dart';
 import 'package:docdiary_ios/core/app_theme.dart';
 import 'package:docdiary_ios/core/failure.dart';
 import 'package:docdiary_ios/core/native_json.dart';
-import 'package:docdiary_ios/features/accounts/voucher_approval/native_voucher_approval_layout.dart';
 import 'package:docdiary_ios/features/accounts/voucher_approval/voucher_approval_models.dart';
 import 'package:docdiary_ios/features/accounts/voucher_approval/voucher_approval_screen.dart';
 import 'package:docdiary_ios/features/dashboard/dashboard_repository.dart';
@@ -536,8 +535,9 @@ void main() {
     final h = ApprovalHarness();
     var fail = true;
     h.onApprovalGet = (u) async {
-      if (u.pathSegments.last == 'getVoucherDetails' && fail)
+      if (u.pathSegments.last == 'getVoucherDetails' && fail) {
         throw const AppFailure('Synthetic detail error');
+      }
       return null;
     };
     await host(t, h);

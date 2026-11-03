@@ -109,8 +109,9 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
   }
 
   Future<void> _loadLatest() async {
-    if (!_owner.current || !_owner.foreground || _writing || _dialogs.isOpen)
+    if (!_owner.current || !_owner.foreground || _writing || _dialogs.isOpen) {
       return;
+    }
     final op = _owner.begin();
     setState(() {
       _busy = true;
@@ -162,7 +163,7 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
       if (_owner.alive(op) && retry == true) await _loadLatest();
       return;
     }
-    if (!_owner.alive(op)) return;
+    if (!mounted || !_owner.alive(op)) return;
     setState(() => _busy = false);
     final seed = _rows,
         prefix = seed.isEmpty ? '' : seed.first.prefix,
@@ -182,8 +183,9 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
               prefix,
               isCurrent: current,
             );
-        if (current())
+        if (current()) {
           state.value = VoucherPickerData(rows: rows, searched: true);
+        }
       } catch (error) {
         if (!current() || _accessFailure(error)) return;
         state.value = VoucherPickerData(searched: true, failure: error);
@@ -198,8 +200,9 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
         state: state,
         onSearch: (q) => unawaited(search(q)),
         onClear: () {
-          if (current() && !state.value.busy)
+          if (current() && !state.value.busy) {
             state.value = VoucherPickerData(rows: seed);
+          }
         },
       ),
       barrierColor: const Color(0xcc000000),
@@ -217,8 +220,9 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
   }
 
   Future<void> _loadDetail(ApprovalVoucher voucher) async {
-    if (!_owner.current || !_owner.foreground || _writing || _dialogs.isOpen)
+    if (!_owner.current || !_owner.foreground || _writing || _dialogs.isOpen) {
       return;
+    }
     final op = _owner.begin();
     setState(() {
       _busy = true;
@@ -267,11 +271,12 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
       if (!mounted || !_owner.alive(op) || _accessFailure(error)) return;
       setState(() => _busy = false);
       final retry = await _error(error);
-      if (_owner.alive(op) && retry == true && _selected != null)
+      if (_owner.alive(op) && retry == true && _selected != null) {
         await _loadDetail(_selected!);
+      }
       return;
     }
-    if (!_owner.alive(op)) return;
+    if (!mounted || !_owner.alive(op)) return;
     setState(() => _busy = false);
     await _dialogs.show<void>(
       context,
@@ -299,6 +304,7 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
       );
       return;
     }
+    if (!mounted) return;
     final yes = await _dialogs.show<bool>(
       context,
       AlertDialog(
@@ -326,8 +332,9 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
     if (!_owner.alive(op) ||
         yes != true ||
         !_ready ||
-        !identical(_detail, shown))
+        !identical(_detail, shown)) {
       return;
+    }
     await _submit(shown, action);
   }
 
@@ -449,8 +456,9 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
     ),
   );
   Future<void> _back() async {
-    if (mounted && !_busy && !_writing && !_dialogs.isOpen)
+    if (mounted && !_busy && !_writing && !_dialogs.isOpen) {
       await Navigator.maybePop(context);
+    }
   }
 
   @override

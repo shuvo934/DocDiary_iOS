@@ -14,8 +14,8 @@ void main() {
     h.transport.requests.clear();
   });
   tearDown(() => h.auth.dispose());
-  Future<ApprovalVoucherDetail> load(VoucherApprovalKind k, int i) =>
-      h.approvals.details(
+  Future<ApprovalVoucherDetail> load(VoucherApprovalKind k, int i) async =>
+      await h.approvals.details(
         h.auth.session!,
         h.profile,
         h.choice(k, i),

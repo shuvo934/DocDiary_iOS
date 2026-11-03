@@ -487,7 +487,8 @@ void main() {
       await tap(t, 'accounts_menu');
       await capture(t, '11_menu_${e.key}');
       await tap(t, 'accounts_menu_patientLedger');
-      expect(find.byKey(const Key('accounts_unavailable')), findsOneWidget);
+      expect(find.text('Account Ledger (Patient)'), findsOneWidget);
+      expect(find.byKey(const Key('ledger_patient_select')), findsOneWidget);
       await finish(t);
     });
   }

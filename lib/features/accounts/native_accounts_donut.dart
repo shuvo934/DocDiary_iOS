@@ -52,22 +52,41 @@ class _DonutState extends State<NativeAccountsDonut> {
   @override
   Widget build(BuildContext context) {
     final empty = widget.slices.isEmpty;
+    final legendSlices =
+        empty
+            ? [
+              AccountsPieSlice(
+                'No Data',
+                AccountsNumber('0'),
+                const Color(0xffb2bec3),
+              ),
+            ]
+            : widget.slices;
     final zoom = MediaQuery.textScalerOf(context);
     final accessible = zoom.scale(12) > 18;
     final label =
         empty
             ? '${widget.title}. No Data'
             : '${widget.title}. ${widget.slices.map((s) => '${s.label}: ${s.value.text}').join('. ')}';
+    Widget legendLabel(AccountsPieSlice slice) => Text(
+      slice.label,
+      style: TextStyle(
+        fontFamily: 'Roboto',
+        fontSize: 10 * widget.scale,
+        height: 1.2,
+      ),
+    );
     Widget legend() => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final slice in widget.slices)
+          for (final slice in legendSlices)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
+                mainAxisSize: empty ? MainAxisSize.min : MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
@@ -82,16 +101,10 @@ class _DonutState extends State<NativeAccountsDonut> {
                     ),
                   ),
                   const SizedBox(width: 5),
-                  Expanded(
-                    child: Text(
-                      slice.label,
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 10 * widget.scale,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
+                  if (empty)
+                    legendLabel(slice)
+                  else
+                    Expanded(child: legendLabel(slice)),
                 ],
               ),
             ),
@@ -138,10 +151,8 @@ class _DonutState extends State<NativeAccountsDonut> {
                         painter: _PiePainter(
                           slices: widget.slices,
                           title:
-                              empty
-                                  ? 'No Data'
-                                  : (widget.centerText ??
-                                      widget.title.replaceAll('/', '/\n')),
+                              widget.centerText ??
+                              widget.title.replaceAll('/', '/\n'),
                           scale: widget.scale,
                           zoom: zoom,
                           whiteValues: widget.whiteValues,
@@ -156,12 +167,17 @@ class _DonutState extends State<NativeAccountsDonut> {
           return accessible
               ? Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [pie, if (!empty) legend()],
+                children: [pie, legend()],
               )
               : Row(
                 children: [
+                  if (empty) const Spacer(),
                   pie,
-                  if (!empty) Expanded(child: legend()) else const Spacer(),
+                  if (empty) ...[
+                    const Spacer(),
+                    legend(),
+                  ] else
+                    Expanded(child: legend()),
                 ],
               );
         },
