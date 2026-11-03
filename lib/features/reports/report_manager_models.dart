@@ -204,6 +204,9 @@ class ReportRequest {
   final DateTime begin, end;
   final String beginText, endText;
   final ReportChoice? department, unit, doctor, service;
+  String get title => item.title;
+  String get reportFile => item.reportFile;
+  bool get dateOnlyPdf => false;
   void validate() {
     reportRequire(!begin.isAfter(end), 'Please Select Date Range');
     reportRequire(
@@ -258,7 +261,7 @@ class ReportRequest {
   }
 
   String get documentName =>
-      '${item.title}_$beginText to $endText'.replaceAll(' ', '_');
+      '${title}_$beginText to $endText'.replaceAll(' ', '_');
 }
 
 /// Oracle rwservlet uses literal '+' separators. Never log its server key.
@@ -295,7 +298,7 @@ class ReportServerConfig {
           !RegExp(r'[\r\n?#]').hasMatch('$path$link'),
       'The report server configuration is unavailable. Please contact your centre.',
     );
-    if (!request.item.showsDoctor) {
+    if (!request.dateOnlyPdf && !request.item.showsDoctor) {
       reportRequire(
         center.isEmpty || reportId(center),
         'The report centre identifier is invalid.',
@@ -305,9 +308,12 @@ class ReportServerConfig {
         '+$key=${Uri.encodeComponent(value)}';
     final query =
         StringBuffer(link)
-          ..write(arg('report', '$path${request.item.reportFile}'))
+          ..write(arg('report', '$path${request.reportFile}'))
           ..write(arg('BEGIN_DATE', request.beginText))
           ..write(arg('END_DATE', request.endText));
+    if (request.dateOnlyPdf) {
+      return Uri.parse('${origin!.replace(path: '/reports/rwservlet')}?$query');
+    }
     if (request.item == ReportManagerItem.doctorPayment) {
       query
         ..write(arg('UNIT', request.unit?.id ?? ''))

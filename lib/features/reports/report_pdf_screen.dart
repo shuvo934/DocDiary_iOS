@@ -52,6 +52,11 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
   @override
   ReportTask get refreshOnResume => loadReport;
   bool get _active => ready && _pdfReady && !isForegroundAction;
+  bool get _dailyRendering =>
+      widget.request.dateOnlyPdf &&
+      error == null &&
+      _bytes != null &&
+      !_pdfReady;
   bool get _visible =>
       current && foreground && (ModalRoute.of(context)?.isCurrent ?? false);
   @override
@@ -133,6 +138,14 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
 
   Future<void> _save() async {
     if (!_active) return;
+    var answered = false;
+    void answer(bool value) {
+      if (!answered && current && foreground && dialogs.isOpen) {
+        answered = true;
+        Navigator.pop(context, value);
+      }
+    }
+
     final confirmed = await dialogs.show<bool>(
       context,
       AlertDialog(
@@ -142,12 +155,12 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
         actions: [
           TextButton(
             key: const Key('report_download_no'),
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => answer(false),
             child: const Text('NO'),
           ),
           TextButton(
             key: const Key('report_download_yes'),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => answer(true),
             child: const Text('YES'),
           ),
         ],
@@ -253,10 +266,24 @@ class _ReportPdfState extends ReportScreenState<ReportPdfScreen> {
               : null,
     );
     return PopScope(
-      canPop: !busy && !isForegroundAction && !dialogs.isOpen,
+      canPop:
+          !busy && !isForegroundAction && !_dailyRendering && !dialogs.isOpen,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop &&
+            widget.request.dateOnlyPdf &&
+            (busy || isForegroundAction || _dailyRendering)) {
+          toasts.show(context, 'Please wait while loading');
+        }
+      },
       child: NativeReportFrame(
-        title: item.title,
-        onClose: () => unawaited(closeReport()),
+        title: widget.request.title,
+        onClose: () {
+          if (_dailyRendering) {
+            toasts.show(context, 'Please wait while loading');
+          } else {
+            unawaited(closeReport());
+          }
+        },
         action: IconButton(
           key: const Key('report_pdf_download'),
           tooltip: 'Download report',

@@ -17,6 +17,7 @@ class ReportManagerRepository {
     : now = now ?? DateTime.now;
   final Transport transport;
   final DateTime Function() now;
+  String get moduleName => 'Report Manager';
   void guard(
     AuthSession session,
     AccountProfile profile,

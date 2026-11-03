@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/app_theme.dart';
+import '../../../core/app_toast.dart';
 import '../../appointments/admin_modify/native_admin_appointment_controls.dart';
 import '../../profile/native_profile_icons.dart';
 export '../../appointments/admin_modify/native_admin_appointment_controls.dart'
@@ -24,7 +25,7 @@ TextStyle vtText(
   family: family,
 );
 
-class NativeVoucherShell extends StatelessWidget {
+class NativeVoucherShell extends StatefulWidget {
   const NativeVoucherShell({
     super.key,
     required this.title,
@@ -36,63 +37,91 @@ class NativeVoucherShell extends StatelessWidget {
   final Widget child;
   final VoidCallback? onBack;
   @override
+  State<NativeVoucherShell> createState() => _NativeVoucherShellState();
+}
+
+class _NativeVoucherShellState extends State<NativeVoucherShell> {
+  final _toasts = AppToastOwner();
+  void _wait() => _toasts.show(context, 'Please wait while loading');
+  @override
+  void didUpdateWidget(covariant NativeVoucherShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.onBack == null && widget.onBack != null) _toasts.clear();
+  }
+
+  @override
+  void dispose() {
+    _toasts.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context);
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: DocColors.primary,
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20 * s, vertical: 10),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 19 * s,
-                      child: IconButton(
-                        key: Key(backKey),
-                        tooltip: 'Back',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minHeight: 44),
-                        onPressed: onBack,
-                        icon: NativeProfileIcon(
-                          NativeProfileGlyph.back,
-                          size: 19 * s,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: vtText(
-                          14,
-                          s,
-                          family: 'Poppins',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(30),
-                    ),
+    return PopScope(
+      canPop: widget.onBack != null,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && widget.onBack == null) _wait();
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: DocColors.primary,
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20 * s,
+                    vertical: 10,
                   ),
-                  child: SafeArea(top: false, child: child),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 19 * s,
+                        child: IconButton(
+                          key: Key(widget.backKey),
+                          tooltip: 'Back',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minHeight: 44),
+                          onPressed: widget.onBack ?? _wait,
+                          icon: NativeProfileIcon(
+                            NativeProfileGlyph.back,
+                            size: 19 * s,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          widget.title,
+                          style: vtText(
+                            14,
+                            s,
+                            family: 'Poppins',
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(30),
+                      ),
+                    ),
+                    child: SafeArea(top: false, child: widget.child),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

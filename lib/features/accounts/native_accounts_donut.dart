@@ -34,6 +34,7 @@ class NativeAccountsDonut extends StatefulWidget {
     this.centerText,
     this.allowRotation = false,
     this.pieWidthFraction = .68,
+    this.valueLabel,
   });
   final String title;
   final List<AccountsPieSlice> slices;
@@ -43,6 +44,7 @@ class NativeAccountsDonut extends StatefulWidget {
   final String? centerText;
   final bool allowRotation;
   final double pieWidthFraction;
+  final String Function(AccountsNumber)? valueLabel;
   @override
   State<NativeAccountsDonut> createState() => _DonutState();
 }
@@ -158,6 +160,7 @@ class _DonutState extends State<NativeAccountsDonut> {
                           whiteValues: widget.whiteValues,
                           rotation: _rotation,
                           progress: progress,
+                          valueLabel: widget.valueLabel,
                         ),
                       ),
                 ),
@@ -195,12 +198,14 @@ class _PiePainter extends CustomPainter {
     required this.whiteValues,
     required this.rotation,
     required this.progress,
+    this.valueLabel,
   });
   final List<AccountsPieSlice> slices;
   final String title;
   final double scale, rotation, progress;
   final TextScaler zoom;
   final bool whiteValues;
+  final String Function(AccountsNumber)? valueLabel;
   void _text(
     Canvas canvas,
     String value,
@@ -266,7 +271,7 @@ class _PiePainter extends CustomPainter {
               center + Offset(math.cos(angle), math.sin(angle)) * radius * .7;
           _text(
             canvas,
-            slice.value.text,
+            valueLabel?.call(slice.value) ?? slice.value.text,
             point,
             10 * scale,
             whiteValues ? Colors.white : Colors.black,

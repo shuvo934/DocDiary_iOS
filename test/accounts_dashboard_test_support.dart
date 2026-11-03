@@ -34,6 +34,7 @@ class AccountsHarness extends HrHarness {
       'getVoucherCount' => voucherRows,
       'getVoucherTotalAmnt' => amountRows,
       'getIncomeExpense' => incomeRows,
+      'getNIncomeStatement' || 'getNExpenseStatement' => <JsonMap>[],
       _ => throw StateError('Unexpected synthetic Accounts API: $uri'),
     };
     return {'count': rows.length, 'items': encoded ? jsonEncode(rows) : rows};

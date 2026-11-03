@@ -5,6 +5,7 @@ import '../../../core/native_dates.dart';
 import '../../auth/auth_controller.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
 import '../accounts_dashboard_repository.dart';
+import '../accounts_loading_boundary.dart';
 import '../voucher_transaction/native_voucher_controls.dart';
 import '../voucher_transaction/payment_invoice_screen.dart';
 import '../voucher_transaction/voucher_models.dart';
@@ -354,18 +355,24 @@ class _LedgerState extends State<AccountLedgerScreen> {
     unawaited(fetch(null));
     final selected = await _dialogs.show<LedgerPatient>(
       context,
-      NativeLedgerPatientPicker(
-        state: state,
-        onSearch: (q) {
-          if (current() && !state.value.busy) unawaited(fetch(q));
-        },
-        onClear: () {
-          if (current() && !state.value.busy) {
-            query = '';
-            state.value = LedgerPatientPickerData(rows: seed);
-          }
-        },
-        onRetry: () => unawaited(fetch(state.value.searched ? query : null)),
+      ValueListenableBuilder<LedgerPatientPickerData>(
+        valueListenable: state,
+        builder:
+            (context, data, child) =>
+                AccountsLoadingBoundary(busy: data.busy, child: child!),
+        child: NativeLedgerPatientPicker(
+          state: state,
+          onSearch: (q) {
+            if (current() && !state.value.busy) unawaited(fetch(q));
+          },
+          onClear: () {
+            if (current() && !state.value.busy) {
+              query = '';
+              state.value = LedgerPatientPickerData(rows: seed);
+            }
+          },
+          onRetry: () => unawaited(fetch(state.value.searched ? query : null)),
+        ),
       ),
       barrierColor: const Color(0xcc000000),
     );
@@ -655,7 +662,7 @@ class _LedgerState extends State<AccountLedgerScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Expanded(
                       child: SingleChildScrollView(
                         key: const Key('ledger_scroll'),

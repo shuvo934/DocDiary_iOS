@@ -329,14 +329,15 @@ void main() {
     },
   );
   check(
-    'deferred menu pages explain unavailability and leave dashboard intact',
+    'Income Expense opens its default screen and Back refreshes the dashboard',
     (t) async {
       final h = AccountsHarness();
       await host(t, h);
       await tap(t, 'accounts_menu');
       await tap(t, 'accounts_menu_incomeExpense');
-      expect(find.byKey(const Key('accounts_unavailable')), findsOneWidget);
-      await tap(t, 'accounts_unavailable_close');
+      expect(find.text('Income/Expense Statement'), findsOneWidget);
+      expect(find.byKey(const Key('statement_amount')), findsOneWidget);
+      await tap(t, 'statement_back');
       expect(caption(t, 'accounts_total_voucher'), '8');
       await finish(t);
     },

@@ -5,6 +5,7 @@ import '../../../core/failure.dart';
 import '../../auth/auth_controller.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
 import '../accounts_dashboard_repository.dart';
+import '../accounts_loading_boundary.dart';
 import '../voucher_transaction/native_voucher_controls.dart';
 import '../voucher_transaction/voucher_read_owner.dart';
 import '../voucher_transaction/voucher_report_dialog.dart';
@@ -194,16 +195,22 @@ class _ApprovalState extends State<VoucherApprovalScreen> {
 
     final selected = await _dialogs.show<ApprovalVoucher>(
       context,
-      NativeVoucherPicker(
-        kind: widget.kind,
-        prefix: prefix,
-        state: state,
-        onSearch: (q) => unawaited(search(q)),
-        onClear: () {
-          if (current() && !state.value.busy) {
-            state.value = VoucherPickerData(rows: seed);
-          }
-        },
+      ValueListenableBuilder<VoucherPickerData>(
+        valueListenable: state,
+        builder:
+            (context, data, child) =>
+                AccountsLoadingBoundary(busy: data.busy, child: child!),
+        child: NativeVoucherPicker(
+          kind: widget.kind,
+          prefix: prefix,
+          state: state,
+          onSearch: (q) => unawaited(search(q)),
+          onClear: () {
+            if (current() && !state.value.busy) {
+              state.value = VoucherPickerData(rows: seed);
+            }
+          },
+        ),
       ),
       barrierColor: const Color(0xcc000000),
     );

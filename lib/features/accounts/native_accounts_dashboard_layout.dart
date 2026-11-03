@@ -19,6 +19,7 @@ class NativeAccountsDashboardLayout extends StatelessWidget {
     required this.onIncomeExpense,
     required this.onPeriod,
     required this.onRetry,
+    this.onLoadingAction,
     required this.period,
     required this.range,
     required this.data,
@@ -30,6 +31,7 @@ class NativeAccountsDashboardLayout extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
   final ScrollController scrollController;
   final VoidCallback onBack, onVoucher, onIncomeExpense, onRetry;
+  final VoidCallback? onLoadingAction;
   final ValueChanged<AccountsDestination> onDestination;
   final ValueChanged<AccountsPeriod> onPeriod;
   final AccountsPeriod period;
@@ -401,7 +403,7 @@ class NativeAccountsDashboardLayout extends StatelessWidget {
                         tooltip: 'Back',
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(minHeight: 44),
-                        onPressed: waiting ? null : onBack,
+                        onPressed: waiting ? onLoadingAction : onBack,
                         icon: NativeProfileIcon(
                           NativeProfileGlyph.back,
                           size: 19 * s,
@@ -434,6 +436,8 @@ class NativeAccountsDashboardLayout extends StatelessWidget {
                             interactive
                                 ? () =>
                                     scaffoldKey.currentState?.openEndDrawer()
+                                : waiting
+                                ? onLoadingAction
                                 : null,
                         icon: Icon(
                           Icons.menu,

@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/failure.dart';
+import '../../core/app_toast.dart';
+import '../reports/native_report_pdf_platform.dart';
+import '../reports/report_pdf_transport.dart';
 import '../auth/account_access.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
@@ -18,6 +21,9 @@ import 'voucher_approval/voucher_approval_repository.dart';
 import 'voucher_approval/voucher_approval_screen.dart';
 import 'account_ledger/account_ledger_screen.dart';
 import 'account_ledger/ledger_repository.dart';
+import 'statements/income_expense_screen.dart';
+import 'statements/daily_statement_screen.dart';
+import 'statements/statement_repository.dart';
 
 class AccountsDashboardScreen extends StatefulWidget {
   const AccountsDashboardScreen({
@@ -25,10 +31,14 @@ class AccountsDashboardScreen extends StatefulWidget {
     required this.auth,
     required this.repository,
     this.destinationBuilder,
+    this.dailyPlatformFactory,
+    this.dailyTransportFactory,
   });
   final AuthController auth;
   final AccountsDashboardRepository repository;
   final DashboardDestinationBuilder? destinationBuilder;
+  final ReportPdfPlatform Function()? dailyPlatformFactory;
+  final ReportPdfTransport Function()? dailyTransportFactory;
   @override
   State<AccountsDashboardScreen> createState() => _AccountsState();
 }
@@ -39,6 +49,7 @@ class _AccountsState extends State<AccountsDashboardScreen>
   final _scaffold = GlobalKey<ScaffoldState>();
   final _scroll = ScrollController();
   final _dialogs = NativeDashboardDialogOwner();
+  final _toasts = AppToastOwner();
   AccountsDashboardData? _data;
   AccountsPeriod _period = AccountsPeriod.today;
   late AccountsRange _range;
@@ -293,6 +304,28 @@ class _AccountsState extends State<AccountsDashboardScreen>
                 lastDate: route.extras['LAST_DATE'] ?? '',
                 accountId: route.extras['AD_ID'] ?? '',
               )
+              : destination == AccountsDestination.incomeExpense
+              ? IncomeExpenseScreen(
+                auth: widget.auth,
+                repository: StatementRepository(
+                  widget.auth.profiles.transport,
+                  now: widget.auth.profiles.now,
+                ),
+                firstDate: route.extras['FIRST_DATE'] ?? '',
+                lastDate: route.extras['LAST_DATE'] ?? '',
+              )
+              : destination == AccountsDestination.dailyStatement
+              ? DailyStatementScreen(
+                auth: widget.auth,
+                repository: StatementRepository(
+                  widget.auth.profiles.transport,
+                  now: widget.auth.profiles.now,
+                ),
+                firstDate: route.extras['FIRST_DATE'] ?? '',
+                lastDate: route.extras['LAST_DATE'] ?? '',
+                platform: widget.dailyPlatformFactory?.call(),
+                transportFactory: widget.dailyTransportFactory,
+              )
               : null);
       if (page == null) {
         await _dialogs.show<void>(
@@ -330,12 +363,22 @@ class _AccountsState extends State<AccountsDashboardScreen>
   }
 
   Future<void> _back() async {
-    if (!mounted || _busy || _dialogs.isOpen) return;
+    if (!mounted || _dialogs.isOpen) return;
+    if (_busy) {
+      _wait();
+      return;
+    }
     if (_scaffold.currentState?.isEndDrawerOpen ?? false) {
       _scaffold.currentState?.closeEndDrawer();
       return;
     }
     await Navigator.maybePop(context);
+  }
+
+  void _wait() {
+    if (_current && _foreground) {
+      _toasts.show(context, 'Please wait while loading');
+    }
   }
 
   @override
@@ -346,6 +389,7 @@ class _AccountsState extends State<AccountsDashboardScreen>
       WidgetsBinding.instance.removeObserver(this);
     }
     _dialogs.dispose();
+    _toasts.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -353,10 +397,14 @@ class _AccountsState extends State<AccountsDashboardScreen>
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_busy,
+    onPopInvokedWithResult: (didPop, result) {
+      if (!didPop && _busy) _wait();
+    },
     child: NativeAccountsDashboardLayout(
       scaffoldKey: _scaffold,
       scrollController: _scroll,
       onBack: () => unawaited(_back()),
+      onLoadingAction: _wait,
       onDestination: (d) => unawaited(_open(d)),
       onVoucher:
           () => unawaited(

@@ -69,7 +69,8 @@ abstract class ReportScreenState<T extends StatefulWidget> extends State<T>
       } else if (mounted && session == null) {
         setState(() {
           busy = false;
-          error = 'Report Manager is unavailable. Please return to Login.';
+          error =
+              '${repository.moduleName} is unavailable. Please return to Login.';
         });
       }
     });
@@ -173,7 +174,7 @@ abstract class ReportScreenState<T extends StatefulWidget> extends State<T>
         }
         error =
             unavailable
-                ? 'Report Manager is not available for this account.'
+                ? '${repository.moduleName} is not available for this account.'
                 : reportFailureMessage(failure);
       });
       if (!mounted || !_alive(operation)) return;

@@ -6,6 +6,7 @@ import '../../../core/failure.dart';
 import '../../auth/auth_controller.dart';
 import '../../dashboard/native_dashboard_dialogs.dart';
 import '../accounts_dashboard_repository.dart';
+import '../accounts_loading_boundary.dart';
 import 'native_voucher_controls.dart';
 import 'native_voucher_tables.dart';
 import 'voucher_models.dart';
@@ -129,142 +130,148 @@ class _ReportState extends State<VoucherReportDialog> {
         ],
       ),
     );
-    return Dialog(
-      key: const Key('vt_report_dialog'),
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: math.max(
-            100,
-            size.height - MediaQuery.paddingOf(context).vertical - 48,
+    return AccountsLoadingBoundary(
+      busy: _busy,
+      child: Dialog(
+        key: const Key('vt_report_dialog'),
+        backgroundColor: Colors.white,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: math.max(
+              100,
+              size.height - MediaQuery.paddingOf(context).vertical - 48,
+            ),
           ),
-        ),
-        child: SizedBox(
-          width: math.min(560, size.width - 48),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ColoredBox(
-                color: DocColors.primary,
-                child: Padding(
-                  padding: EdgeInsets.all(10 * s),
-                  child: Text(
-                    VoucherReport(widget.number, []).title,
-                    style: vtText(
-                      15,
-                      s,
-                      family: 'Poppins',
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              Flexible(
-                child: SingleChildScrollView(
-                  key: const Key('vt_report_scroll'),
-                  padding: const EdgeInsets.fromLTRB(5, 3, 5, 8),
-                  child:
-                      _busy || !_owner.current || !_owner.foreground
-                          ? const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                key: Key('vt_report_loading'),
-                              ),
-                            ),
-                          )
-                          : _error != null
-                          ? Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _error!,
-                                  key: const Key('vt_report_error'),
-                                  textAlign: TextAlign.center,
-                                ),
-                                TextButton(
-                                  key: const Key('vt_report_retry'),
-                                  onPressed: () => unawaited(_load()),
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          )
-                          : report == null || report.empty
-                          ? const Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Text(
-                              'No Voucher Details Found',
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                          : Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 2,
-                                  bottom: 2,
-                                ),
-                                child: Text(
-                                  widget.number,
-                                  key: const Key('vt_report_number'),
-                                  textAlign: TextAlign.center,
-                                  style: vtText(
-                                    14,
-                                    s,
-                                    family: 'PatuaOne',
-                                    weight: FontWeight.w400,
-                                    color: DocColors.greenSea,
-                                  ),
-                                ),
-                              ),
-                              metadata('Voucher Date', report.date),
-                              metadata('Bill Ref. No:', report.reference),
-                              metadata('Bill Ref. Date:', report.referenceDate),
-                              const SizedBox(height: 8),
-                              NativeVoucherReportTable(
-                                report: report,
-                                horizontal: _horizontal,
-                                formatAmount: widget.formatAmount,
-                              ),
-                            ],
-                          ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    key: const Key('vt_report_ok'),
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(48, 44),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed:
-                        _busy || !_owner.current || !_owner.foreground
-                            ? null
-                            : () => Navigator.pop(context),
+          child: SizedBox(
+            width: math.min(560, size.width - 48),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ColoredBox(
+                  color: DocColors.primary,
+                  child: Padding(
+                    padding: EdgeInsets.all(10 * s),
                     child: Text(
-                      'OK',
+                      VoucherReport(widget.number, []).title,
                       style: vtText(
-                        11,
+                        15,
                         s,
-                        color: DocColors.primary,
-                        family: 'Roboto',
-                        weight: FontWeight.w500,
+                        family: 'Poppins',
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                Flexible(
+                  child: SingleChildScrollView(
+                    key: const Key('vt_report_scroll'),
+                    padding: const EdgeInsets.fromLTRB(5, 3, 5, 8),
+                    child:
+                        _busy || !_owner.current || !_owner.foreground
+                            ? const Padding(
+                              padding: EdgeInsets.all(32),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  key: Key('vt_report_loading'),
+                                ),
+                              ),
+                            )
+                            : _error != null
+                            ? Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _error!,
+                                    key: const Key('vt_report_error'),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  TextButton(
+                                    key: const Key('vt_report_retry'),
+                                    onPressed: () => unawaited(_load()),
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            )
+                            : report == null || report.empty
+                            ? const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text(
+                                'No Voucher Details Found',
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                            : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 2,
+                                    bottom: 2,
+                                  ),
+                                  child: Text(
+                                    widget.number,
+                                    key: const Key('vt_report_number'),
+                                    textAlign: TextAlign.center,
+                                    style: vtText(
+                                      14,
+                                      s,
+                                      family: 'PatuaOne',
+                                      weight: FontWeight.w400,
+                                      color: DocColors.greenSea,
+                                    ),
+                                  ),
+                                ),
+                                metadata('Voucher Date', report.date),
+                                metadata('Bill Ref. No:', report.reference),
+                                metadata(
+                                  'Bill Ref. Date:',
+                                  report.referenceDate,
+                                ),
+                                const SizedBox(height: 8),
+                                NativeVoucherReportTable(
+                                  report: report,
+                                  horizontal: _horizontal,
+                                  formatAmount: widget.formatAmount,
+                                ),
+                              ],
+                            ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      key: const Key('vt_report_ok'),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 44),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed:
+                          _busy || !_owner.current || !_owner.foreground
+                              ? null
+                              : () => Navigator.pop(context),
+                      child: Text(
+                        'OK',
+                        style: vtText(
+                          11,
+                          s,
+                          color: DocColors.primary,
+                          family: 'Roboto',
+                          weight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
