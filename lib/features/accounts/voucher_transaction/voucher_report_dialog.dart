@@ -18,10 +18,12 @@ class VoucherReportDialog extends StatefulWidget {
     required this.auth,
     required this.repository,
     required this.number,
+    this.formatAmount,
   });
   final AuthController auth;
   final VoucherRepository repository;
   final String number;
+  final String Function(VtMoney)? formatAmount;
   @override
   State<VoucherReportDialog> createState() => _ReportState();
 }
@@ -229,6 +231,7 @@ class _ReportState extends State<VoucherReportDialog> {
                               NativeVoucherReportTable(
                                 report: report,
                                 horizontal: _horizontal,
+                                formatAmount: widget.formatAmount,
                               ),
                             ],
                           ),

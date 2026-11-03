@@ -334,7 +334,7 @@ void main() {
       final h = AccountsHarness();
       await host(t, h);
       await tap(t, 'accounts_menu');
-      await tap(t, 'accounts_menu_creditApproval');
+      await tap(t, 'accounts_menu_incomeExpense');
       expect(find.byKey(const Key('accounts_unavailable')), findsOneWidget);
       await tap(t, 'accounts_unavailable_close');
       expect(caption(t, 'accounts_total_voucher'), '8');

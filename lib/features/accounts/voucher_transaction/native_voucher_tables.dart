@@ -347,15 +347,20 @@ class NativeVoucherReportTable extends StatelessWidget {
     super.key,
     required this.report,
     required this.horizontal,
+    this.formatAmount,
   });
   final VoucherReport report;
   final ScrollController horizontal;
+  final String Function(VtMoney)? formatAmount;
   @override
   Widget build(BuildContext context) {
     final s = adminAppointmentScale(context),
         widths = _widths(context, _reportWidths),
         style = vtText(9, s),
         totalWidth = widths.reduce((a, b) => a + b);
+    final debitLabel = formatAmount?.call(report.debit) ?? report.debit.grouped;
+    final creditLabel =
+        formatAmount?.call(report.credit) ?? report.credit.grouped;
     final heights = <double>[
       for (final line in report.lines)
         [
@@ -410,7 +415,7 @@ class NativeVoucherReportTable extends StatelessWidget {
           math.max(
             voucherTextHeight(
               context,
-              report.debit.grouped,
+              debitLabel,
               widths[3],
               footerStyle,
               vertical: 5,
@@ -418,7 +423,7 @@ class NativeVoucherReportTable extends StatelessWidget {
             ),
             voucherTextHeight(
               context,
-              report.credit.grouped,
+              creditLabel,
               widths[4],
               footerStyle,
               vertical: 5,
@@ -524,7 +529,7 @@ class NativeVoucherReportTable extends StatelessWidget {
                   voucherCell(
                     width: widths[3],
                     height: footerHeight,
-                    text: report.debit.grouped,
+                    text: debitLabel,
                     key: const Key('vt_report_debit'),
                     style: footerStyle,
                     border: false,
@@ -532,7 +537,7 @@ class NativeVoucherReportTable extends StatelessWidget {
                   voucherCell(
                     width: widths[4],
                     height: footerHeight,
-                    text: report.credit.grouped,
+                    text: creditLabel,
                     key: const Key('vt_report_credit'),
                     style: footerStyle,
                     border: false,

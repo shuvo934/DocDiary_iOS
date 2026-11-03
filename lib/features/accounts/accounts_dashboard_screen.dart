@@ -13,6 +13,9 @@ import 'accounts_dashboard_repository.dart';
 import 'native_accounts_dashboard_layout.dart';
 import 'voucher_transaction/voucher_transaction_screen.dart';
 import 'voucher_transaction/voucher_repository.dart';
+import 'voucher_approval/voucher_approval_models.dart';
+import 'voucher_approval/voucher_approval_repository.dart';
+import 'voucher_approval/voucher_approval_screen.dart';
 
 class AccountsDashboardScreen extends StatefulWidget {
   const AccountsDashboardScreen({
@@ -253,6 +256,25 @@ class _AccountsState extends State<AccountsDashboardScreen>
                 ),
                 firstDate: route.extras['FIRST_DATE'] ?? '',
                 lastDate: route.extras['LAST_DATE'] ?? '',
+              )
+              : const [
+                AccountsDestination.creditApproval,
+                AccountsDestination.debitApproval,
+                AccountsDestination.journalApproval,
+              ].contains(destination)
+              ? VoucherApprovalScreen(
+                auth: widget.auth,
+                repository: VoucherApprovalRepository(
+                  widget.auth.profiles.transport,
+                  now: widget.auth.profiles.now,
+                ),
+                kind: switch (destination) {
+                  AccountsDestination.creditApproval =>
+                    VoucherApprovalKind.credit,
+                  AccountsDestination.debitApproval =>
+                    VoucherApprovalKind.debit,
+                  _ => VoucherApprovalKind.journal,
+                },
               )
               : null);
       if (page == null) {
