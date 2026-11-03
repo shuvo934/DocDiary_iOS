@@ -369,11 +369,12 @@ void main() {
     final h = AccountsHarness();
     await host(t, h);
     h.onAccountsGet = (u) async {
-      if (u.path.endsWith('getIncomeExpense'))
+      if (u.path.endsWith('getIncomeExpense')) {
         throw const AppFailure(
           'Synthetic network error',
           kind: FailureKind.network,
         );
+      }
       return null;
     };
     await tap(t, 'accounts_period_lastMonth');

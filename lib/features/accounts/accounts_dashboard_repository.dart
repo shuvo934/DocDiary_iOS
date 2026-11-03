@@ -32,8 +32,9 @@ class AccountsDashboardRepository {
       'The server returned information for a different account. Please try again.',
     );
     ProfileRepository.checkAccess(profile, now());
-    if (!ManagementAccess(profile).allows(ManagementDestination.accounts))
+    if (!ManagementAccess(profile).allows(ManagementDestination.accounts)) {
       throw const AccountsModuleUnavailable();
+    }
   }
 
   Future<List<JsonMap>> _get(
@@ -96,8 +97,9 @@ class AccountsDashboardRepository {
         count: true,
         nonNegative: true,
       );
-      if (label.isNotEmpty && !count.isZero)
+      if (label.isNotEmpty && !count.isZero) {
         slices.add(AccountsVoucherSlice(label, count, i));
+      }
     }
     final amounts = await _get(
       session,

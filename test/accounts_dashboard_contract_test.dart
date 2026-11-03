@@ -20,7 +20,7 @@ void main() {
   Future<AccountsDashboardData> load(
     AccountsHarness h, {
     bool Function()? current,
-  }) => h.accounts.load(
+  }) async => h.accounts.load(
     h.auth.session!,
     h.profile,
     range,
@@ -187,7 +187,7 @@ void main() {
               u.path.endsWith(endpoint)
                   ? {
                     'count': 1,
-                    'items': [{}],
+                    'items': [<String, Object?>{}],
                   }
                   : null;
       await expectLater(load(h), throwsA(isA<AppFailure>()));

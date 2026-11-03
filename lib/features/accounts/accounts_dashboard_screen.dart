@@ -11,6 +11,8 @@ import 'accounts_dashboard_models.dart';
 import 'accounts_dashboard_navigation.dart';
 import 'accounts_dashboard_repository.dart';
 import 'native_accounts_dashboard_layout.dart';
+import 'voucher_transaction/voucher_transaction_screen.dart';
+import 'voucher_transaction/voucher_repository.dart';
 
 class AccountsDashboardScreen extends StatefulWidget {
   const AccountsDashboardScreen({
@@ -85,12 +87,13 @@ class _AccountsState extends State<AccountsDashboardScreen>
     ++_operation;
     _dialogs.close();
     _scaffold.currentState?.closeEndDrawer();
-    if (mounted)
+    if (mounted) {
       setState(() {
         _data = null;
         _busy = true;
         _error = null;
       });
+    }
   }
 
   @override
@@ -226,8 +229,9 @@ class _AccountsState extends State<AccountsDashboardScreen>
     bool chart = false,
   }) async {
     if (!_ready ||
-        !accountsDestinations(_session.center.baseUri).contains(destination))
+        !accountsDestinations(_session.center.baseUri).contains(destination)) {
       return;
+    }
     final op = ++_operation;
     setState(() => _busy = true);
     try {
@@ -238,7 +242,19 @@ class _AccountsState extends State<AccountsDashboardScreen>
         chartRange: chart && _fromTab ? _range : null,
         now: widget.repository.now(),
       );
-      final page = widget.destinationBuilder?.call(context, route);
+      final page =
+          widget.destinationBuilder?.call(context, route) ??
+          (destination == AccountsDestination.voucherTransaction
+              ? VoucherTransactionScreen(
+                auth: widget.auth,
+                repository: VoucherRepository(
+                  widget.auth.profiles.transport,
+                  now: widget.auth.profiles.now,
+                ),
+                firstDate: route.extras['FIRST_DATE'] ?? '',
+                lastDate: route.extras['LAST_DATE'] ?? '',
+              )
+              : null);
       if (page == null) {
         await _dialogs.show<void>(
           context,

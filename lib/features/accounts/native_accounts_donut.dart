@@ -31,12 +31,18 @@ class NativeAccountsDonut extends StatefulWidget {
     required this.scale,
     this.onTap,
     this.whiteValues = false,
+    this.centerText,
+    this.allowRotation = false,
+    this.pieWidthFraction = .68,
   });
   final String title;
   final List<AccountsPieSlice> slices;
   final double scale;
   final VoidCallback? onTap;
   final bool whiteValues;
+  final String? centerText;
+  final bool allowRotation;
+  final double pieWidthFraction;
   @override
   State<NativeAccountsDonut> createState() => _DonutState();
 }
@@ -100,7 +106,7 @@ class _DonutState extends State<NativeAccountsDonut> {
         builder: (context, constraints) {
           final diameter = math.min(
             285 * widget.scale,
-            constraints.maxWidth * .68 - 16,
+            constraints.maxWidth * widget.pieWidthFraction - 16,
           );
           final pie = SizedBox(
             width: diameter + 16,
@@ -115,7 +121,7 @@ class _DonutState extends State<NativeAccountsDonut> {
                 ),
                 onTap: widget.onTap,
                 onHorizontalDragUpdate:
-                    widget.onTap == null
+                    !widget.allowRotation && widget.onTap == null
                         ? null
                         : (details) =>
                             setState(() => _rotation += details.delta.dx / 100),
@@ -134,7 +140,8 @@ class _DonutState extends State<NativeAccountsDonut> {
                           title:
                               empty
                                   ? 'No Data'
-                                  : widget.title.replaceAll('/', '/\n'),
+                                  : (widget.centerText ??
+                                      widget.title.replaceAll('/', '/\n')),
                           scale: widget.scale,
                           zoom: zoom,
                           whiteValues: widget.whiteValues,
