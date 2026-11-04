@@ -193,7 +193,7 @@ JsonMap adminProfile() => {
 };
 
 class Harness {
-  Harness({DateTime? clock}) {
+  Harness({DateTime? clock, bool isIOS = false}) {
     now = clock ?? DateTime(2026, 10, 15, 13, 30);
     transport.onGet = defaultGet;
     profiles = ProfileRepository(
@@ -202,7 +202,11 @@ class Harness {
       describeClient: () async => const ClientDescriptor(),
     );
     auth = AuthController(
-      repository: AuthRepository(transport, ServerDirectory(transport)),
+      repository: AuthRepository(
+        transport,
+        ServerDirectory(transport),
+        isIOS: isIOS,
+      ),
       profiles: profiles,
       vault: vault,
     );

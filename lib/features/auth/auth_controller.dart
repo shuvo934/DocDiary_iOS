@@ -148,6 +148,10 @@ class AuthController extends ChangeNotifier {
     _retryAccount = null;
     _changed();
     try {
+      await repository.requireIosSubscription(candidate.center);
+      if (!_current(operation)) {
+        return;
+      }
       final loaded = await profiles.open(
         candidate,
         isCurrent: () => _current(operation),
@@ -317,6 +321,7 @@ class AuthController extends ChangeNotifier {
             ? AuthStage.chooseAccount
             : AuthStage.chooseCenter;
     var flagCompleted = !resetFlag;
+    var resettingFlag = false;
     var loaded = alreadyLoaded;
     stage = AuthStage.signingIn;
     error = null;
@@ -324,8 +329,13 @@ class AuthController extends ChangeNotifier {
     _retryAccount = null;
     _changed();
     try {
+      await repository.requireIosSubscription(candidate.center);
+      if (!_current(operation)) {
+        return;
+      }
       // Account switching and DocData Retry never reset forced-logout flags.
       if (resetFlag) {
+        resettingFlag = true;
         await repository.resetFirstLoginFlag(
           candidate.center,
           candidate.account,
@@ -334,6 +344,7 @@ class AuthController extends ChangeNotifier {
           return;
         }
         flagCompleted = true;
+        resettingFlag = false;
       }
       final loadedProfile = await profiles.open(
         candidate,
@@ -370,7 +381,7 @@ class AuthController extends ChangeNotifier {
         return;
       }
       error = _message(failure);
-      if (!flagCompleted) {
+      if (resettingFlag) {
         // Login's flag-reset failure remains in the accepted selection/login UI.
         stage = previousStage;
       } else {
@@ -379,7 +390,7 @@ class AuthController extends ChangeNotifier {
         _retryAccount =
             () => _finishCandidate(
               candidate,
-              resetFlag: false,
+              resetFlag: !flagCompleted,
               alreadyLoaded: loaded,
             );
       }

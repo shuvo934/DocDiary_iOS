@@ -7,6 +7,7 @@ enum AccountAccessReason {
   expired,
   doctorUnavailable,
   adminUnavailable,
+  iosSubscriptionRequired,
 }
 
 /// A native dashboard access dialog, distinct from a retryable request failure.
@@ -32,6 +33,15 @@ class AccountAccessFailure extends AppFailure {
         'No Admin Information found for this Id. Please contact with Administrator.',
       );
 
+  factory AccountAccessFailure.iosSubscriptionRequired(String centerName) {
+    final name = centerName.trim();
+    final center = name.isEmpty ? 'This centre' : "The centre '$name'";
+    return AccountAccessFailure(
+      AccountAccessReason.iosSubscriptionRequired,
+      '$center does not have an active subscription for DocDiary on iOS.',
+    );
+  }
+
   factory AccountAccessFailure.expired(String expiry) => AccountAccessFailure(
     AccountAccessReason.expired,
     'Your access to the app is expired on: $expiry.\n'
@@ -54,6 +64,7 @@ class AccountAccessFailure extends AppFailure {
     AccountAccessReason.forcedLogout => 'Forced Log Out!',
     AccountAccessReason.expired => 'Access Expired!',
     AccountAccessReason.adminUnavailable => 'No Information Found!',
+    AccountAccessReason.iosSubscriptionRequired => 'Warning!',
     AccountAccessReason.mobileAccess ||
     AccountAccessReason.doctorUnavailable => 'Access Denied!',
   };

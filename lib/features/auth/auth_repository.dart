@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import '../../config/server_directory.dart';
 import '../../core/failure.dart';
 import '../../core/native_json.dart';
 import '../../core/transport.dart';
+import 'account_access.dart';
 import 'auth_models.dart';
 
 class DiscoveryResult {
@@ -11,9 +14,11 @@ class DiscoveryResult {
 }
 
 class AuthRepository {
-  AuthRepository(this.transport, this.directory);
+  AuthRepository(this.transport, this.directory, {bool? isIOS})
+    : _isIOS = isIOS ?? Platform.isIOS;
   final Transport transport;
   final ServerDirectory directory;
+  final bool _isIOS;
 
   Future<DiscoveryResult> discover(Credentials credentials) async {
     final centers = <CenterOption>[];
@@ -70,6 +75,28 @@ class AuthRepository {
     return DiscoveryResult(
       List.unmodifiable(centers),
       failedServerCount: failures,
+    );
+  }
+
+  Future<void> requireIosSubscription(CenterOption center) async {
+    if (!_isIOS) return;
+
+    final response = await transport.get(
+      apiEndpoint(center.baseUri, 'login/getSubscriptionData'),
+    );
+    final items = nativeItems(response);
+    final count = nativeText(response['count']).trim();
+    final value =
+        items.length == 1 && (count.isEmpty || count == '1')
+            ? nativeText(items.single['val']).trim()
+            : '';
+    if (value == '1') return;
+    if (value == '0' || (count == '0' && items.isEmpty)) {
+      throw AccountAccessFailure.iosSubscriptionRequired(center.name);
+    }
+    throw const AppFailure(
+      'The centre server returned incomplete iOS subscription data. Please try again.',
+      kind: FailureKind.invalidData,
     );
   }
 
