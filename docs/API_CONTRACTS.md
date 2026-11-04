@@ -7,6 +7,7 @@ directory/base URLs, not the synthetic `.example` hosts used by tests.
 | Method and relative route | Inputs | Response/use |
 | --- | --- | --- |
 | GET `login/getAllLoginData` | query `doc_code`, `doc_password` | `is_available`, `is_online`, `p_center_api`, `p_center_name`, `p_doc_code`, `p_admin_user_flag`, `p_admin_user_id`, lists |
+| GET `login/getSubscriptionData` | selected centre base URL | iOS entitlement from `items[0].val` |
 | POST `login/updateFLFlag` | header `P_DOC_CODE` | exact `string_out = Successfully Created` required |
 | POST `login/updateAdminFLFlag` | header `P_USR_ID` | same success contract |
 | GET `doc_dashboard/getDocData` | query `doc_code` | `items` doctor identity, permissions, access/expiry fields |
@@ -34,8 +35,7 @@ directory/base URLs, not the synthetic `.example` hosts used by tests.
 Native arrays may be arrays or JSON-encoded strings. JSON null and literal `"null"`
 are normalized where the Android implementation uses fallback values.
 
-Credentials never appear in application logging. The underlying legacy authentication
-contract still sends them in a query; changing that requires a separate backend agreement.
+Centre checks run up to 24 at a time with a 15-second deadline per request. Results are processed in directory order. The login contract sends credentials in a query. The app omits request URLs from logs. HTTP centre traffic is plaintext.
 
 
 ## iOS loginLog client descriptor (18 October 2026)
@@ -45,7 +45,7 @@ Apple brand, actual systemName/systemVersion, Platform.localHostname and
 Wi-Fi/public/local-interface IP fallback. There is no additional login POST.
 No dummy host/IP is written. Missing optional metadata stays empty; backend
 acceptance of empty fields and IPv6 needs live testing. Source IP observed by
-the backend is a distinct server-side fact. See STARTUP_DEVICE_UPDATE_BN.md.
+the backend is a distinct server-side fact. See the startup-device notes in the sibling Archive.
 
 Separate public reads: Apple HTTPS lookup by actual bundle ID/optional numeric
 Apple ID and country; HTTPS public-IP echo only without usable Wi-Fi. Neither

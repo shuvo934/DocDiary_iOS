@@ -117,9 +117,8 @@ class ProfileRepository {
         'exp_date': expiry,
       });
     }
-    parseOracleDate(
-      expiry,
-    ); // Malformed expiry is retryable, never an implicit extension.
+    // Validate the effective expiry before recording a successful login.
+    checkAccess(profile, nowDate);
     if (doctor && profile.doctorId.isEmpty) {
       throw const AppFailure(
         'The doctor identifier was not returned by the server.',

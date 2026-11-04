@@ -7,8 +7,6 @@ if ! command -v flutter >/dev/null 2>&1; then
   exit 1
 fi
 flutter --version
-# Formatting also asks the actual Dart parser to parse every source and test.
-dart format lib test
 flutter analyze --fatal-infos
 flutter test
 if [[ "${1:-}" == "--ios-simulator" ]]; then

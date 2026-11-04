@@ -239,7 +239,10 @@ class AuthController extends ChangeNotifier {
     error = null;
     _changed();
     try {
-      final result = await repository.discover(_pending!);
+      final result = await repository.discover(
+        _pending!,
+        isCurrent: () => _current(operation),
+      );
       if (!_current(operation)) {
         return;
       }

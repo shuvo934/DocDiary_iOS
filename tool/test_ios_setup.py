@@ -35,24 +35,28 @@ class IosConfigurationTest(unittest.TestCase):
         self.project.write_text('\n'.join(blocks))
         (self.root / 'ios/Podfile').write_text("# platform :ios, '13.0'\n")
 
-    def read_info(self, config):
-        with (self.root / f'ios/Runner/Info-{config}.plist').open('rb') as stream:
+    def read_info(self):
+        with (self.root / 'ios/Runner/Info.plist').open('rb') as stream:
             return plistlib.load(stream)
 
-    def test_debug_http_and_release_strict_are_separate(self):
+    def test_one_plist_requests_portrait_and_uses_default_ats(self):
         MODULE.configure(self.root)
-        self.assertTrue(self.read_info('Debug')['NSAppTransportSecurity']['NSAllowsArbitraryLoads'])
-        self.assertFalse(self.read_info('Release')['NSAppTransportSecurity']['NSAllowsArbitraryLoads'])
+        info = self.read_info()
+        self.assertFalse(info['NSAppTransportSecurity']['NSAllowsArbitraryLoads'])
+        self.assertTrue(info['UIRequiresFullScreen'])
+        for key in ['UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad']:
+            self.assertEqual(info[key], ['UIInterfaceOrientationPortrait'])
+        self.assertEqual(list((self.root / 'ios/Runner').glob('Info*.plist')),
+                         [self.root / 'ios/Runner/Info.plist'])
 
     def test_generated_flutter_scene_settings_are_preserved(self):
         MODULE.configure(self.root)
-        self.assertIn('UIApplicationSceneManifest', self.read_info('Release'))
+        self.assertIn('UIApplicationSceneManifest', self.read_info())
 
     def test_each_build_configuration_references_correct_info_and_keychain(self):
         MODULE.configure(self.root)
         text = self.project.read_text()
-        self.assertEqual(text.count('Runner/Info-Debug.plist'), 1)
-        self.assertEqual(text.count('Runner/Info-Release.plist'), 2)
+        self.assertEqual(text.count('Runner/Info.plist'), 3)
         self.assertEqual(text.count('CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;'), 3)
 
     def test_configuration_can_be_rerun_without_duplicate_settings(self):
@@ -61,11 +65,11 @@ class IosConfigurationTest(unittest.TestCase):
         MODULE.configure(self.root)
         self.assertEqual(self.project.read_text(), first)
 
-    def test_ios_minimum_and_bundle_id_are_set(self):
+    def test_ios_minimum_is_set_and_bundle_id_preserved(self):
         MODULE.configure(self.root)
         text = self.project.read_text()
         self.assertEqual(text.count('IPHONEOS_DEPLOYMENT_TARGET = 15.0;'), 3)
-        self.assertEqual(text.count(MODULE.BUNDLE_ID), 3)
+        self.assertEqual(text.count('com.example.app'), 3)
         self.assertIn("platform :ios, '15.0'", (self.root / 'ios/Podfile').read_text())
 
     def test_unrecognized_xcode_template_fails_without_writing_project(self):

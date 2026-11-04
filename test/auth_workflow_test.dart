@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:docdiary_ios/core/failure.dart';
+import 'package:docdiary_ios/core/native_json.dart';
 import 'package:docdiary_ios/features/auth/auth_controller.dart';
 import 'package:docdiary_ios/features/auth/auth_models.dart';
 
@@ -124,6 +126,39 @@ void main() {
     },
   );
 
+  test('centre requests overlap and replay in directory order', () async {
+    h.transport.onText =
+        (_) async => 'https://one.example/api/\nhttps://two.example/api/';
+    final replies = {
+      'one.example': Completer<JsonMap>(),
+      'two.example': Completer<JsonMap>(),
+    };
+    h.transport.onGet = (uri) => replies[uri.host]!.future;
+    final login = h.signIn();
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      h.transport.requests
+          .where((r) => r.method == 'GET')
+          .map((r) => r.uri.host),
+      ['one.example', 'two.example'],
+    );
+    replies['two.example']!.complete(
+      doctorLogin(base: 'https://two.example/api/'),
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(h.auth.stage, AuthStage.discovering);
+    expect(h.posts, isEmpty);
+    replies['one.example']!.complete(
+      doctorLogin(base: 'https://one.example/api/'),
+    );
+    await login;
+    expect(h.auth.stage, AuthStage.chooseCenter);
+    expect(h.auth.centers.map((center) => center.baseUri.host), [
+      'one.example',
+      'two.example',
+    ]);
+  });
+
   test(
     'mixed doctor/admin result preserves the explicitly selected admin identity',
     () async {
@@ -188,6 +223,7 @@ void main() {
     await h.signIn();
     expect(h.auth.session, isNull);
     expect(h.auth.stage, AuthStage.accountBlocked);
+    expect(h.posts.where((r) => r.uri.path.endsWith('loginLog')), isEmpty);
     await h.auth.acknowledgeAccess();
     h.doctorData['exp_date'] = '15-OCT-26';
     await h.signIn();

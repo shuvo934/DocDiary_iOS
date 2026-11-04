@@ -14,41 +14,75 @@ class DiscoveryResult {
 }
 
 class AuthRepository {
-  AuthRepository(this.transport, this.directory, {bool? isIOS})
-    : _isIOS = isIOS ?? Platform.isIOS;
+  AuthRepository(
+    this.transport,
+    this.directory, {
+    bool? isIOS,
+    Transport? discoveryTransport,
+  }) : _isIOS = isIOS ?? Platform.isIOS,
+       _discoveryTransport = discoveryTransport ?? transport;
   final Transport transport;
   final ServerDirectory directory;
   final bool _isIOS;
+  final Transport _discoveryTransport;
+  static const _maxParallelChecks = 24;
 
-  Future<DiscoveryResult> discover(Credentials credentials) async {
+  Future<({JsonMap? response, AppFailure? failure})> _checkCenter(
+    Uri base,
+    Credentials credentials,
+  ) async {
+    try {
+      final response = await _discoveryTransport.get(
+        apiEndpoint(base, 'login/getAllLoginData', {
+          'doc_code': credentials.mobile,
+          'doc_password': credentials.password,
+        }),
+      );
+      return (response: response, failure: null);
+    } on AppFailure catch (failure) {
+      return (response: null, failure: failure);
+    }
+  }
+
+  Future<DiscoveryResult> discover(
+    Credentials credentials, {
+    bool Function()? isCurrent,
+  }) async {
     final centers = <CenterOption>[];
     var failures = 0;
     var receivedResponse = false;
     var serverIssue = false;
     var lastMessage = '';
-    for (final base in await directory.load()) {
-      try {
-        final response = await transport.get(
-          apiEndpoint(base, 'login/getAllLoginData', {
-            'doc_code': credentials.mobile,
-            'doc_password': credentials.password,
-          }),
-        );
-        receivedResponse = true;
-        final center = CenterOption.fromLoginResponse(response);
-        if (center != null) {
-          centers.add(center);
-        } else {
-          final message = nativeText(response['is_online']);
-          // Keep the previous useful business message like native prv_message.
-          // A bare Online status is not a reason to show an empty account list.
-          if (message.isNotEmpty && message.trim().toLowerCase() != 'online') {
-            lastMessage = message;
+    final bases = await directory.load();
+    for (var start = 0; start < bases.length; start += _maxParallelChecks) {
+      if (isCurrent?.call() == false) throw const ObsoleteRequest();
+      // Wait for every centre, then replay in directory order as Android does.
+      final results = await Future.wait(
+        bases
+            .skip(start)
+            .take(_maxParallelChecks)
+            .map((base) => _checkCenter(base, credentials)),
+      );
+      for (final result in results) {
+        try {
+          final failure = result.failure;
+          if (failure != null) throw failure;
+          final response = result.response!;
+          receivedResponse = true;
+          final center = CenterOption.fromLoginResponse(response);
+          if (center != null) {
+            centers.add(center);
+          } else {
+            final message = nativeText(response['is_online']);
+            if (message.isNotEmpty &&
+                message.trim().toLowerCase() != 'online') {
+              lastMessage = message;
+            }
           }
+        } on AppFailure catch (failure) {
+          failures++;
+          serverIssue = serverIssue || failure.kind != FailureKind.network;
         }
-      } on AppFailure catch (failure) {
-        failures++;
-        serverIssue = serverIssue || failure.kind != FailureKind.network;
       }
     }
     if (centers.isEmpty) {

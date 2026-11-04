@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
+import '../../core/privacy_policy_link.dart';
 
 const _loginSystemBars = SystemUiOverlayStyle(
   statusBarColor: DocColors.primary,
@@ -106,11 +107,22 @@ class NativeLoginLayout extends StatelessWidget {
             color: Colors.white,
             child: LayoutBuilder(
               builder: (context, constraints) {
+                final normalHeaderHeight = constraints.maxHeight * .35;
+                final headerHeight =
+                    media.viewInsets.bottom > 0
+                        ? math.min(
+                          normalHeaderHeight,
+                          math.max(
+                            0.0,
+                            constraints.maxHeight - bottomInset - 100,
+                          ),
+                        )
+                        : normalHeaderHeight;
                 return Column(
                   children: [
                     SizedBox(
                       key: const Key('native_login_header'),
-                      height: constraints.maxHeight * .35,
+                      height: headerHeight,
                       width: double.infinity,
                       child: Stack(
                         fit: StackFit.expand,
@@ -125,7 +137,15 @@ class NativeLoginLayout extends StatelessWidget {
                             child: Center(
                               // Center the native 140sdp box including its 8/60sdp margins.
                               child: Transform.translate(
-                                offset: Offset(0, (8 - 60) * sdp / 2),
+                                offset: Offset(
+                                  0,
+                                  (8 - 60) *
+                                      sdp /
+                                      2 *
+                                      (normalHeaderHeight == 0
+                                          ? 0
+                                          : headerHeight / normalHeaderHeight),
+                                ),
                                 child: Image.asset(
                                   'assets/images/doc_diary_logo_shadow.png',
                                   width: 140 * sdp,
@@ -379,6 +399,7 @@ class NativeLoginLayout extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+                                const Center(child: PrivacyPolicyLink()),
                               ],
                             ),
                           ),

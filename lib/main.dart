@@ -17,6 +17,7 @@ import 'features/startup/app_update_controller.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final transport = IoTransport();
+  final discoveryTransport = IoTransport(timeout: const Duration(seconds: 15));
   final storeTransport = IoTransport(timeout: const Duration(seconds: 5));
   const checkStore = bool.fromEnvironment(
     'DOCDIARY_CHECK_APP_STORE',
@@ -34,7 +35,11 @@ void main() {
     ),
   );
   final auth = AuthController(
-    repository: AuthRepository(transport, ServerDirectory(transport)),
+    repository: AuthRepository(
+      transport,
+      ServerDirectory(transport),
+      discoveryTransport: discoveryTransport,
+    ),
     profiles: ProfileRepository(transport),
     vault: KeychainSessionVault(),
   );
@@ -45,6 +50,7 @@ void main() {
       updates: updates,
       onDispose: () {
         transport.close();
+        discoveryTransport.close();
         storeTransport.close();
       },
     ),

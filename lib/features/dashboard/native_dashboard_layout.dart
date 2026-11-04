@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/native_dates.dart';
+import '../../core/privacy_policy_link.dart';
 import '../auth/profile_repository.dart';
 import 'dashboard_repository.dart';
 import 'meeting_countdown.dart';
@@ -400,6 +401,7 @@ class _Header extends StatelessWidget {
             color: DocColors.greenSea,
           ),
         ),
+        const PrivacyPolicyLink(compact: true),
       ],
     ),
   );
@@ -617,73 +619,71 @@ class _PeriodTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(3, 15, 3, 0),
-    child: Row(
-      children: [
-        for (final item in SummaryPeriod.values)
-          Expanded(
-            child: Semantics(
-              selected: period == item,
-              button: true,
-              child: Material(
-                color: Colors.transparent,
-                child: Ink(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(40),
-                    gradient:
-                        period == item
-                            ? const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [DocColors.primary, DocColors.greenSea],
-                            )
-                            : null,
-                  ),
-                  child: InkWell(
-                    key: Key('dashboard_period_${item.name}'),
-                    borderRadius: BorderRadius.circular(40),
-                    onTap: loading ? null : () => onPeriod(item),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              item.label.toUpperCase(),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: _text(
-                                'PatuaOne',
-                                9 * sdp,
-                                color:
-                                    period == item
-                                        ? Colors.white
-                                        : Colors.black54,
-                                weight: FontWeight.w700,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final largeLabels =
+            MediaQuery.textScalerOf(context).scale(9 * sdp) > 1.4 * 9 * sdp;
+        final columns = largeLabels && constraints.maxWidth < 460 ? 2 : 4;
+        return Wrap(
+          runSpacing: 6,
+          children: [
+            for (final item in SummaryPeriod.values)
+              SizedBox(
+                width: constraints.maxWidth / columns,
+                child: Semantics(
+                  selected: period == item,
+                  button: true,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        gradient:
+                            period == item
+                                ? const LinearGradient(
+                                  colors: [
+                                    DocColors.primary,
+                                    DocColors.greenSea,
+                                  ],
+                                )
+                                : null,
+                      ),
+                      child: InkWell(
+                        key: Key('dashboard_period_${item.name}'),
+                        borderRadius: BorderRadius.circular(40),
+                        onTap: loading ? null : () => onPeriod(item),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 48),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                item.label.toUpperCase(),
+                                textAlign: TextAlign.center,
+                                style: _text(
+                                  'PatuaOne',
+                                  9 * sdp,
+                                  color:
+                                      period == item
+                                          ? Colors.white
+                                          : Colors.black54,
+                                  weight: FontWeight.w700,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                        // if (period == item)
-                        //   const Positioned(
-                        //     left: 0,
-                        //     right: 0,
-                        //     bottom: 0,
-                        //     child: SizedBox(
-                        //       height: 2,
-                        //       child: ColoredBox(color: Colors.white),
-                        //     ),
-                        //   ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-      ],
+          ],
+        );
+      },
     ),
   );
 }

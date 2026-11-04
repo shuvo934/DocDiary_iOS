@@ -90,6 +90,8 @@ def check():
                 continue
             if not resolved.is_file(): failures.append(f'Missing import {target} in {path.name}')
         for asset in re.findall(r"['\"](assets/images/[^'\"]+)['\"]", text):
+            if '$' in asset:
+                continue
             if not (ROOT / asset).is_file(): failures.append('Missing asset: ' + asset)
     for relative in ['lib/main.dart', 'pubspec.yaml', 'tool/bootstrap_ios.sh', 'docs/native_baseline.json']:
         if not (ROOT / relative).is_file(): failures.append('Missing required file: ' + relative)
