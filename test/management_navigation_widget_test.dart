@@ -6,6 +6,7 @@ import 'package:docdiary_ios/core/app_theme.dart';
 import 'package:docdiary_ios/core/failure.dart';
 import 'package:docdiary_ios/core/native_json.dart';
 import 'package:docdiary_ios/features/auth/auth_controller.dart';
+import 'package:docdiary_ios/features/analytics/analytics_dashboard_screen.dart';
 import 'package:docdiary_ios/features/auth/auth_models.dart';
 import 'package:docdiary_ios/features/auth/login_screen.dart';
 import 'package:docdiary_ios/features/auth/profile_repository.dart';
@@ -446,23 +447,32 @@ void main() {
     await _finish(t);
   });
 
-  _case('deferred Analytics closes cleanly and Reports opens its native form', (
-    t,
-  ) async {
-    final h = _admin();
-    await _show(t, h);
-    await _tap(t, 'dashboard_nav_management');
-    await _tap(t, 'management_analytics');
-    expect(find.byKey(const Key('management_unavailable')), findsOneWidget);
-    await t.tap(find.text('Close'));
-    await t.pumpAndSettle();
-    expect(find.byKey(const Key('management_analytics')), findsOneWidget);
-    await _tap(t, 'management_reports');
-    await _tap(t, 'report_manager_select_1');
-    expect(find.byKey(const Key('management_unavailable')), findsNothing);
-    expect(find.byType(ReportParametersScreen), findsOneWidget);
-    await _finish(t);
-  });
+  _case(
+    'Analytics opens its dashboard and Reports still opens its native form',
+    (t) async {
+      final h = _admin();
+      h.adminData['is_pay_appoint_type_active'] = '0';
+      final previous = h.transport.onGet!;
+      h.transport.onGet = (uri) async {
+        if (uri.path.contains('/analytic_dashboard/')) {
+          return {'count': 0, 'items': <JsonMap>[]};
+        }
+        return previous(uri);
+      };
+      await _show(t, h);
+      await _tap(t, 'dashboard_nav_management');
+      await _tap(t, 'management_analytics');
+      expect(find.byType(AnalyticsDashboardScreen), findsOneWidget);
+      expect(find.text('MOBILE APPS'), findsOneWidget);
+      await _tap(t, 'analytics_back');
+      expect(find.byKey(const Key('management_analytics')), findsOneWidget);
+      await _tap(t, 'management_reports');
+      await _tap(t, 'report_manager_select_1');
+      expect(find.byKey(const Key('management_unavailable')), findsNothing);
+      expect(find.byType(ReportParametersScreen), findsOneWidget);
+      await _finish(t);
+    },
+  );
 
   for (final failure in ['forced', 'access', 'expired']) {
     _case(

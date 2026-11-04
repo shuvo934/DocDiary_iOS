@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_theme.dart';
 import 'admin_chart_models.dart';
+import 'native_chart_geometry.dart';
 
 const _orange = Color(0xFFFDA000);
 const _cancel = Color(0xFFB2BEC3);
@@ -389,34 +390,14 @@ class NativeAdminLinePainter extends CustomPainter {
     double rotation = 0,
     bool belowAxis = false,
     Color color = const Color(0xFF6C6E6F),
-  }) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: value,
-        style: chartRoboto(size * textScale, color: color),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    canvas.save();
-    // Center the rotated label's full bounds below the axis, rather than
-    // rotating its top edge around the tick (which raises half the date).
-    final rotatedHeight =
-        painter.width * math.sin(rotation).abs() +
-        painter.height * math.cos(rotation).abs();
-    canvas.translate(
-      position.dx,
-      position.dy + (belowAxis ? rotatedHeight / 2 : 0),
-    );
-    if (rotation != 0) {
-      canvas.rotate(rotation);
-    }
-    painter.paint(
-      canvas,
-      Offset(-painter.width / 2, belowAxis ? -painter.height / 2 : 0),
-    );
-    canvas.restore();
-    painter.dispose();
-  }
+  }) => paintNativeChartLabel(
+    canvas,
+    value,
+    position,
+    chartRoboto(size * textScale, color: color),
+    rotation: rotation,
+    belowAxis: belowAxis,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -458,20 +439,8 @@ class NativeAdminLinePainter extends CustomPainter {
       ),
     );
     for (var series = 0; series < 2; series++) {
-      final path = Path();
-      var previous = at(0, series);
-      path.moveTo(previous.dx, previous.dy);
-      for (var i = 1; i < visible; i++) {
-        final before = at(math.max(0, i - 2), series);
-        final current = at(i, series);
-        final next = at(math.min(count - 1, i + 1), series);
-        final a = previous + (current - before) * 0.2;
-        final b = current - (next - previous) * 0.2;
-        path.cubicTo(a.dx, a.dy, b.dx, b.dy, current.dx, current.dy);
-        previous = current;
-      }
       canvas.drawPath(
-        path,
+        nativeChartCurve(visible, count, (i) => at(i, series)),
         Paint()
           ..color = lineColors[series]
           ..style = PaintingStyle.stroke

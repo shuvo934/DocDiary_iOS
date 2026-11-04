@@ -10,6 +10,8 @@ import '../dashboard/dashboard_navigation.dart';
 import '../dashboard/native_dashboard_dialogs.dart';
 import '../accounts/accounts_dashboard_screen.dart';
 import '../accounts/accounts_dashboard_repository.dart';
+import '../analytics/analytics_dashboard_screen.dart';
+import '../analytics/analytics_repository.dart';
 import '../hr/hr_dashboard_repository.dart';
 import '../hr/hr_dashboard_screen.dart';
 import '../reports/native_report_manager_layout.dart';
@@ -233,6 +235,14 @@ class _ManagementMenuScreenState extends State<ManagementMenuScreen>
                 now: widget.auth.profiles.now,
               ),
               destinationBuilder: widget.destinationBuilder,
+            )
+            : destination == ManagementDestination.analytics
+            ? AnalyticsDashboardScreen(
+              auth: widget.auth,
+              repository: AnalyticsRepository(
+                widget.auth.profiles.transport,
+                now: widget.auth.profiles.now,
+              ),
             )
             : destination == ManagementDestination.reports
             ? ManagementMenuScreen(
