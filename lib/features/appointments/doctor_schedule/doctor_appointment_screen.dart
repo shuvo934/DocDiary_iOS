@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../../core/app_toast.dart';
 import '../../../core/failure.dart';
 import '../../../core/native_dates.dart';
+import '../../../core/video_call_link.dart';
 import '../../auth/account_access.dart';
 import '../../auth/auth_controller.dart';
 import '../../auth/auth_models.dart';
@@ -303,7 +304,7 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
         return;
       }
       if (action == DoctorAppointmentAction.video &&
-          row!.value('doc_video_link').isEmpty) {
+          row!.value('doc_video_link').trim().isEmpty) {
         _toasts.show(context, 'Video call is not available yet');
         return;
       }
@@ -362,6 +363,14 @@ class _DoctorAppointmentScreenState extends State<DoctorAppointmentScreen>
               : null);
       if (page == null && action == DoctorAppointmentAction.avail) {
         await _avail(row!, operation);
+        return;
+      }
+      if (page == null && action == DoctorAppointmentAction.video) {
+        setState(() => _busy = true);
+        final error = await openVideoCallLink(row!.value('doc_video_link'));
+        if (!mounted || !_alive(operation)) return;
+        setState(() => _busy = false);
+        if (error != null) _toasts.show(context, error);
         return;
       }
       if (page == null) {

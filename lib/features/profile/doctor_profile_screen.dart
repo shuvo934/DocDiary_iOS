@@ -4,10 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../core/app_toast.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_theme.dart';
 import '../../core/failure.dart';
+import '../../core/video_call_link.dart';
 import '../auth/account_access.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
@@ -292,30 +292,11 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen>
     if (!_canAct || _profile.value('doc_video_link_enable_flag') != '1') {
       return;
     }
-    final value = _profile.value('doc_video_link').trim();
-    if (value.isEmpty) {
-      _notice('Video call is not available yet');
-      return;
-    }
-    final uri = Uri.tryParse(value);
-    if (uri == null ||
-        !const ['http', 'https'].contains(uri.scheme) ||
-        uri.host.isEmpty ||
-        uri.userInfo.isNotEmpty) {
-      _notice('Video call link is invalid. Please contact your administrator.');
-      return;
-    }
-    try {
-      final open =
-          widget.openVideo ??
-          ((Uri url) async =>
-              await launchUrl(url, mode: LaunchMode.externalApplication));
-      if (!await open(uri).timeout(const Duration(seconds: 10))) {
-        _notice('Could not open the video call link.');
-      }
-    } catch (_) {
-      _notice('Could not open the video call link.');
-    }
+    final error = await openVideoCallLink(
+      _profile.value('doc_video_link'),
+      open: widget.openVideo,
+    );
+    if (error != null) _notice(error);
   }
 
   Future<bool> _photoRetry(Object failure, int operation) async {

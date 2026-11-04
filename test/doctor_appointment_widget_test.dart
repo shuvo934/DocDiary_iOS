@@ -20,6 +20,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'doctor_appointment_test_support.dart';
+import 'toast_test_support.dart';
 
 Future<void> _tap(WidgetTester t, String key) async {
   final f = find.byKey(Key(key));
@@ -380,6 +381,63 @@ void main() {
       await _finish(t);
     },
   );
+  for (final (link, launcherResult, toast) in [
+    (' https://video.example/slot?meeting=41 ', true, null),
+    ('   ', false, 'Video call is not available yet'),
+    (
+      'javascript:alert(1)',
+      false,
+      'Video call link is invalid. Please contact your administrator.',
+    ),
+    (
+      'https://video.example/slot?meeting=41',
+      false,
+      'Could not open the video call link.',
+    ),
+  ]) {
+    _case('Timeline video shows ${toast ?? 'the external meeting URL'}', (
+      t,
+    ) async {
+      final h = DoctorAppointmentHarness(clock: DateTime(2026, 10, 24, 13, 50));
+      h.customRows = [
+        {
+          ...doctorAppointmentRow(),
+          'ts_video_conf_flag': '1',
+          'doc_video_link': link,
+        },
+      ];
+      final toasts = ToastRecorder()..install();
+      addTearDown(toasts.uninstall);
+      const launcher = MethodChannel('plugins.flutter.io/url_launcher');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      final calls = <MethodCall>[];
+      messenger.setMockMethodCallHandler(launcher, (call) async {
+        calls.add(call);
+        return launcherResult;
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(launcher, null));
+
+      await _show(t, h);
+      await _tap(t, 'doctor_appointment_0_video');
+      if (link.trim().startsWith('https:')) {
+        expect(calls.single.method, 'launch');
+        expect(calls.single.arguments, containsPair('url', link.trim()));
+        expect(calls.single.arguments, containsPair('useWebView', false));
+        expect(calls.single.arguments, containsPair('useSafariVC', false));
+      } else {
+        expect(calls, isEmpty);
+      }
+      expect(toasts.messages, toast == null ? isEmpty : [toast]);
+      expect(find.byType(DoctorAppointmentScreen), findsOneWidget);
+      expect(
+        find.byKey(const Key('doctor_appointment_unavailable')),
+        findsNothing,
+      );
+      expect(h.posts, isEmpty);
+      await _finish(t);
+    });
+  }
   _case('load failure has native Retry/Exit and no invented empty state', (
     t,
   ) async {
