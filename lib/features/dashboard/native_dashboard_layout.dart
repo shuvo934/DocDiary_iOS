@@ -401,7 +401,7 @@ class _Header extends StatelessWidget {
             color: DocColors.greenSea,
           ),
         ),
-        const PrivacyPolicyLink(compact: true),
+        // const PrivacyPolicyLink(compact: true),
       ],
     ),
   );

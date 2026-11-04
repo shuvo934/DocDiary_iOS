@@ -6,7 +6,10 @@ class PrivacyPolicyLink extends StatelessWidget {
 
   final bool compact;
   static final _url = Uri.tryParse(
-    const String.fromEnvironment('DOCDIARY_PRIVACY_POLICY_URL'),
+    const String.fromEnvironment(
+      'DOCDIARY_PRIVACY_POLICY_URL',
+      defaultValue: 'https://privacy.techterrain-it.com/',
+    ),
   );
 
   @override

@@ -399,7 +399,7 @@ class NativeLoginLayout extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const Center(child: PrivacyPolicyLink()),
+                                // const Center(child: PrivacyPolicyLink()),
                               ],
                             ),
                           ),
